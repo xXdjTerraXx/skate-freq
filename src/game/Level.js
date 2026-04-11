@@ -27,6 +27,17 @@ export default class Level{
 
     //MAIN LEVEL CONTAINER
     this.mainContainer = new THREE.Group()
+    
+    //rotate the main container so that a side is at 6 oclock instead of vertex
+    //oki so a full circle is 2*Math.PI radians, each side is 2*Math.PI / lane count
+    //then divide THAT by 2 and that is rotating from a vertex at 6oclock to
+    //the side being centered:
+    //(Math.PI * 2) / (levelConfig.LANE_COUNT / 2)
+    //or, simplified: Math.PI / levelConfig.LANE_COUNT
+    //zRotationOffset is this value applied to the mainContainer z rotation so that
+    //a side is centered at 6oclock instead of a vertex
+    this.zRotationOffset = Math.PI / levelConfig.LANE_COUNT
+    this.mainContainer.rotation.z += this.zRotationOffset 
 
     //RING CONTAINER
     this.ringContainer = new THREE.Group()
@@ -65,13 +76,15 @@ export default class Level{
     //positioning
     this.rotation = 0
     this.targetRotation = 0
+    this.rotationVelocity = 0
 
     this.laneCount = levelConfig.LANE_COUNT
     this.currentLane = 0
   }
 
-  init = () => {
-    
+  init = (player) => {
+    //give level player
+     this.player = player
     //FOG EFFECT
     this.app.scene.fog = new THREE.Fog(0x000000, 2, 15)
 
@@ -97,34 +110,35 @@ export default class Level{
     this.app.scene.add(this.ringContainer)
 }
 
-  setPlayer = (player) => {
-    this.player = player
-    }
 
-    changeLane = (direction) => {
-        console.log("lane change")
-        this.currentLane += direction
 
-        if (this.currentLane < 0) {
-            this.currentLane = this.laneCount - 1
-        }
+  changeLane = (direction) => {
+      console.log("lane change")
+      this.currentLane += direction
 
-        if (this.currentLane >= this.laneCount) {
-            this.currentLane = 0
-        }
+      if (this.currentLane < 0) {
+          this.currentLane = this.laneCount - 1
+      }
 
-        const laneAngle = (Math.PI * 2) / this.laneCount
-        this.targetRotation = this.currentLane * laneAngle
-    }
+      if (this.currentLane >= this.laneCount) {
+          this.currentLane = 0
+      }
+
+      const laneAngle = (Math.PI * 2) / this.laneCount
+      this.targetRotation = this.currentLane * laneAngle
+  }
+
+  applyRotation = () => {
+      this.rotation += (this.targetRotation - this.rotation) * 0.2
+  }
 
   //ANIMATE//
-  animate = (player) => {
-    requestAnimationFrame(() => this.animate())
-
+  update = () => {
+    
     // move tunnels toward camera
     this.tunnel1.position.z += this.levelSpeed
     this.tunnel2.position.z += this.levelSpeed
-
+    
     // reset for looping effect
     if (this.tunnel1.position.z > levelConfig.TUNNEL_LENGTH) {
         this.tunnel1.position.z = this.tunnel2.position.z - levelConfig.TUNNEL_LENGTH
@@ -133,9 +147,6 @@ export default class Level{
     if (this.tunnel2.position.z > levelConfig.TUNNEL_LENGTH) {
         this.tunnel2.position.z = this.tunnel1.position.z - levelConfig.TUNNEL_LENGTH
     }
-
-    //update player
-    this.player.update()
 
     //update gate rings
     this.gateRings.forEach(ring => {
@@ -149,14 +160,12 @@ export default class Level{
     })
 
     //APPLY ROTATION
-    // smooth rotation
-    this.rotation += (this.targetRotation - this.rotation) * 0.2
+    this.applyRotation()
 
     // rotate everything
-    this.mainContainer.rotation.z = this.rotation
-    this.ringContainer.rotation.z = -this.rotation
+    this.mainContainer.rotation.z = this.rotation + this.zRotationOffset
+    this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
 
-    //RENDER
-    this.app.renderer.render(this.app.scene, this.app.camera)
+
     }
 }

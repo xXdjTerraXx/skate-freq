@@ -7,7 +7,7 @@ export default class GateRing {
     this.ringContainer = ringContainer
 
     //hex geometry 
-    this.geometry = new THREE.RingGeometry(1, 0.9, 6)
+    this.geometry = new THREE.RingGeometry(1, 0.97, levelConfig.LANE_COUNT)
 
     //material
     this.material = new THREE.MeshBasicMaterial({

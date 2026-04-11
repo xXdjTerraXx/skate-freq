@@ -12,9 +12,10 @@ const player = new Player(mainApplication)
 player.init()
 
 const level = new Level(mainApplication)
-level.init()
-level.setPlayer(player)
-level.animate();
+level.init(player)
 
-const controller = new Controller(level)
+const controller = new Controller(level, player)
 controller.init()
+
+//start eeeeverything
+mainApplication.start(level, player, controller)
