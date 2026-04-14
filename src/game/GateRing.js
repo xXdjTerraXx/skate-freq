@@ -26,8 +26,8 @@ export default class GateRing {
     this.ringContainer.add(this.mesh)
   }
 
-  update(speed) {
-    this.mesh.position.z += speed
+  update(deltaTime, speed) {
+    this.mesh.position.z += speed * deltaTime
 
     const t = performance.now() * 0.005
     const scale = 1 + Math.sin(t) * 0.05

@@ -53,17 +53,18 @@ export default class Controller{
 
     rotateLeftPress = () => {
         console.log("LEFT KEY PRESS")
-        this.level.changeLane(-1)
+        this.level.changeLane(1)
     }
 
     rotateRightPress = () => {
         console.log("RIGHT KEY PRESS")
-        this.level.changeLane(1)
+        this.level.changeLane(-1)
     }
 
     jump = () => {
         console.log("SPACE BAR PRESS")
         this.player.jump()
+        this.level.checkRampHit()
     }
 
     run = () => {

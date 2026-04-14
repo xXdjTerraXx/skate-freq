@@ -40,7 +40,7 @@ export default class Player {
     //stuff for jumping
     this.isJumping = false
     //value of jump velocity when plyr hits actually jumps. never changes
-    this.TARGET_JUMP_VELOCITY = .17
+    this.TARGET_JUMP_VELOCITY = .09
     //
     this.jumpVelocity = 0
     //jump offset is distance from ground  
@@ -89,7 +89,7 @@ export default class Player {
     if (this.isJumping) {
       //jump velocity slowed over time by gravity
       this.jumpVelocity += this.gravity
-      this.jumpOffset += this.jumpVelocity - .01 //the.01 is just an arbitrary jump limiter
+      this.jumpOffset += this.jumpVelocity 
       //landing check
       if (this.jumpOffset <= 0) {
         this.jumpOffset = 0
@@ -97,7 +97,6 @@ export default class Player {
         this.isJumping = false
       }
     }
-    this.radius = this.baseRadius - this.jumpOffset
   }
 
   updateMovement = () => {
@@ -117,18 +116,22 @@ export default class Player {
       this.laneOffset = -this.maxLaneOffset;
       this.laneOffsetVelocity = 0;
     }
+
+    this.mesh.rotation.z = this.laneOffsetVelocity * 20;
   }
 
   updatePosition = () => {
     //final angle is angle but with laneOffset for movement
     const finalAngle = this.angle + this.laneOffset;
 
-    const x = Math.cos(finalAngle) * this.radius
-    const y = Math.sin(finalAngle) * this.radius
+    const effectiveRadius = this.baseRadius - this.jumpOffset
+
+    const x = Math.cos(finalAngle) * effectiveRadius
+    const y = Math.sin(finalAngle) * effectiveRadius
     this.mesh.position.set(x, y, this.initialZPosition)
   }
 
-  update = () => {
+  update = (deltaTime) => {
     this.updateJumpPhysics()
     if(this.isMoving !== false){
       this.updateMovement()

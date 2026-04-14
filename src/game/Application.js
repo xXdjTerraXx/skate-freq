@@ -13,6 +13,8 @@ export default class Application{
     )
     //RENDERER setup
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
+
+    this.clock = new THREE.Clock()
     
   }
 
@@ -40,12 +42,15 @@ export default class Application{
 
   masterUpdate = () => {
     requestAnimationFrame(() => this.masterUpdate())
+
+    const deltaTime = this.clock.getDelta()
+
     //call controller run func
     this.controller.run()
     //call the level's update func
-    this.level.update()
+    this.level.update(deltaTime)
     //update player
-    this.player.update()
+    this.player.update(deltaTime)
 
     //RENDER
     this.renderer.render(this.scene, this.camera)

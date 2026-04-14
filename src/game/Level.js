@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { levelConfig } from '../config'
 import GateRing from './GateRing'
+import Ramp from './Ramp'
 
 export default class Level{
   constructor(app){
@@ -42,6 +43,9 @@ export default class Level{
     //RING CONTAINER
     this.ringContainer = new THREE.Group()
 
+    //RAMPS CONTAINER 
+    this.rampContainer = new THREE.Group()
+
     //TUNNELS setup
     //two tunnels for loop
     this.tunnel1 = new THREE.Mesh(this.geometry, this.material)
@@ -75,11 +79,15 @@ export default class Level{
 
     //positioning
     this.rotation = 0
+    this.rotationAccumulator = 0
     this.targetRotation = 0
     this.rotationVelocity = 0
 
     this.laneCount = levelConfig.LANE_COUNT
-    this.currentLane = 0
+    this.playerCurrentLane = levelConfig.STARTING_LANE
+
+    //RAMPS
+    this.ramps = []
   }
 
   init = (player) => {
@@ -105,39 +113,85 @@ export default class Level{
         this.gateRings.push(ring)
     }
 
+    //init ramps
+    // lane 0, time 4 sec
+    const ramp = new Ramp(this.app, 1, 4.0) 
+    ramp.init(this.rampContainer)
+    this.ramps.push(ramp)
+
+    //add rampContainer to mainContainer
+    this.mainContainer.add(this.rampContainer)
     //add everything to main scene
     this.app.scene.add(this.mainContainer)
     this.app.scene.add(this.ringContainer)
 }
 
-
-
   changeLane = (direction) => {
-      console.log("lane change")
-      this.currentLane += direction
-
-      if (this.currentLane < 0) {
-          this.currentLane = this.laneCount - 1
-      }
-
-      if (this.currentLane >= this.laneCount) {
-          this.currentLane = 0
-      }
-
+      this.rotationAccumulator += direction
       const laneAngle = (Math.PI * 2) / this.laneCount
-      this.targetRotation = this.currentLane * laneAngle
+      this.targetRotation = this.rotationAccumulator * laneAngle
+
+      //keep track of playerCurrentLane
+      this.playerCurrentLane = (this.playerCurrentLane + direction + this.laneCount) % this.laneCount
+      console.log('DEBUG: PLAYER CURRENT LANE: ', this.playerCurrentLane)
   }
 
   applyRotation = () => {
       this.rotation += (this.targetRotation - this.rotation) * 0.2
   }
 
+  checkRampHit = () => {
+    const playerLane = this.playerCurrentLane
+    const playerZ = this.player.initialZPosition
+
+    let closestRamp = null
+    let closestDistance = Infinity
+
+    // find closest ramp in front of player
+    this.ramps.forEach(ramp => {
+      const distance = Math.abs(ramp.z - playerZ)
+      // skip behind player
+      if (distance < 0) return 
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestRamp = ramp
+      }
+    })
+
+    //check to prevent double hit on ramp
+    if(closestRamp.hit) return
+
+    if (!closestRamp) {
+      console.log("MISS (no ramp)")
+      return
+    }
+
+    // lane check
+    if (closestRamp.lane !== playerLane) {
+      console.log("MISS (wrong lane)")
+      return
+    }
+
+    // timing via distance
+    const PERFECT_THRESHOLD = 0.5
+    const GOOD_THRESHOLD = 1.5
+
+    if (closestDistance < PERFECT_THRESHOLD) {
+      console.log("PERFECT")
+    } else if (closestDistance < GOOD_THRESHOLD) {
+      console.log("GOOD")
+    } else {
+      console.log("MISS (bad timing)")
+    }
+    closestRamp.hit = true
+}
+
   //ANIMATE//
-  update = () => {
+  update = (deltaTime) => {
     
     // move tunnels toward camera
-    this.tunnel1.position.z += this.levelSpeed
-    this.tunnel2.position.z += this.levelSpeed
+    this.tunnel1.position.z += this.levelSpeed * deltaTime
+    this.tunnel2.position.z += this.levelSpeed * deltaTime
     
     // reset for looping effect
     if (this.tunnel1.position.z > levelConfig.TUNNEL_LENGTH) {
@@ -150,13 +204,18 @@ export default class Level{
 
     //update gate rings
     this.gateRings.forEach(ring => {
-        ring.update(this.levelSpeed)
+        ring.update(deltaTime, this.levelSpeed)
 
         //resetThreshold is an arbitrary point slightly in front of the camera
         const resetThreshold = this.app.camera.position.z + 3
         if (ring.mesh.position.z > resetThreshold) {
             ring.mesh.position.z -= this.ringCount * this.ringSpacing
         }
+    })
+
+    //update ramps
+    this.ramps.forEach(ramp => {
+      ramp.update(deltaTime, this.levelSpeed)
     })
 
     //APPLY ROTATION
