@@ -67,7 +67,7 @@ export default class Controller{
         this.level.checkRampHit()
     }
 
-    run = () => {
+    run = (deltaTime) => {
         if(this.moveKeys.left === true){
             this.player.direction = -1
             this.player.isMoving = true

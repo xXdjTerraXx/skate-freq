@@ -3,11 +3,24 @@ import { levelConfig } from '../config'
 import GateRing from './GateRing'
 import Ramp from './Ramp'
 
-export default class Level{
-  constructor(app){
-    this.app = app
+//the whole scene tree for hte game looks like this:
+//            [app scene]_________
+//            |                  | 
+//  [app.masterGameContainer]   [app.mainUserInterfaceContainer]
+//              |
+//       ~~~~~~~[mainLevelContainer]~~~~~~~~~~
+//       |                      |               |
+//   [tunnelsContainer]  [ringsContainer]  [rampsContainer]
 
+export default class Level{
+  constructor(app, hitManager){
+    this.app = app
+    this.hitManager = hitManager
+
+    //bring in some constants from config
     this.levelSpeed = levelConfig.SPEED
+    this.laneCount = levelConfig.LANE_COUNT
+    this.playerCurrentLane = levelConfig.STARTING_LANE
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -26,29 +39,37 @@ export default class Level{
       side: THREE.BackSide // THIS puts you inside the tunnel
     })
 
-    //MAIN LEVEL CONTAINER
-    this.mainContainer = new THREE.Group()
+    //MAIN LEVEL CONTAINER, EVERYTHING LEVEL RELATED GOES HERE
+    this.mainLevelContainer = new THREE.Group()
+    this.mainLevelContainer.name = 'main level container'
+    //TUNNELS CONTAINER
+    this.tunnelsContainer = new THREE.Group()
+    this.tunnelsContainer.name = 'tunnels container'
+    //RING CONTAINER
+    this.ringContainer = new THREE.Group()
+    this.ringContainer.name = 'rings container'
+    //RAMPS CONTAINER 
+    this.rampContainer = new THREE.Group()
+    this.rampContainer.name = 'ramp container'
+    //WORLD HIT FX CONTAINER
+    this.worldHitFxContainer = new THREE.Group()
+    this.worldHitFxContainer.name = 'world hit fx container'
     
+    //radians measurement of a face
+    this.laneAngle = (Math.PI * 2) / this.laneCount
+
     //rotate the main container so that a side is at 6 oclock instead of vertex
-    //oki so a full circle is 2*Math.PI radians, each side is 2*Math.PI / lane count
-    //then divide THAT by 2 and that is rotating from a vertex at 6oclock to
-    //the side being centered:
     //(Math.PI * 2) / (levelConfig.LANE_COUNT / 2)
     //or, simplified: Math.PI / levelConfig.LANE_COUNT
     //zRotationOffset is this value applied to the mainContainer z rotation so that
-    //a side is centered at 6oclock instead of a vertex
-    this.zRotationOffset = Math.PI / levelConfig.LANE_COUNT
-    this.mainContainer.rotation.z += this.zRotationOffset 
-
-    //RING CONTAINER
-    this.ringContainer = new THREE.Group()
-
-    //RAMPS CONTAINER 
-    this.rampContainer = new THREE.Group()
+    //a side is centered at 6oclock instead of a vertex. equal to half the size
+    //of one side
+    this.zRotationOffset = Math.PI / levelConfig.LANE_COUNT 
 
     //TUNNELS setup
     //two tunnels for loop
     this.tunnel1 = new THREE.Mesh(this.geometry, this.material)
+    //tunnels have to be rotated 90 deg on x so youre going THROUGH it
     this.tunnel1.rotation.x = Math.PI / 2
 
     this.tunnel2 = new THREE.Mesh(this.geometry, this.material)
@@ -83,16 +104,12 @@ export default class Level{
     this.targetRotation = 0
     this.rotationVelocity = 0
 
-    this.laneCount = levelConfig.LANE_COUNT
-    this.playerCurrentLane = levelConfig.STARTING_LANE
 
     //RAMPS
     this.ramps = []
   }
 
-  init = (player) => {
-    //give level player
-     this.player = player
+  init = () => {
     //FOG EFFECT
     this.app.scene.fog = new THREE.Fog(0x000000, 2, 15)
 
@@ -100,10 +117,6 @@ export default class Level{
     this.tunnel1.position.z = 0
     // position second tunnel exactly one length behind
     this.tunnel2.position.z = -levelConfig.TUNNEL_LENGTH 
-
-    //add tunnel to scene
-    this.mainContainer.add(this.tunnel1)
-    this.mainContainer.add(this.tunnel2)
 
     //init gate rings
     for(let i = 0; i < this.ringCount; i++){
@@ -114,57 +127,64 @@ export default class Level{
     }
 
     //init ramps
-    // lane 0, time 4 sec
-    const ramp = new Ramp(this.app, 1, 4.0) 
+    // lane 1, time 4 sec
+    const ramp = new Ramp(this.app, 1, 4.0, this.zRotationOffset) 
     ramp.init(this.rampContainer)
     this.ramps.push(ramp)
 
-    //add rampContainer to mainContainer
-    this.mainContainer.add(this.rampContainer)
-    //add everything to main scene
-    this.app.scene.add(this.mainContainer)
-    this.app.scene.add(this.ringContainer)
+     //add tunnels to mainLevelContainer
+    this.tunnelsContainer.add(this.tunnel1)
+    this.tunnelsContainer.add(this.tunnel2)
+
+    //add everything to mainLevelContainer. on application start, mainLevelContainer
+    //gets added to Application.masterGameContainer which gets added to
+    //main scene
+    this.mainLevelContainer.add(this.tunnelsContainer)
+    this.mainLevelContainer.add(this.rampContainer)
+    this.mainLevelContainer.add(this.ringContainer)
+
+    this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 5
 }
 
   changeLane = (direction) => {
       this.rotationAccumulator += direction
-      const laneAngle = (Math.PI * 2) / this.laneCount
-      this.targetRotation = this.rotationAccumulator * laneAngle
+      this.targetRotation = this.rotationAccumulator * this.laneAngle
 
       //keep track of playerCurrentLane
       this.playerCurrentLane = (this.playerCurrentLane + direction + this.laneCount) % this.laneCount
       console.log('DEBUG: PLAYER CURRENT LANE: ', this.playerCurrentLane)
   }
 
-  applyRotation = () => {
-      this.rotation += (this.targetRotation - this.rotation) * 0.2
+  applyRotation = (deltaTime) => {
+      const lerpFactor = 1 - Math.pow(0.001, deltaTime)
+      this.rotation += (this.targetRotation - this.rotation) * lerpFactor
   }
 
   checkRampHit = () => {
     const playerLane = this.playerCurrentLane
-    const playerZ = this.player.initialZPosition
+    const playerZ = levelConfig.PLAYER_Z_VALUE
 
     let closestRamp = null
     let closestDistance = Infinity
 
     // find closest ramp in front of player
     this.ramps.forEach(ramp => {
-      const distance = Math.abs(ramp.z - playerZ)
+      const distance = ramp.z - playerZ
       // skip behind player
-      if (distance < 0) return 
+      if (distance > 0) return 
       if (distance < closestDistance) {
         closestDistance = distance
         closestRamp = ramp
       }
     })
 
-    //check to prevent double hit on ramp
-    if(closestRamp.hit) return
-
     if (!closestRamp) {
       console.log("MISS (no ramp)")
       return
     }
+
+    //check to prevent double hit on ramp
+    if(closestRamp.hit) return
 
     // lane check
     if (closestRamp.lane !== playerLane) {
@@ -176,12 +196,15 @@ export default class Level{
     const PERFECT_THRESHOLD = 0.5
     const GOOD_THRESHOLD = 1.5
 
-    if (closestDistance < PERFECT_THRESHOLD) {
+    if (Math.abs(closestDistance) < PERFECT_THRESHOLD) {
       console.log("PERFECT")
-    } else if (closestDistance < GOOD_THRESHOLD) {
+      this.hitManager.spawnHitEffect("PERFECT", "ui")
+    } else if (Math.abs(closestDistance) < GOOD_THRESHOLD) {
       console.log("GOOD")
+      this.hitManager.spawnHitEffect("GOOD", "ui")
     } else {
       console.log("MISS (bad timing)")
+      this.hitManager.spawnHitEffect("MISS", "ui")
     }
     closestRamp.hit = true
 }
@@ -219,12 +242,11 @@ export default class Level{
     })
 
     //APPLY ROTATION
-    this.applyRotation()
+    this.applyRotation(deltaTime)
 
     // rotate everything
-    this.mainContainer.rotation.z = this.rotation + this.zRotationOffset
+    this.tunnelsContainer.rotation.z = this.rotation + this.zRotationOffset
+    this.rampContainer.rotation.z = this.rotation + this.zRotationOffset
     this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
-
-
     }
 }

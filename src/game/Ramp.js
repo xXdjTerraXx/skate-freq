@@ -2,12 +2,12 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 
 export default class Ramp {
-  constructor(app, lane, time) {
+  constructor(app, lane, time, levelZRotationOffset) {
     this.app = app
     // which lane this ramp is in
     this.lane = lane 
     // position in correct lane
-    this.laneAngle = (Math.PI * 2) / levelConfig.LANE_COUNT
+    this.laneAngle = (Math.PI * 2) / levelConfig.LANE_COUNT - levelZRotationOffset
     // when it should be hit (seconds for now)    
     this.time = time     
     // start far away from player
@@ -27,8 +27,9 @@ export default class Ramp {
   init(rampContainer) {
     
 
-    // shift so ramp is centered on side
-    const angle = (this.lane * this.laneAngle) - Math.PI + (this.laneAngle / 2)
+    // adding (this.laneAngle / 2) shifts ramp to be centered on a side
+    // const angle = (this.lane * this.laneAngle) + (this.laneAngle / 2)
+    const angle = this.lane * this.laneAngle
 
     const radius = levelConfig.TUNNEL_RADIUS
 

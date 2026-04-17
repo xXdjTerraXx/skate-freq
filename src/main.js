@@ -1,21 +1,32 @@
-import Player from './game/Player';
-import Level from './game/Level';
-import Application from './game/Application';
-import Controller from './game/Controller';
+import assetManifest from "./assetManifest"
+
+import Player from './game/Player'
+import Level from './game/Level'
+import Application from './game/Application'
+import Controller from './game/Controller'
+import HitManager from './game/HitManager'
+import UiSpace from './game/UiSpace'
 
 
-//everything kicks off here bruv :3
+
 const mainApplication = new Application()
-mainApplication.init()
+await mainApplication.init()
 
-const player = new Player(mainApplication)
+const ui = new UiSpace(mainApplication)
+ui.init()
+
+const hitManager = new HitManager(mainApplication)
+
+const level = new Level(mainApplication, hitManager)
+level.init()
+
+hitManager.init(ui.hitEffectsContainer, level.worldHitFxContainer)
+
+const player = new Player(mainApplication, level)
 player.init()
-
-const level = new Level(mainApplication)
-level.init(player)
 
 const controller = new Controller(level, player)
 controller.init()
 
 //start eeeeverything
-mainApplication.start(level, player, controller)
+mainApplication.start(level, player, controller, hitManager, ui)
