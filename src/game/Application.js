@@ -29,6 +29,9 @@ export default class Application{
   init = async () => {
     //position the camera
     this.camera.position.z = 2
+    this.camera.position.y = .5
+    //little bit of downward titl
+    this.camera.rotation.x = -0.2
     //size the renderer and append to dom
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(this.renderer.domElement)
@@ -43,18 +46,23 @@ export default class Application{
     await this.assetManager.loadAllAssets()
   }
 
-  start = (level, player, controller, hitManager, ui) => {
+  start = (level, player, controller, hitManager, ui, audioManager) => {
     this.level = level
     this.player = player
     this.controller = controller
     this.hitManager = hitManager
     this.ui = ui
+    this.audioManager = audioManager
 
     //add level, player, and ui to masterGameContainer
     this.masterGameContainer.add(this.level.mainLevelContainer)
     this.masterGameContainer.add(this.ui.mainContainer)
     //add masterGameContainer to scene and start the main update chain
     this.scene.add(this.masterGameContainer)
+
+    //TEMPORARY AUDIOMANAGER INIT HERE
+    this.audioManager.init()
+
     this.masterUpdate()
   }
 

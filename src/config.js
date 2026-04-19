@@ -2,7 +2,7 @@ export const levelConfig = {
     TUNNEL_LENGTH: 100,
     TUNNEL_RADIUS: 1,
     LANE_COUNT: 8,
-    STARTING_LANE: 1,
+    STARTING_LANE: 0,
     SPEED: 10,
     RING_COUNT: 12,
     RING_SPACING: 2,
@@ -16,5 +16,9 @@ export const levelConfig = {
         PERFECT: 0x2b73fb,
         GOOD: 0xfbe52b,
         MISS: 0xfb2b35 
+    },
+    RAMP_TIMING: {
+        GOOD: 0.3,
+        PERFECT: 0.15
     }
 }

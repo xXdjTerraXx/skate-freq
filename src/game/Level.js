@@ -3,24 +3,38 @@ import { levelConfig } from '../config'
 import GateRing from './GateRing'
 import Ramp from './Ramp'
 
-//the whole scene tree for hte game looks like this:
-//            [app scene]_________
-//            |                  | 
+//the whole scene tree for the game looks like this:
+//            _____[app scene]_________
+//           |                         | 
 //  [app.masterGameContainer]   [app.mainUserInterfaceContainer]
-//              |
-//       ~~~~~~~[mainLevelContainer]~~~~~~~~~~
-//       |                      |               |
-//   [tunnelsContainer]  [ringsContainer]  [rampsContainer]
+//              |                      
+//       ______[mainLevelContainer]______________
+//      |                      |                 |
+//   [tunnelsContainer]  [ringContainer]  [rampContainer]
 
 export default class Level{
-  constructor(app, hitManager){
+  constructor(app, hitManager, testLevelMap){
     this.app = app
     this.hitManager = hitManager
+    this.levelMap = testLevelMap
+    
 
     //bring in some constants from config
     this.levelSpeed = levelConfig.SPEED
     this.laneCount = levelConfig.LANE_COUNT
     this.playerCurrentLane = levelConfig.STARTING_LANE
+
+    //MUSIC/BEAT STUFF
+    this.bpm = 90
+    this.secondsPerBeat = 60/this.bpm
+    this.currentTime = 0.00
+    this.lastBeat = 3
+    this.currentBeat = 0
+    this.currentBar = 0
+    //4/4 time
+    this.beatsPerBar = 4
+    //beat subdivision
+    this.beatSubdivision = 2
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -95,7 +109,7 @@ export default class Level{
     //how many rings
     this.ringCount = levelConfig.RING_COUNT
     //distance between each one
-    this.ringSpacing = levelConfig.RING_SPACING
+    this.ringSpacing = this.levelSpeed*this.secondsPerBeat/this.beatSubdivision
 
 
     //positioning
@@ -126,11 +140,21 @@ export default class Level{
         this.gateRings.push(ring)
     }
 
+    const patternLengthTime = this.levelMap.patternLengthBeats * this.secondsPerBeat 
     //init ramps
-    // lane 1, time 4 sec
-    const ramp = new Ramp(this.app, 1, 4.0, this.zRotationOffset) 
-    ramp.init(this.rampContainer)
-    this.ramps.push(ramp)
+    this.levelMap.levelMap.forEach(mapNode => {
+      const ramp = new Ramp(
+        this.app, 
+        mapNode.lane - 1, 
+        mapNode.beat * this.secondsPerBeat, 
+        this.zRotationOffset, 
+        this.levelSpeed, 
+        this.currentTime,
+        patternLengthTime) 
+      ramp.init(this.rampContainer)
+      this.ramps.push(ramp)
+    })
+    
 
      //add tunnels to mainLevelContainer
     this.tunnelsContainer.add(this.tunnel1)
@@ -143,11 +167,16 @@ export default class Level{
     this.mainLevelContainer.add(this.rampContainer)
     this.mainLevelContainer.add(this.ringContainer)
 
-    this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 5
+    //rotate whole level so lane 1 is at 6oclock
+    this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
+}
+
+setPlayer(player) {
+  this.player = player
 }
 
   changeLane = (direction) => {
-      this.rotationAccumulator += direction
+      this.rotationAccumulator -= direction
       this.targetRotation = this.rotationAccumulator * this.laneAngle
 
       //keep track of playerCurrentLane
@@ -162,56 +191,68 @@ export default class Level{
 
   checkRampHit = () => {
     const playerLane = this.playerCurrentLane
-    const playerZ = levelConfig.PLAYER_Z_VALUE
 
-    let closestRamp = null
-    let closestDistance = Infinity
+    // walk through ramps and return closest ramp in front of player
+    const closestRampInTime = this.ramps.reduce(
+      (acc, ramp) => {
+      const timeUntilHit = ramp.time - this.currentTime
+      const absTime = Math.abs(timeUntilHit)
+      
+      if (absTime > 2.0) return acc
+      if(absTime < acc.timeDiff){
+        return { ramp: ramp, timeDiff: absTime }
+      }  
+      return acc
+      }, { ramp: null, timeDiff: Infinity }
+    )
 
-    // find closest ramp in front of player
-    this.ramps.forEach(ramp => {
-      const distance = ramp.z - playerZ
-      // skip behind player
-      if (distance > 0) return 
-      if (distance < closestDistance) {
-        closestDistance = distance
-        closestRamp = ramp
-      }
-    })
+    const ramp = closestRampInTime.ramp
 
-    if (!closestRamp) {
+    if (!ramp) {
       console.log("MISS (no ramp)")
       return
     }
 
+    const timeUntilHit = ramp.time - this.currentTime
+
+
     //check to prevent double hit on ramp
-    if(closestRamp.hit) return
+    if(ramp.hit) return
 
     // lane check
-    if (closestRamp.lane !== playerLane) {
-      console.log("MISS (wrong lane)")
+    if (ramp.lane !== playerLane) {
+      this.hitManager.spawnHitEffect("MISS", "ui")
       return
     }
 
-    // timing via distance
-    const PERFECT_THRESHOLD = 0.5
-    const GOOD_THRESHOLD = 1.5
 
-    if (Math.abs(closestDistance) < PERFECT_THRESHOLD) {
-      console.log("PERFECT")
+    if (Math.abs(timeUntilHit) < levelConfig.RAMP_TIMING.PERFECT) {
       this.hitManager.spawnHitEffect("PERFECT", "ui")
-    } else if (Math.abs(closestDistance) < GOOD_THRESHOLD) {
-      console.log("GOOD")
+    } else if (Math.abs(timeUntilHit) < levelConfig.RAMP_TIMING.GOOD) {
       this.hitManager.spawnHitEffect("GOOD", "ui")
     } else {
-      console.log("MISS (bad timing)")
       this.hitManager.spawnHitEffect("MISS", "ui")
     }
-    closestRamp.hit = true
+    //set ramp hit to true
+    ramp.hit = true
 }
-
-  //ANIMATE//
   update = (deltaTime) => {
-    
+    //UPDATE MUSIC/BEAT STUFF
+    //increment time
+    this.currentTime += deltaTime
+    //store last beat value
+    this.lastBeat = this.currentBeat
+    //convert time to beats and update currentBeat
+    this.currentBeat = this.currentTime / this.secondsPerBeat
+    this.currentBar = Math.floor(this.currentBeat / this.beatsPerBar)
+    //check fo rnew beat
+    if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
+      // console.log(this.currentBar, Math.floor(this.currentBeat)%this.beatsPerBar)
+      this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
+      this.app.audioManager.playClick()
+    }
+
+
     // move tunnels toward camera
     this.tunnel1.position.z += this.levelSpeed * deltaTime
     this.tunnel2.position.z += this.levelSpeed * deltaTime
@@ -238,7 +279,7 @@ export default class Level{
 
     //update ramps
     this.ramps.forEach(ramp => {
-      ramp.update(deltaTime, this.levelSpeed)
+      ramp.update(deltaTime, this.levelSpeed, this.currentTime)
     })
 
     //APPLY ROTATION

@@ -134,6 +134,10 @@ export default class Player {
     this.mesh.position.set(x, y, this.initialZPosition)
   }
 
+  onBeat = (beatInBar) => {
+    // console.log("BEAT!", beatInBar)
+    this.playerRing.pulse(beatInBar)
+  }
 
   update = (deltaTime) => {
     this.updateJumpPhysics()
@@ -141,6 +145,9 @@ export default class Player {
       this.updateMovement(deltaTime)
     }
     this.updatePosition()
+    //update player ring
+    this.playerRing.update()
   }
+  
 }
 

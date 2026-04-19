@@ -22,11 +22,11 @@ export default class Controller{
         window.addEventListener('keydown', (e) => {
             //left lane switch
             if (e.code === this.leftArrow || e.code === this.qKey) {
-                this.rotateLeftPress()
+                this.rotateRightPress()
             }
             //right lane switch
             if (e.code ===  this.rightArrow || e.code === this.eKey) {
-                this.rotateRightPress()
+                this.rotateLeftPress()
             }
             //jump
             if(e.code === this.spacebar){
