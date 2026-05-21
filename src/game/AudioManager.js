@@ -7,7 +7,7 @@ export default class AudioManager {
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
   }
 
-  playClick = (isDownbeat = false) => {
+  playClick = (isDownbeat = false, offset = 0) => {
     const ctx = this.audioContext
 
     const osc = ctx.createOscillator()
@@ -23,5 +23,23 @@ export default class AudioManager {
 
     osc.start()
     osc.stop(ctx.currentTime + 0.05)
+    }
+
+    playKeyPressClick = () => {
+      const ctx = this.audioContext
+
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = "saw"
+      osc.frequency.value = 700
+
+      gain.gain.value = 0.3
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+const latencyOffset = 0.00
+      osc.start(ctx.currentTime + latencyOffset)
+      osc.stop(ctx.currentTime + 0.05 + latencyOffset)
     }
 }

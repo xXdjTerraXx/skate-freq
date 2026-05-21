@@ -106,11 +106,15 @@ class UiHitEffect extends HitEffect{
             this.isDead = true
             this.removeSelf()
         }
-        //first delete the old geometry
+        
         else{
+            //move up some
             this.mesh.position.y += 0.5 * deltaTime
+            //increase the scale and set it
             this.currentScale += this.scaleIncrementSpeed * deltaTime
             this.mesh.scale.set(this.currentScale, this.currentScale, this.currentScale)
+            //then **air horns** scaling functiooonnnnnn
+            //aka reduce opacity as scale increases 
             this.material.opacity = 1 - (this.currentScale / this.terminalScale)
         }
     }

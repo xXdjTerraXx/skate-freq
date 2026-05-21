@@ -2,8 +2,10 @@ export const levelConfig = {
     TUNNEL_LENGTH: 100,
     TUNNEL_RADIUS: 1,
     LANE_COUNT: 8,
+    SUB_LANE_COUNT: 3,
     STARTING_LANE: 0,
-    SPEED: 10,
+    STARTING_SUB_LANE: 1,
+    SPEED: 5,
     RING_COUNT: 12,
     RING_SPACING: 2,
     RING_COLOR: 0x27BBF5,
@@ -17,7 +19,8 @@ export const levelConfig = {
         GOOD: 0xfbe52b,
         MISS: 0xfb2b35 
     },
-    RAMP_TIMING: {
+    //timing windows for all note node - ramps, rails, tapNotes
+    NOTE_TIMING: {
         GOOD: 0.3,
         PERFECT: 0.15
     }

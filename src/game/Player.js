@@ -17,15 +17,10 @@ export default class Player {
 
     //GEOMETRY
     this.geometry = new THREE.SphereGeometry(0.05, 16, 16)
-
-    //just for helpful to have
-    this.width = this.geometry.parameters.radius * 2
-
     //MATERIAL
     this.material = new THREE.MeshBasicMaterial({
       color: 0x00ffff
     })
-
     //MESH
     this.mesh = new THREE.Mesh(this.geometry, this.material)
 
@@ -58,8 +53,22 @@ export default class Player {
     this.direction = 0
     this.laneOffset = 0
     this.laneOffsetVelocity = 0
-    // 90% of half-lane so player wont hit edges exactly
-    this.maxLaneOffset = ((Math.PI * 2) / levelConfig.LANE_COUNT) / 2 * 0.99 
+    
+
+    //NEW SUB LANE STUFF
+    this.subLane = 1 // 0 = left, 1 = center, 2 = right
+    this.maxLaneOffset = ((Math.PI * 2) / levelConfig.LANE_COUNT) / 3 * 0.99 
+    this.subLaneOffsets = [
+      -this.maxLaneOffset, 0, this.maxLaneOffset
+    ]
+    this.targetLaneOffset = 0 
+    
+    //PULSING ON KEY PRESS
+    this.isPulsing = false
+    //the maximum scale the player gets when pulsed
+    this.pulseMaxScale = 1.4
+    //baseScale is just the default scale - 1
+    this.baseScale = 1
 
     //place player on inner wall of tunnel
     this.updatePosition()
@@ -72,6 +81,11 @@ export default class Player {
     this.mainPlayerContainer.add(this.mesh)
     this.level.mainLevelContainer.add(this.mainPlayerContainer)
     // this.app.scene.add(this.mainPlayerContainer)
+  }
+
+  pulse = () => {
+    this.pulseAmount = 1.5  
+    this.isPulsing = true
   }
 
   //JUMP SYSTEM EXPLAINED:
@@ -105,22 +119,16 @@ export default class Player {
     }
   }
 
+  setSubLane = (index) => {
+    this.subLane = index
+    this.targetLaneOffset = this.subLaneOffsets[index]
+  }
+
   updateMovement = (deltaTime) => {
-    this.laneOffsetVelocity += this.direction * levelConfig.PLAYER_ACCEL * deltaTime
-    this.laneOffsetVelocity *= Math.pow(this.friction, deltaTime * 60)
-    this.laneOffset += this.laneOffsetVelocity * deltaTime
+    const lerpFactor = 1 - Math.pow(0.001, deltaTime)
+    this.laneOffset += (this.targetLaneOffset - this.laneOffset) * lerpFactor
 
-    // clamp
-    if (this.laneOffset > this.maxLaneOffset) {
-      this.laneOffset = this.maxLaneOffset
-      this.laneOffsetVelocity = 0
-    }
-    if (this.laneOffset < -this.maxLaneOffset) {
-      this.laneOffset = -this.maxLaneOffset
-      this.laneOffsetVelocity = 0
-    }
-
-    this.mesh.rotation.z = this.laneOffsetVelocity * 20
+    this.mesh.rotation.z = (this.targetLaneOffset - this.laneOffset) * 10
   }
 
   updatePosition = () => {
@@ -141,13 +149,25 @@ export default class Player {
 
   update = (deltaTime) => {
     this.updateJumpPhysics()
-    if(this.isMoving !== false){
-      this.updateMovement(deltaTime)
-    }
+    // if(this.isMoving !== false){this.updateMovement(deltaTime)}
+    this.updateMovement(deltaTime)
+
     this.updatePosition()
     //update player ring
     this.playerRing.update()
+
+    if(this.isPulsing){
+      //stuff for pulsing on key press
+      this.pulseAmount *= Math.pow(0.01, deltaTime)
+      // this.pulseAmount *= 0.9
+      const eased = this.pulseAmount * this.pulseAmount
+      this.currentScale = this.baseScale + (this.pulseMaxScale - this.baseScale) * eased
+      if (this.pulseAmount < 0.01) {
+        this.isPulsing = false
+      }
+    }
+    else this.currentScale = this.baseScale
+    this.mesh.scale.set(this.currentScale, this.currentScale, this.currentScale)
   }
-  
 }
 

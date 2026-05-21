@@ -2,8 +2,10 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 
 export default class Ramp {
-  constructor(app, lane, time, levelZRotationOffset, levelSpeed, currentTime, patternLengthTime) {
+  constructor(app, hitlineZPosition, lane, time, levelZRotationOffset, levelSpeed, currentTime, patternLengthTime) {
     this.app = app
+
+    this.hitlineZPosition = hitlineZPosition
     // which lane this ramp is in
     this.lane = lane 
 
@@ -14,14 +16,14 @@ export default class Ramp {
     this.time = time     
     // start far away from player
     this.levelSpeed = levelSpeed
-    this.z = -(this.levelSpeed * currentTime)      
+    this.z = this.hitlineZPosition-(this.levelSpeed * currentTime)      
 
     //this value is the patternLengthBeats of the song pattern
     //multiplied by the secondsPerBeat of the song. atm it functions as a
     //loop offset for looping the song pattern
     this.patternLengthTime = patternLengthTime
 
-    // simple placeholder geometry (we'll replace later)
+    // simple placeholder geometry (will replace later)
     const geometry = new THREE.BoxGeometry(0.15, 0.4, 1.2)
     const material = new THREE.MeshBasicMaterial({ 
       color: 0xff00ff, transparent: true, opacity: 0.25 
@@ -33,13 +35,13 @@ export default class Ramp {
     //gets reset to false when ramp goes off screen
     this.hit = false
 
-    //for testing purposes while level is looping tunnel
+    //for testing purposes while level is looping tunnel. this value how long between
+    //each pattern loop
     this.loopOffset = 2.0
   }
 
   init(rampContainer) {
-    
-
+  
   //ok some weird notes here....subtracting 1 from this.lane is the 
   //only way i found currently to fix offset problem im 
   //having between player's lane index and the ramp's. subtracting levelZRotationOffset
@@ -65,24 +67,29 @@ export default class Ramp {
     rampContainer.add(this.mesh)
   }
 
-  update(deltaTime, speed, currentTime) {
+  update(deltaTime, currentTime) {
     //how much time is left before ramp is at player z, essentially
     //a countdown until this ramp at player
     const timeUntilHit = this.time - currentTime
     const dist = Math.abs(timeUntilHit)
     // fade in as it approaches
-    this.mesh.material.opacity = Math.min(0.6, 1.2 - dist)
+    this.mesh.material.opacity = Math.max(0, Math.min(0.6, 1.2 - dist))
 
     // scale slightly near hit
     const scale = 1 + Math.max(0, 0.5 - dist) * 1.5
-    this.mesh.scale.set(scale, scale, 1)
+    this.mesh.scale.set(scale, scale, scale)
     //update ramp z position
-    this.z = -(speed * timeUntilHit)
+    this.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
     this.mesh.position.z = this.z
     //reset ramp
-    if(timeUntilHit < -2.0 ){
-      this.time += (this.patternLengthTime + this.loopOffset)
-      this.hit = false
+    // if (this.time < currentTime - this.patternLengthTime) {
+    //   this.time += this.patternLengthTime
+    //   this.hit = false
+    // }
+    while (this.time < currentTime) {
+        this.time += this.patternLengthTime
+        this.hit = false
+        this.mesh.visible = true
     }
   }
 }

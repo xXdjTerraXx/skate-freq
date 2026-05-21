@@ -39,17 +39,16 @@ export default class PlayerRing {
 
   //pulses the player ring on beats
   pulse = (beatInBar) => {
-    
-  if (beatInBar === 1) {
-    //strong hit on beat 1
-    this.pulseAmount = 1.2   
-    this.colorPulse = 1.0   
-  } else {
-    //weaker on beat2
-    this.pulseAmount = 0.5   
-    this.colorPulse = 0.5
+    if (beatInBar === 1) {
+      //strong hit on beat 1
+      this.pulseAmount = 1.2   
+      this.colorPulse = 1.0   
+    } else {
+      //weaker on beat2
+      this.pulseAmount = 0.5   
+      this.colorPulse = 0.5
+    }
   }
-}
 
   init(playerZ, playerContainer) {
     // place at player depth

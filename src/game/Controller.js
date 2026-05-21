@@ -1,5 +1,6 @@
 export default class Controller{
-    constructor(level, player){
+    constructor(app, level, player){
+        this.app = app
         this.level = level
         this.player = player
 
@@ -8,14 +9,9 @@ export default class Controller{
         this.qKey = 'KeyQ'
         this.eKey = 'KeyE'
         this.aKey = 'KeyA'
+        this.sKey = 'KeyS'
         this.dKey = 'KeyD'
         this.spacebar = 'Space'
-
-
-        this.moveKeys = {
-            'left': false,
-            'right': false,
-        }
     }
 
     init = () => {
@@ -32,21 +28,15 @@ export default class Controller{
             if(e.code === this.spacebar){
                 this.jump()
             }
-            //player movement left to right within a lane
+            //player subLane movement
             if(e.code === this.aKey){
-                this.moveKeys.left = true
+                this.playerSubLaneSwitch(0)
+            }
+            if(e.code === this.sKey){
+                this.playerSubLaneSwitch(1)
             }
             if(e.code === this.dKey){
-                this.moveKeys.right = true
-            }
-        })
-
-        window.addEventListener('keyup', (e) => {
-            if(e.code === this.aKey){
-                this.moveKeys.left = false
-            }
-            if(e.code === this.dKey){
-                this.moveKeys.right = false
+                this.playerSubLaneSwitch(2)
             }
         })
     }
@@ -67,18 +57,28 @@ export default class Controller{
         this.level.checkRampHit()
     }
 
+    playerSubLaneSwitch = (index) => {
+        //DEBUG play key press click
+        this.app.audioManager.playKeyPressClick()
+
+        this.player.setSubLane(index)
+        this.level.checkTapNoteHit(index)
+        //player pulse effect
+        this.player.pulse()
+    }
+
     run = (deltaTime) => {
-        if(this.moveKeys.left === true){
-            this.player.direction = -1
-            this.player.isMoving = true
-        }
-        else if(this.moveKeys.right === true){
-            this.player.direction = 1
-            this.player.isMoving = true
-        }
-        else {
-            this.player.direction = 0
-            this.player.isMoving = false
-        }
+        // if(this.moveKeys.left === true){
+        //     this.player.direction = -1
+        //     this.player.isMoving = true
+        // }
+        // else if(this.moveKeys.right === true){
+        //     this.player.direction = 1
+        //     this.player.isMoving = true
+        // }
+        // else {
+        //     this.player.direction = 0
+        //     this.player.isMoving = false
+        // }
     }
 }

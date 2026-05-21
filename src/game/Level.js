@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 import GateRing from './GateRing'
 import Ramp from './Ramp'
+import TapNote from './TapNote'
 
 //the whole scene tree for the game looks like this:
 //            _____[app scene]_________
@@ -18,11 +19,11 @@ export default class Level{
     this.hitManager = hitManager
     this.levelMap = testLevelMap
     
-
     //bring in some constants from config
     this.levelSpeed = levelConfig.SPEED
     this.laneCount = levelConfig.LANE_COUNT
     this.playerCurrentLane = levelConfig.STARTING_LANE
+    this.playerCurrentSubLane = levelConfig.STARTING_SUB_LANE
 
     //MUSIC/BEAT STUFF
     this.bpm = 90
@@ -35,6 +36,9 @@ export default class Level{
     this.beatsPerBar = 4
     //beat subdivision
     this.beatSubdivision = 2
+
+    //HITLINE
+    this.hitlineZPosition = levelConfig.PLAYER_Z_VALUE
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -65,6 +69,9 @@ export default class Level{
     //RAMPS CONTAINER 
     this.rampContainer = new THREE.Group()
     this.rampContainer.name = 'ramp container'
+    //NOTES CONTAINER
+    this.tapNotesContainer = new THREE.Group()
+    this.tapNotesContainer.name = 'tap notes container'
     //WORLD HIT FX CONTAINER
     this.worldHitFxContainer = new THREE.Group()
     this.worldHitFxContainer.name = 'world hit fx container'
@@ -118,7 +125,8 @@ export default class Level{
     this.targetRotation = 0
     this.rotationVelocity = 0
 
-
+    //TAP NOTES
+    this.tapNotes = []
     //RAMPS
     this.ramps = []
   }
@@ -134,17 +142,37 @@ export default class Level{
 
     //init gate rings
     for(let i = 0; i < this.ringCount; i++){
-        const z = -i * this.ringSpacing
+        // const z = -(i+1) * this.ringSpacing
+        const z = this.hitlineZPosition + (-i * this.ringSpacing)
         const ring = new GateRing(this.app, z, this.ringContainer)
         ring.init()
         this.gateRings.push(ring)
     }
 
+    //this value needed for tapNote and ramp initing :3
     const patternLengthTime = this.levelMap.patternLengthBeats * this.secondsPerBeat 
+    //init tapNotes
+    this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
+          const tapNote = new TapNote(
+            this.app, 
+            this.hitlineZPosition,
+            this.levelSpeed, 
+            this.zRotationOffset, 
+            this.currentTime, 
+            tapNoteInLevelMap.lane, 
+            tapNoteInLevelMap.subLane, 
+            tapNoteInLevelMap.time, 
+            patternLengthTime
+          ) 
+          tapNote.init(this.tapNotesContainer)
+          this.tapNotes.push(tapNote)
+        })
+
     //init ramps
-    this.levelMap.levelMap.forEach(mapNode => {
+    this.levelMap.patterns.ramps.forEach(mapNode => {
       const ramp = new Ramp(
         this.app, 
+        this.hitlineZPosition,
         mapNode.lane - 1, 
         mapNode.beat * this.secondsPerBeat, 
         this.zRotationOffset, 
@@ -155,7 +183,6 @@ export default class Level{
       this.ramps.push(ramp)
     })
     
-
      //add tunnels to mainLevelContainer
     this.tunnelsContainer.add(this.tunnel1)
     this.tunnelsContainer.add(this.tunnel2)
@@ -164,16 +191,17 @@ export default class Level{
     //gets added to Application.masterGameContainer which gets added to
     //main scene
     this.mainLevelContainer.add(this.tunnelsContainer)
+    this.mainLevelContainer.add(this.tapNotesContainer)
     this.mainLevelContainer.add(this.rampContainer)
     this.mainLevelContainer.add(this.ringContainer)
 
     //rotate whole level so lane 1 is at 6oclock
     this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
-}
+  }
 
-setPlayer(player) {
-  this.player = player
-}
+  setPlayer(player) {
+    this.player = player
+  }
 
   changeLane = (direction) => {
       this.rotationAccumulator -= direction
@@ -185,9 +213,64 @@ setPlayer(player) {
   }
 
   applyRotation = (deltaTime) => {
+      //figure the new rotation
       const lerpFactor = 1 - Math.pow(0.001, deltaTime)
       this.rotation += (this.targetRotation - this.rotation) * lerpFactor
+    
+      // apply rotation to everything
+      this.tunnelsContainer.rotation.z = this.rotation + this.zRotationOffset
+      this.tapNotesContainer.rotation.z = this.rotation + this.zRotationOffset
+      this.rampContainer.rotation.z = this.rotation + this.zRotationOffset
+      this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
   }
+
+  checkTapNoteHit = (subLane) => {
+    const playerLane = this.playerCurrentLane
+    const HIT_OFFSET = levelConfig.PLAYER_Z_VALUE / this.levelSpeed
+
+    const closestTapNoteInTime = this.tapNotes.reduce(
+      (acc, note) => {
+        const timeUntilHit = (note.time - this.currentTime) - HIT_OFFSET
+        const absTime = Math.abs(timeUntilHit)
+        if (note.hit) return acc
+        if (note.lane !== playerLane) return acc
+        if (note.subLane !== this.player.subLane) return acc
+        if (timeUntilHit > 0.5) return acc
+        if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
+        if (absTime < acc.timeDiff) {
+          return { note: note, timeDiff: absTime }
+        }
+        return acc
+      }, { note: null, timeDiff: Infinity }
+    )
+
+    const tapNote = closestTapNoteInTime.note
+
+    if (!tapNote) {
+      this.hitManager.spawnHitEffect("MISS", "ui")
+      return
+    }
+
+    const timeUntilHit = (tapNote.time - this.currentTime) - HIT_OFFSET
+
+    console.log('timeUntilHit on press:', timeUntilHit, 'rating:', 
+      Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT ? 'PERFECT' :
+      Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD ? 'GOOD' : 'MISS'
+    )
+
+    if (tapNote.hit) return
+
+    if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
+      this.hitManager.spawnHitEffect("PERFECT", "ui")
+    } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
+      this.hitManager.spawnHitEffect("GOOD", "ui")
+    } else {
+      this.hitManager.spawnHitEffect("MISS", "ui")
+    }
+
+    tapNote.hit = true
+    tapNote.mesh.visible = false
+}
 
   checkRampHit = () => {
     const playerLane = this.playerCurrentLane
@@ -197,7 +280,7 @@ setPlayer(player) {
       (acc, ramp) => {
       const timeUntilHit = ramp.time - this.currentTime
       const absTime = Math.abs(timeUntilHit)
-      
+      if (ramp.hit) return acc
       if (absTime > 2.0) return acc
       if(absTime < acc.timeDiff){
         return { ramp: ramp, timeDiff: absTime }
@@ -225,17 +308,18 @@ setPlayer(player) {
       return
     }
 
-
-    if (Math.abs(timeUntilHit) < levelConfig.RAMP_TIMING.PERFECT) {
+    //check timing and spawn and effect!
+    if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
       this.hitManager.spawnHitEffect("PERFECT", "ui")
-    } else if (Math.abs(timeUntilHit) < levelConfig.RAMP_TIMING.GOOD) {
+    } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
       this.hitManager.spawnHitEffect("GOOD", "ui")
     } else {
       this.hitManager.spawnHitEffect("MISS", "ui")
     }
     //set ramp hit to true
     ramp.hit = true
-}
+  }
+
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
@@ -245,13 +329,13 @@ setPlayer(player) {
     //convert time to beats and update currentBeat
     this.currentBeat = this.currentTime / this.secondsPerBeat
     this.currentBar = Math.floor(this.currentBeat / this.beatsPerBar)
-    //check fo rnew beat
+
+    //check fo ra new beat
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
       // console.log(this.currentBar, Math.floor(this.currentBeat)%this.beatsPerBar)
       this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
-      this.app.audioManager.playClick()
+      // this.app.audioManager.playClick()
     }
-
 
     // move tunnels toward camera
     this.tunnel1.position.z += this.levelSpeed * deltaTime
@@ -268,7 +352,15 @@ setPlayer(player) {
 
     //update gate rings
     this.gateRings.forEach(ring => {
+        //DEBUGGING GATE RINGS WITH A CLICK
+        // const wasBeforePlayer = ring.mesh.position.z < this.hitlineZPosition
         ring.update(deltaTime, this.levelSpeed)
+
+        //DEBUGGING GATE RINGS WITH A CLICK
+        // const isAfterPlayer = ring.mesh.position.z >= this.hitlineZPosition
+        // if (wasBeforePlayer && isAfterPlayer) {
+        //     this.app.audioManager.playKeyPressClick()
+        // }
 
         //resetThreshold is an arbitrary point slightly in front of the camera
         const resetThreshold = this.app.camera.position.z + 3
@@ -277,17 +369,26 @@ setPlayer(player) {
         }
     })
 
+    this.tapNotes.forEach(note => {
+      // DEBUG - checking timing with a click
+      const wasBeforeHitline = note.mesh.position.z < this.hitlineZPosition
+      note.update(deltaTime, this.currentTime)
+      const isAfterHitline = note.mesh.position.z >= this.hitlineZPosition
+
+      if (wasBeforeHitline && isAfterHitline) {
+          this.app.audioManager.playClick(true, -0.016) // true = downbeat sound so it's distinct
+      }
+
+      // note.update(deltaTime, this.currentTime)
+    })
+
     //update ramps
     this.ramps.forEach(ramp => {
-      ramp.update(deltaTime, this.levelSpeed, this.currentTime)
+      ramp.update(deltaTime, this.currentTime)
     })
 
     //APPLY ROTATION
     this.applyRotation(deltaTime)
 
-    // rotate everything
-    this.tunnelsContainer.rotation.z = this.rotation + this.zRotationOffset
-    this.rampContainer.rotation.z = this.rotation + this.zRotationOffset
-    this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
-    }
+  }
 }
