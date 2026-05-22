@@ -10,9 +10,9 @@ export default class TapNote{
 
         //which of the 8 lanes this note exists in
         this.lane = lane 
-        //which sublane of the lane this note exists in0, 1, or 2
+        //which sublane of the lane this note exists in: 0, 1, or 2
         this.subLane = subLane
-        //the time this lane should reach the player
+        //the time in seconds this note should reach the player
         this.time = time 
 
         //gets set to true when player hits (or misses) this note. prevents double hits
@@ -90,11 +90,11 @@ export default class TapNote{
         //     this.hit = false
         //     this.mesh.visible = true
         // }
-        while (this.time < currentTime) {
-            this.time += this.patternLengthTime
-            this.hit = false
-            this.mesh.visible = true
-        }
+        // while (this.time < currentTime) {
+        //     this.time += this.patternLengthTime
+        //     this.hit = false
+        //     this.mesh.visible = true
+        // }
   }
 }
 

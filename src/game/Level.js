@@ -26,7 +26,8 @@ export default class Level{
     this.playerCurrentSubLane = levelConfig.STARTING_SUB_LANE
 
     //MUSIC/BEAT STUFF
-    this.bpm = 90
+    this.bpm = this.app.audioManager.getCurrentBpm()
+    // this.bpm = 100
     this.secondsPerBeat = 60/this.bpm
     this.currentTime = 0.00
     this.lastBeat = 3
@@ -132,6 +133,8 @@ export default class Level{
   }
 
   init = () => {
+    console.log('DEBUG---->BPM:', this.bpm)
+    console.log('DEBUG---->secondsPerBeat:', this.secondsPerBeat)
     //FOG EFFECT
     this.app.scene.fog = new THREE.Fog(0x000000, 2, 15)
 
@@ -151,8 +154,10 @@ export default class Level{
 
     //this value needed for tapNote and ramp initing :3
     const patternLengthTime = this.levelMap.patternLengthBeats * this.secondsPerBeat 
+    console.log("DEBUG!!--->pattenLengthTime: ", patternLengthTime)
     //init tapNotes
     this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
+          const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat
           const tapNote = new TapNote(
             this.app, 
             this.hitlineZPosition,
@@ -161,7 +166,7 @@ export default class Level{
             this.currentTime, 
             tapNoteInLevelMap.lane, 
             tapNoteInLevelMap.subLane, 
-            tapNoteInLevelMap.time, 
+            timeInSeconds,
             patternLengthTime
           ) 
           tapNote.init(this.tapNotesContainer)
@@ -226,11 +231,12 @@ export default class Level{
 
   checkTapNoteHit = (subLane) => {
     const playerLane = this.playerCurrentLane
-    const HIT_OFFSET = levelConfig.PLAYER_Z_VALUE / this.levelSpeed
+    // const HIT_OFFSET = levelConfig.PLAYER_Z_VALUE / this.levelSpeed
+    const HIT_OFFSET = 0
 
     const closestTapNoteInTime = this.tapNotes.reduce(
       (acc, note) => {
-        const timeUntilHit = (note.time - this.currentTime) - HIT_OFFSET
+        const timeUntilHit = (note.time - this.currentTime)
         const absTime = Math.abs(timeUntilHit)
         if (note.hit) return acc
         if (note.lane !== playerLane) return acc
@@ -245,6 +251,7 @@ export default class Level{
     )
 
     const tapNote = closestTapNoteInTime.note
+    
 
     if (!tapNote) {
       this.hitManager.spawnHitEffect("MISS", "ui")
@@ -252,11 +259,11 @@ export default class Level{
     }
 
     const timeUntilHit = (tapNote.time - this.currentTime) - HIT_OFFSET
-
-    console.log('timeUntilHit on press:', timeUntilHit, 'rating:', 
-      Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT ? 'PERFECT' :
-      Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD ? 'GOOD' : 'MISS'
-    )
+    console.log("DEBUG--->timeuntilHit:", timeUntilHit)
+    // console.log('timeUntilHit on press:', timeUntilHit, 'rating:', 
+    //   Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT ? 'PERFECT' :
+    //   Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD ? 'GOOD' : 'MISS'
+    // )
 
     if (tapNote.hit) return
 
@@ -323,7 +330,8 @@ export default class Level{
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
-    this.currentTime += deltaTime
+    this.currentTime = this.app.audioManager.getCurrentTime()
+    
     //store last beat value
     this.lastBeat = this.currentBeat
     //convert time to beats and update currentBeat
@@ -334,7 +342,7 @@ export default class Level{
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
       // console.log(this.currentBar, Math.floor(this.currentBeat)%this.beatsPerBar)
       this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
-      // this.app.audioManager.playClick()
+      this.app.audioManager.playClick()
     }
 
     // move tunnels toward camera

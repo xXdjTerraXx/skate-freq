@@ -15,13 +15,13 @@ export default class AssetManager{
     loadAsset = (path) => {
         return new Promise((resolve, reject) => {
             this.loader.load(
-            path,
-            (texture) => resolve(texture),
-            undefined,
-            (error) => {
-                console.error("FAILED TO LOAD:", path)
-                reject(error)
-            }
+                path,
+                (texture) => resolve(texture),
+                undefined,
+                (error) => {
+                    console.error("FAILED TO LOAD:", path)
+                    reject(error)
+                }
             )
         })
     }

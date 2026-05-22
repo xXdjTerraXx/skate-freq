@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { levelConfig } from '../config'
 import AssetManager from './AssetManager'
-import assetManifest from '../assetManifest'
+import { graphicsAssetManifest } from "../assetManifest"
 
 export default class Application{
   constructor(){
@@ -23,7 +23,7 @@ export default class Application{
     this.masterGameContainer = new THREE.Group()
     this.masterGameContainer.name = 'master game container'
 
-    this.assetManager = new AssetManager(assetManifest)
+    this.assetManager = new AssetManager(graphicsAssetManifest)
   }
 
   init = async () => {
@@ -46,13 +46,12 @@ export default class Application{
     await this.assetManager.loadAllAssets()
   }
 
-  start = (level, player, controller, hitManager, ui, audioManager) => {
+  start = (level, player, controller, hitManager, ui) => {
     this.level = level
     this.player = player
     this.controller = controller
     this.hitManager = hitManager
     this.ui = ui
-    this.audioManager = audioManager
 
     //add level, player, and ui to masterGameContainer
     this.masterGameContainer.add(this.level.mainLevelContainer)
@@ -60,8 +59,8 @@ export default class Application{
     //add masterGameContainer to scene and start the main update chain
     this.scene.add(this.masterGameContainer)
 
-    //TEMPORARY AUDIOMANAGER INIT HERE
-    this.audioManager.init()
+    //play song
+    this.audioManager.playSong('testSong2')
 
     this.masterUpdate()
   }

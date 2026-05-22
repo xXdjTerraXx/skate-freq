@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { levelConfig } from '../config';
 
+//this is just literally an octagonal ring alignted with the player's z position. just there
+//to add more of a clear visual of where the target window for key press is
 export default class PlayerRing {
   constructor(app) {
     this.app = app;

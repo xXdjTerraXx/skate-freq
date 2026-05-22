@@ -86,10 +86,10 @@ export default class Ramp {
     //   this.time += this.patternLengthTime
     //   this.hit = false
     // }
-    while (this.time < currentTime) {
-        this.time += this.patternLengthTime
-        this.hit = false
-        this.mesh.visible = true
-    }
+    // while (this.time < currentTime) {
+    //     this.time += this.patternLengthTime
+    //     this.hit = false
+    //     this.mesh.visible = true
+    // }
   }
 }

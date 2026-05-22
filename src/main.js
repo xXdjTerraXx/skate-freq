@@ -1,4 +1,4 @@
-import assetManifest from "./assetManifest"
+import { audioAssetManifest } from './assetManifest'
 
 import Player from './game/Player'
 import Level from './game/Level'
@@ -49,35 +49,34 @@ const testMap = {
   patternLengthBeats: 16,
   patterns: {
     tapNotes: [
-      // --- LANE 0: Rhythm (quarter notes) ---
-      { lane: 0, subLane: 1, time: 4 * 0.6667 },
-  { lane: 0, subLane: 1, time: 5 * 0.6667 },
-  { lane: 0, subLane: 1, time: 6 * 0.6667 },
-  { lane: 0, subLane: 1, time: 7 * 0.6667 },
+  // beat 1-4: straight quarter notes center lane
+  { lane: 0, subLane: 1, beat: 1 },
+  { lane: 0, subLane: 1, beat: 2 },
+  { lane: 0, subLane: 1, beat: 3 },
+  { lane: 0, subLane: 1, beat: 4 },
 
-  { lane: 0, subLane: 1, time: 8 * 0.6667 },
-  { lane: 0, subLane: 1, time: 9 * 0.6667 },
-  { lane: 0, subLane: 1, time: 10 * 0.6667 },
-  { lane: 0, subLane: 1, time: 11 * 0.6667 },
+  // beat 5-8: alternating left and right
+  { lane: 0, subLane: 0, beat: 5 },
+  { lane: 0, subLane: 2, beat: 6 },
+  { lane: 0, subLane: 0, beat: 7 },
+  { lane: 0, subLane: 2, beat: 8 },
 
-  // --- LANE 1: Groove (off-beats) ---
-  { lane: 0, subLane: 0, time: 4.5 * 0.6667 },
-  { lane: 0, subLane: 2, time: 5.5 * 0.6667 },
-  { lane: 0, subLane: 0, time: 6.5 * 0.6667 },
-  { lane: 0, subLane: 2, time: 7.5 * 0.6667 },
+  // beat 9-12: eighth notes center
+  { lane: 0, subLane: 1, beat: 9 },
+  { lane: 0, subLane: 1, beat: 9.5 },
+  { lane: 0, subLane: 1, beat: 10 },
+  { lane: 0, subLane: 1, beat: 10.5 },
+  { lane: 0, subLane: 1, beat: 11 },
+  { lane: 0, subLane: 1, beat: 11.5 },
 
-  { lane: 0, subLane: 0, time: 8.5 * 0.6667 },
-  { lane: 0, subLane: 2, time: 9.5 * 0.6667 },
-  { lane: 0, subLane: 0, time: 10.5 * 0.6667 },
-  { lane: 0, subLane: 2, time: 11.5 * 0.6667 },
-
-  // --- LANE 2: Lead (sparse hits) ---
-  { lane: 2, subLane: 1, time: 6 * 0.6667 },
-  { lane: 2, subLane: 2, time: 7 * 0.6667 },
-
-  { lane: 2, subLane: 0, time: 10 * 0.6667 },
-  { lane: 2, subLane: 1, time: 11 * 0.6667 }
-    ],
+  // beat 13-16: mixed pattern
+  { lane: 0, subLane: 0, beat: 13 },
+  { lane: 0, subLane: 1, beat: 13.5 },
+  { lane: 0, subLane: 2, beat: 14 },
+  { lane: 0, subLane: 1, beat: 14.5 },
+  { lane: 0, subLane: 0, beat: 15 },
+  { lane: 0, subLane: 2, beat: 16 },
+],
 
     ramps: [
       // simple ramps on strong beats
@@ -92,7 +91,13 @@ const testMap = {
 const mainApplication = new Application()
 await mainApplication.init()
 
-const audioManager = new AudioManager(mainApplication)
+const audioManager = new AudioManager(mainApplication, audioAssetManifest)
+await audioManager.loadAllSongs()
+//set a particular song as the currently selected song
+audioManager.selectSong('testSong2')
+
+// give application a reference to audioManager HERE
+mainApplication.audioManager = audioManager
 
 const ui = new UiSpace(mainApplication)
 ui.init()
@@ -115,6 +120,6 @@ controller.init()
 window.addEventListener('keydown', (e) => {
   if(e.code === 'KeyF'){
     //start eeeeverything
-    mainApplication.start(level, player, controller, hitManager, ui, audioManager)
+    mainApplication.start(level, player, controller, hitManager, ui)
   }
 })
