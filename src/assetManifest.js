@@ -14,19 +14,19 @@ export const audioAssetManifest = {
     songs: {
         testSong: {
             path: '/assets/audio/the-end-of-biters-prefuse-73.wav',
-            bpm: 120,  // whatever the actual BPM is
+            bpm: 120,  
             title: 'The End of Biters',
             artist: 'Prefuse 73'
         },
         testSong2: {
             path: '/assets/audio/testSong2.wav',
-            bpm: 100,  // whatever the actual BPM is
+            bpm: 100,  
             title: 'Test Song 2',
             artist: 'xXdjTerraXx'
         },
         testSong3: {
             path: '/assets/audio/testSong3.wav',
-            bpm: 90,  // whatever the actual BPM is
+            bpm: 90,  
             title: 'Test Song 3',
             artist: 'xXdjTerraXx'
         },

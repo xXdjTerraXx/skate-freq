@@ -5,11 +5,11 @@ import Ramp from './Ramp'
 import TapNote from './TapNote'
 
 //the whole scene tree for the game looks like this:
-//            _____[app scene]_________
-//           |                         | 
-//  [app.masterGameContainer]   [app.mainUserInterfaceContainer]
-//              |                      
-//       ______[mainLevelContainer]______________
+//           [app scene]
+//                |                      
+//            [playing state container]___________________________  
+//              |                                                 |
+//       ______[mainLevelContainer]______________            [app.ui.mainContainer]
 //      |                      |                 |
 //   [tunnelsContainer]  [ringContainer]  [rampContainer]
 

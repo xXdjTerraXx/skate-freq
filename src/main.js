@@ -9,6 +9,8 @@ import UiSpace from './game/UiSpace'
 import AudioManager from "./game/AudioManager"
 
 import { createGameStates } from './gameStates'
+import StateMachine from './game/StateMachine'
+import TitleScreen from './game/TitleScreen'
 
 const testMap = {
   patternLengthBeats: 16,
@@ -54,11 +56,7 @@ const testMap = {
 
 
 const mainApplication = new Application()
-
-//createGameStates returns a state object with all the state's inited
-const gameStatesDictionary = createGameStates(mainApplication)
-//then pass it to the app
-await mainApplication.init()
+await mainApplication.initGaphicalAssets()
 
 const audioManager = new AudioManager(mainApplication, audioAssetManifest)
 await audioManager.loadAllSongs()
@@ -73,6 +71,8 @@ ui.init()
 
 const hitManager = new HitManager(mainApplication)
 
+const titleScreen = new TitleScreen(mainApplication)
+
 const level = new Level(mainApplication, hitManager, testMap)
 level.init()
 
@@ -86,7 +86,11 @@ level.setPlayer(player)
 const controller = new Controller(mainApplication, level, player)
 controller.init()
 
-mainApplication.setup(level, player, controller, hitManager, ui, gameStatesDictionary)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen)
+//createGameStates returns a state object with all the state's inited
+const gameStatesDictionary = createGameStates(mainApplication)
+
+mainApplication.stateMachine = new StateMachine(mainApplication, gameStatesDictionary)
 
 window.addEventListener('keydown', (e) => {
   if(e.code === 'KeyF'){

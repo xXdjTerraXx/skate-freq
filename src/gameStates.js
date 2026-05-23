@@ -32,15 +32,44 @@ class LoadingState {
 }
 
 class TitleState {
-    constructor(app) { this.app = app }
+    constructor(app) {
+        this.app = app 
+        this.container = new THREE.Group()
+        this.container.name = 'title state container'
+        this.container.add(this.app.titleScreen.mainContainer)
+        this.container.visible = false
+        this.app.scene.add(this.container)
+    }
     
     onEnter = () => {
         console.log('entering TITLE state')
+        this.addKeyEvents()
+        this.container.visible = true
     }
 
-    update = (deltaTime) => {}
+    update = (deltaTime) => {
+        console.log("DEBUG: TITLE SCREEN UPDATE")
+    }
     
-    onExit = () => {}
+    onExit = () => {
+        this.removeKeyEvents()
+        this.container.visible = false
+    }
+
+    titleKeyEvent = (e) => {
+            if(e.code === 'KeyF'){
+                //start eeeeverything
+                this.app.stateMachine.setState(GAME_STATES.PLAYING)
+            }
+        }
+
+    addKeyEvents = () => {
+        window.addEventListener('keydown', this.titleKeyEvent)
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('keydown', this.titleKeyEvent)
+    }
 }
 
 class SongSelectState {
@@ -68,18 +97,20 @@ class CountdownState {
 }
 
 class PlayingState {
-    constructor(app) { this.app = app }
+    constructor(app) { 
+        this.app = app 
+        this.container = new THREE.Group()
+        this.container.name = 'playing state container'
+        this.container.add(this.app.level.mainLevelContainer)
+        this.container.add(this.app.ui.mainContainer)
+        this.container.visible = false
+        this.app.scene.add(this.container)
+    }
     
     onEnter = () => {
         console.log('entering PLAYING state')
-        this.masterGameContainer = new THREE.Group()
-        this.masterGameContainer.name = 'master game container'
-        //add level, player, and ui to masterGameContainer
-        this.masterGameContainer.add(this.app.level.mainLevelContainer)
-        this.masterGameContainer.add(this.app.ui.mainContainer)
-        //add masterGameContainer to scene and start the main update chain
-        this.app.scene.add(this.masterGameContainer)
-
+        //toggle visibility
+        this.container.visible = true
         //play song
         this.app.audioManager.playSong('testSong2')
     }
@@ -98,6 +129,7 @@ class PlayingState {
     
     onExit = () => {
         console.log('exiting PLAYING state')
+        this.container.visible = false
     }
 }
 

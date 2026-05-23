@@ -17,28 +17,22 @@ export default class Application{
       0.1, 
       1000
     )
-    //RENDERER setup
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
 
-    this.clock = new THREE.Clock()
-    
-    // this.masterGameContainer = new THREE.Group()
-    // this.masterGameContainer.name = 'master game container'
-
-    this.assetManager = new AssetManager(graphicsAssetManifest)
-
-  }
-
-  init = async () => {
     //position the camera
     this.camera.position.z = 2
     this.camera.position.y = .5
     //little bit of downward titl
     this.camera.rotation.x = -0.2
     //size the renderer and append to dom
+
+    //RENDERER setup
+    this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(this.renderer.domElement)
-
+    
+    //add a clock
+    this.clock = new THREE.Clock()
+    
     // --- RESIZE HANDLING ---
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight
@@ -46,20 +40,25 @@ export default class Application{
       this.renderer.setSize(window.innerWidth, window.innerHeight)
     })
 
+  }
+
+  initGaphicalAssets = async () => {
+    this.assetManager = new AssetManager(graphicsAssetManifest)
     await this.assetManager.loadAllAssets()
   }
 
-   setup = (level, player, controller, hitManager, ui, gameStatesDictionary) => {
+   setup = (level, player, controller, hitManager, ui, titleScreen) => {
     this.level = level
     this.player = player
     this.controller = controller
     this.hitManager = hitManager
     this.ui = ui
-    this.stateMachine = new StateMachine(this, gameStatesDictionary)
+    this.titleScreen = titleScreen
   }
 
   start = () => {
-    this.stateMachine.setState(GAME_STATES.PLAYING)
+    console.log("kicking it all off...")
+    this.stateMachine.setState(levelConfig.INITIAL_GAME_STATE)
     this.masterUpdate()
   }
 
