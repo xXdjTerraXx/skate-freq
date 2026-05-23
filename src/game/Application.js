@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 import AssetManager from './AssetManager'
 import { graphicsAssetManifest } from "../assetManifest"
+import StateMachine from './StateMachine'
+import { GAME_STATES } from '../gameStates'
 
 export default class Application{
   constructor(){
@@ -20,10 +22,11 @@ export default class Application{
 
     this.clock = new THREE.Clock()
     
-    this.masterGameContainer = new THREE.Group()
-    this.masterGameContainer.name = 'master game container'
+    // this.masterGameContainer = new THREE.Group()
+    // this.masterGameContainer.name = 'master game container'
 
     this.assetManager = new AssetManager(graphicsAssetManifest)
+
   }
 
   init = async () => {
@@ -46,22 +49,17 @@ export default class Application{
     await this.assetManager.loadAllAssets()
   }
 
-  start = (level, player, controller, hitManager, ui) => {
+   setup = (level, player, controller, hitManager, ui, gameStatesDictionary) => {
     this.level = level
     this.player = player
     this.controller = controller
     this.hitManager = hitManager
     this.ui = ui
+    this.stateMachine = new StateMachine(this, gameStatesDictionary)
+  }
 
-    //add level, player, and ui to masterGameContainer
-    this.masterGameContainer.add(this.level.mainLevelContainer)
-    this.masterGameContainer.add(this.ui.mainContainer)
-    //add masterGameContainer to scene and start the main update chain
-    this.scene.add(this.masterGameContainer)
-
-    //play song
-    this.audioManager.playSong('testSong2')
-
+  start = () => {
+    this.stateMachine.setState(GAME_STATES.PLAYING)
     this.masterUpdate()
   }
 
@@ -70,15 +68,7 @@ export default class Application{
 
     const deltaTime = this.clock.getDelta()
 
-    //call controller run func
-    this.controller.run(deltaTime)
-    //update player
-    this.player.update(deltaTime)
-    //call the level's update func
-    this.level.update(deltaTime)
-    //hit manager update
-    this.hitManager.update(deltaTime)
-    
+    this.stateMachine.update(deltaTime)
 
     //RENDER
     this.renderer.render(this.scene, this.camera)

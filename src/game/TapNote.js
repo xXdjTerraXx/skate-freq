@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 
 export default class TapNote{
-    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, time, patternLengthTime){
+    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, time){
         this.app = app 
         this.hitlineZPosition = hitlineZPosition
         this.levelSpeed = levelSpeed
@@ -38,16 +38,6 @@ export default class TapNote{
             0, 
             this.maxSubLaneOffset
         ]
-
-        //STUFF FOR LOOPING - ~~TEMPORARY!!!~~
-        //this value is the patternLengthBeats of the song pattern
-        //multiplied by the secondsPerBeat of the song. atm it functions as a
-        //loop offset for looping the song pattern
-        this.patternLengthTime = patternLengthTime
-
-        //for testing purposes while level is looping tunnel. this value how long between
-        //each pattern loop
-        this.loopOffset = 2.0
     } 
 
     init = (tapNotesContainer) => {
@@ -84,17 +74,6 @@ export default class TapNote{
         //update tapoNote z position
         this.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
         this.mesh.position.z = this.z
-        //reset tapoNote
-        // if (this.time < currentTime - this.patternLengthTime) {
-        //     this.time += this.patternLengthTime
-        //     this.hit = false
-        //     this.mesh.visible = true
-        // }
-        // while (this.time < currentTime) {
-        //     this.time += this.patternLengthTime
-        //     this.hit = false
-        //     this.mesh.visible = true
-        // }
   }
 }
 

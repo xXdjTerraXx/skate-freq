@@ -18,11 +18,6 @@ export default class Ramp {
     this.levelSpeed = levelSpeed
     this.z = this.hitlineZPosition-(this.levelSpeed * currentTime)      
 
-    //this value is the patternLengthBeats of the song pattern
-    //multiplied by the secondsPerBeat of the song. atm it functions as a
-    //loop offset for looping the song pattern
-    this.patternLengthTime = patternLengthTime
-
     // simple placeholder geometry (will replace later)
     const geometry = new THREE.BoxGeometry(0.15, 0.4, 1.2)
     const material = new THREE.MeshBasicMaterial({ 
@@ -34,10 +29,6 @@ export default class Ramp {
     //this prevents players double hitting ramps
     //gets reset to false when ramp goes off screen
     this.hit = false
-
-    //for testing purposes while level is looping tunnel. this value how long between
-    //each pattern loop
-    this.loopOffset = 2.0
   }
 
   init(rampContainer) {
@@ -81,15 +72,5 @@ export default class Ramp {
     //update ramp z position
     this.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
     this.mesh.position.z = this.z
-    //reset ramp
-    // if (this.time < currentTime - this.patternLengthTime) {
-    //   this.time += this.patternLengthTime
-    //   this.hit = false
-    // }
-    // while (this.time < currentTime) {
-    //     this.time += this.patternLengthTime
-    //     this.hit = false
-    //     this.mesh.visible = true
-    // }
   }
 }

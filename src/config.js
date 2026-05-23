@@ -1,4 +1,7 @@
+import { GAME_STATES } from "./gameStates"
+
 export const levelConfig = {
+    INITIAL_GAME_STATE: GAME_STATES.PLAYING,
     TUNNEL_LENGTH: 100,
     TUNNEL_RADIUS: 1,
     LANE_COUNT: 8,

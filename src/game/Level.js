@@ -152,9 +152,7 @@ export default class Level{
         this.gateRings.push(ring)
     }
 
-    //this value needed for tapNote and ramp initing :3
-    const patternLengthTime = this.levelMap.patternLengthBeats * this.secondsPerBeat 
-    console.log("DEBUG!!--->pattenLengthTime: ", patternLengthTime)
+     
     //init tapNotes
     this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
           const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat
@@ -167,7 +165,6 @@ export default class Level{
             tapNoteInLevelMap.lane, 
             tapNoteInLevelMap.subLane, 
             timeInSeconds,
-            patternLengthTime
           ) 
           tapNote.init(this.tapNotesContainer)
           this.tapNotes.push(tapNote)
@@ -175,15 +172,15 @@ export default class Level{
 
     //init ramps
     this.levelMap.patterns.ramps.forEach(mapNode => {
+      const timeInSeconds = (mapNode.beat - 1) * this.secondsPerBeat
       const ramp = new Ramp(
         this.app, 
         this.hitlineZPosition,
         mapNode.lane - 1, 
-        mapNode.beat * this.secondsPerBeat, 
+        timeInSeconds, 
         this.zRotationOffset, 
         this.levelSpeed, 
-        this.currentTime,
-        patternLengthTime) 
+        this.currentTime) 
       ramp.init(this.rampContainer)
       this.ramps.push(ramp)
     })
@@ -327,10 +324,21 @@ export default class Level{
     ramp.hit = true
   }
 
+  endLevel = () => {
+    console.log('level complete!')
+    // stop the update loop somehow
+    // show score screen
+  }
+
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
     this.currentTime = this.app.audioManager.getCurrentTime()
+
+    //check if song is over
+    if(this.app.audioManager.isFinished()){
+      this.endLevel()
+    }
     
     //store last beat value
     this.lastBeat = this.currentBeat
