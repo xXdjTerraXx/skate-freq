@@ -36,7 +36,7 @@ export default class Level{
     //4/4 time
     this.beatsPerBar = 4
     //beat subdivision
-    this.beatSubdivision = 2
+    this.beatSubdivision = levelConfig.GATE_RING_BEAT_SUBDIVISION
 
     //HITLINE
     this.hitlineZPosition = levelConfig.PLAYER_Z_VALUE
@@ -117,7 +117,7 @@ export default class Level{
     //how many rings
     this.ringCount = levelConfig.RING_COUNT
     //distance between each one
-    this.ringSpacing = this.levelSpeed*this.secondsPerBeat/this.beatSubdivision
+    this.ringSpacing = this.secondsPerBeat/this.beatSubdivision
 
 
     //positioning
@@ -145,13 +145,10 @@ export default class Level{
 
     //init gate rings
     for(let i = 0; i < this.ringCount; i++){
-        // const z = -(i+1) * this.ringSpacing
-        const z = this.hitlineZPosition + (-i * this.ringSpacing)
-        const ring = new GateRing(this.app, z, this.ringContainer)
+        const ring = new GateRing(this.app, this.ringContainer, i, this.ringSpacing, this.hitlineZPosition, this.ringCount)
         ring.init()
         this.gateRings.push(ring)
     }
-
      
     //init tapNotes
     this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
@@ -370,19 +367,13 @@ export default class Level{
     this.gateRings.forEach(ring => {
         //DEBUGGING GATE RINGS WITH A CLICK
         // const wasBeforePlayer = ring.mesh.position.z < this.hitlineZPosition
-        ring.update(deltaTime, this.levelSpeed)
+        ring.update(deltaTime, this.levelSpeed, this.currentTime)
 
         //DEBUGGING GATE RINGS WITH A CLICK
         // const isAfterPlayer = ring.mesh.position.z >= this.hitlineZPosition
         // if (wasBeforePlayer && isAfterPlayer) {
         //     this.app.audioManager.playKeyPressClick()
         // }
-
-        //resetThreshold is an arbitrary point slightly in front of the camera
-        const resetThreshold = this.app.camera.position.z + 3
-        if (ring.mesh.position.z > resetThreshold) {
-            ring.mesh.position.z -= this.ringCount * this.ringSpacing
-        }
     })
 
     this.tapNotes.forEach(note => {

@@ -11,6 +11,7 @@ export const levelConfig = {
     SPEED: 5,
     RING_COUNT: 12,
     RING_SPACING: 2,
+    GATE_RING_BEAT_SUBDIVISION: 2,
     RING_COLOR: 0x27BBF5,
     PLAYER_Z_VALUE: .2,
     PLAYER_RING_COLOR: 0x27F542,

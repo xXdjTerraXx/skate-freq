@@ -92,9 +92,4 @@ const gameStatesDictionary = createGameStates(mainApplication)
 
 mainApplication.stateMachine = new StateMachine(mainApplication, gameStatesDictionary)
 
-window.addEventListener('keydown', (e) => {
-  if(e.code === 'KeyF'){
-    //start eeeeverything
-    mainApplication.start()
-  }
-})
+mainApplication.start()
