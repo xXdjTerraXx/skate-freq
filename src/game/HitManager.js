@@ -3,6 +3,7 @@ import { levelConfig } from '../config'
 
 //decides which type of hit effect to spawn and which container to put
 //it in. each hit effect is responsible for its own movement and deletion
+//...basically like a particle manager
 export default class HitManager{
     constructor(app){
         this.app = app
@@ -13,6 +14,39 @@ export default class HitManager{
     init = (uiHitFxContainer, worldHitFxContainer) => {
         this.uiHitFxContainer = uiHitFxContainer
         this.worldHitFxContainer = worldHitFxContainer
+    }
+
+    registerHit = (tapNote, currentTime) => {
+        //if player presses when no note
+        if (!tapNote) {
+            this.spawnHitEffect("MISS", "ui")
+            return
+        }
+
+        //prevent double hitting
+        if (tapNote.hit) return
+        
+        //hit offset here just in case ever need it
+        const HIT_OFFSET = 0
+        const timeUntilHit = (tapNote.time - currentTime) - HIT_OFFSET
+
+        let hitScore 
+        if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
+            hitScore = 'PERFECT'
+        } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
+            hitScore = 'GOOD'
+        } else {
+            hitScore = 'MISS'
+        }
+        this.spawnHitEffect(hitScore, "ui")
+        this.updateScore(hitScore)
+
+        tapNote.hit = true
+        tapNote.mesh.visible = false
+    }
+
+    updateScore = (hitScore) => {
+        this.app.scoreManager.updateScore(hitScore)
     }
 
     //hit rating is 'PERFECT', 'GOOD', or 'MISS'

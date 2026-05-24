@@ -1,8 +1,9 @@
 export default class Controller{
-    constructor(app, level, player){
+    constructor(app, level, player, hitManager){
         this.app = app
         this.level = level
         this.player = player
+        this.hitManager = hitManager
 
         this.leftArrow = 'ArrowLeft'
         this.rightArrow = 'ArrowRight'
@@ -62,7 +63,9 @@ export default class Controller{
         this.app.audioManager.playKeyPressClick()
 
         this.player.setSubLane(index)
-        this.level.checkTapNoteHit(index)
+        //check for a tapNote hit
+        const { note, currentTime } = this.level.checkTapNoteHit(index)
+        this.hitManager.registerHit(note, currentTime)
         //player pulse effect
         this.player.pulse()
     }

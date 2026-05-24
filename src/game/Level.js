@@ -223,10 +223,10 @@ export default class Level{
       this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
   }
 
+  //checks for a tapNoteHit. called in controller on key press
+  //returns an object: { note, timeDiff, currentTime }
   checkTapNoteHit = (subLane) => {
     const playerLane = this.playerCurrentLane
-    // const HIT_OFFSET = levelConfig.PLAYER_Z_VALUE / this.levelSpeed
-    const HIT_OFFSET = 0
 
     const closestTapNoteInTime = this.tapNotes.reduce(
       (acc, note) => {
@@ -238,39 +238,13 @@ export default class Level{
         if (timeUntilHit > 0.5) return acc
         if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
         if (absTime < acc.timeDiff) {
-          return { note: note, timeDiff: absTime }
+          return { note: note, timeDiff: absTime, currentTime: this.currentTime }
         }
         return acc
-      }, { note: null, timeDiff: Infinity }
+      }, { note: null, timeDiff: Infinity, currentTime: null }
     )
 
-    const tapNote = closestTapNoteInTime.note
-    
-
-    if (!tapNote) {
-      this.hitManager.spawnHitEffect("MISS", "ui")
-      return
-    }
-
-    const timeUntilHit = (tapNote.time - this.currentTime) - HIT_OFFSET
-    console.log("DEBUG--->timeuntilHit:", timeUntilHit)
-    // console.log('timeUntilHit on press:', timeUntilHit, 'rating:', 
-    //   Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT ? 'PERFECT' :
-    //   Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD ? 'GOOD' : 'MISS'
-    // )
-
-    if (tapNote.hit) return
-
-    if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
-      this.hitManager.spawnHitEffect("PERFECT", "ui")
-    } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
-      this.hitManager.spawnHitEffect("GOOD", "ui")
-    } else {
-      this.hitManager.spawnHitEffect("MISS", "ui")
-    }
-
-    tapNote.hit = true
-    tapNote.mesh.visible = false
+    return closestTapNoteInTime
 }
 
   checkRampHit = () => {
@@ -320,6 +294,32 @@ export default class Level{
     //set ramp hit to true
     ramp.hit = true
   }
+
+  // registerHit = (tapNote) => {
+  //   //if player presses when no note
+  //   if (!tapNote) {
+  //     this.hitManager.spawnHitEffect("MISS", "ui")
+  //     return
+  //   }
+
+  //   //prevent double hitting
+  //   if (tapNote.hit) return
+    
+  //   //hit offset here just in case ever need it
+  //   const HIT_OFFSET = 0
+  //   const timeUntilHit = (tapNote.time - this.currentTime) - HIT_OFFSET
+
+  //   if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
+  //     this.hitManager.spawnHitEffect("PERFECT", "ui")
+  //   } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
+  //     this.hitManager.spawnHitEffect("GOOD", "ui")
+  //   } else {
+  //     this.hitManager.spawnHitEffect("MISS", "ui")
+  //   }
+
+  //   tapNote.hit = true
+  //   tapNote.mesh.visible = false
+  // }
 
   endLevel = () => {
     console.log('level complete!')
@@ -377,16 +377,20 @@ export default class Level{
     })
 
     this.tapNotes.forEach(note => {
+      //////////////////////////////////////////
       // DEBUG - checking timing with a click
-      const wasBeforeHitline = note.mesh.position.z < this.hitlineZPosition
-      note.update(deltaTime, this.currentTime)
-      const isAfterHitline = note.mesh.position.z >= this.hitlineZPosition
-
-      if (wasBeforeHitline && isAfterHitline) {
-          this.app.audioManager.playClick(true, -0.016) // true = downbeat sound so it's distinct
-      }
-
+      // const wasBeforeHitline = note.mesh.position.z < this.hitlineZPosition
       // note.update(deltaTime, this.currentTime)
+      // const isAfterHitline = note.mesh.position.z >= this.hitlineZPositio
+      // if (wasBeforeHitline && isAfterHitline) {
+      //     this.app.audioManager.playClick(true, -0.016) // true = downbeat sound so it's distinct
+      // }
+      /////////////////////////////////////////////
+
+      ////////////////////////////////////////////
+      // DEBUG - NO click
+      note.update(deltaTime, this.currentTime)
+      ////////////////////////////////////////////
     })
 
     //update ramps

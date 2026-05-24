@@ -60,6 +60,7 @@ export default class AudioManager {
       console.warn(`song not found: ${songKey}`)
     }
     this.currentSong = this.loadedSongs[songKey]
+    console.log("WOO WOO WOOW OOO CURRENT OSNG: ", this.currentSong)
   }
 
   // sets the active song and plays it from the beginning

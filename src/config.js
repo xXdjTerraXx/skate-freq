@@ -27,5 +27,9 @@ export const levelConfig = {
     NOTE_TIMING: {
         GOOD: 0.3,
         PERFECT: 0.15
+    },
+    TAP_NOTE_SCORE_DICT: {
+        PERFECT: 100,
+        GOOD: 50
     }
 }

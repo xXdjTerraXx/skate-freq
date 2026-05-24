@@ -47,13 +47,14 @@ export default class Application{
     await this.assetManager.loadAllAssets()
   }
 
-   setup = (level, player, controller, hitManager, ui, titleScreen) => {
+   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager) => {
     this.level = level
     this.player = player
     this.controller = controller
     this.hitManager = hitManager
     this.ui = ui
     this.titleScreen = titleScreen
+    this.scoreManager = scoreManager
   }
 
   start = () => {
@@ -67,6 +68,7 @@ export default class Application{
 
     const deltaTime = this.clock.getDelta()
 
+    //run the update function of the current state
     this.stateMachine.update(deltaTime)
 
     //RENDER
