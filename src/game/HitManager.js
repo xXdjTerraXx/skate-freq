@@ -17,8 +17,12 @@ export default class HitManager{
     }
 
     registerHit = (tapNote, currentTime) => {
+        let hitScore 
+
         //if player presses when no note
         if (!tapNote) {
+            hitScore = 'MISS'
+            this.updateScore(hitScore)
             this.spawnHitEffect("MISS", "ui")
             return
         }
@@ -29,8 +33,7 @@ export default class HitManager{
         //hit offset here just in case ever need it
         const HIT_OFFSET = 0
         const timeUntilHit = (tapNote.time - currentTime) - HIT_OFFSET
-
-        let hitScore 
+        
         if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
             hitScore = 'PERFECT'
         } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
@@ -46,6 +49,7 @@ export default class HitManager{
     }
 
     updateScore = (hitScore) => {
+        console.log("DEBUG HIT SCORE IN HIT MANAGER: ", hitScore)
         this.app.scoreManager.updateScore(hitScore)
     }
 

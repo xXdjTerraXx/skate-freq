@@ -61,9 +61,9 @@ export default class Controller{
     playerSubLaneSwitch = (index) => {
         //DEBUG play key press click
         this.app.audioManager.playKeyPressClick()
-
+        //move the player to the correct sub lane
         this.player.setSubLane(index)
-        //check for a tapNote hit
+        //check for a tapNote hit inside of Level
         const { note, currentTime } = this.level.checkTapNoteHit(index)
         this.hitManager.registerHit(note, currentTime)
         //player pulse effect

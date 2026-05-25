@@ -19,9 +19,23 @@ export const levelConfig = {
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.008,
     UI_HIT_EFFECT_COLOR_DICT:{
-        PERFECT: 0x2b73fb,
-        GOOD: 0xfbe52b,
-        MISS: 0xfb2b35 
+        PERFECT: 0x00FFEE,//<--cyan from UI_COLOR_PALETTE
+        GOOD: 0x00FF88,  //<--green from UI_COLOR_PALETTE
+        MISS: 0xFF2244 
+    },
+    UI_FONTS_DICT: {
+        uiFont1: '/assets/fonts/OCRAEXT.TTF',
+        uiFont2: '/assets/fonts/whitrabt.ttf'
+    },
+    UI_COLOR_PALETTE: {
+        black: '#050510',
+        cyan: '#00FFEE',
+        orange: '#FF5500',
+        purple: '#9900FF',
+        gold: '#FFD700',
+        green: '#00FF88',
+        red: '#FF2244',
+        highlight: '#F0F0FF',
     },
     //timing windows for all note node - ramps, rails, tapNotes
     NOTE_TIMING: {
@@ -30,6 +44,7 @@ export const levelConfig = {
     },
     TAP_NOTE_SCORE_DICT: {
         PERFECT: 100,
-        GOOD: 50
+        GOOD: 50,
+        MISS: 0
     }
 }

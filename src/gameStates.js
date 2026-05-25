@@ -48,7 +48,7 @@ class TitleState {
     }
 
     update = (deltaTime) => {
-        console.log("DEBUG: TITLE SCREEN UPDATE")
+        
     }
     
     onExit = () => {
@@ -150,16 +150,51 @@ class PausedState {
 }
 
 class ResultsState {
-    constructor(app) { this.app = app }
+    constructor(app) { 
+        this.app = app 
+        this.container = new THREE.Group()
+        this.container.name = 'results state container'
+        this.container.add(this.app.resultsScreen.mainContainer)
+        this.container.visible = false
+        this.app.scene.add(this.container)
+    }
     
     onEnter = () => {
         console.log('entering RESULTS state')
-        // show score screen
+        this.addKeyEvents()
+        this.app.resultsScreen.displayResults()
+        this.container.visible = true
     }
 
     update = (deltaTime) => {}
     
-    onExit = () => {}
+    onExit = () => {
+        this.removeKeyEvents()
+        this.container.visible = false
+        //since the song/level is over, reset everything:
+        //the score in ScoreManager, the ui, and the results screen
+        this.app.scoreManager.resetAll()
+        this.app.ui.resetScoreAndComboText()
+        this.app.resultsScreen.resetResultsText()
+        /////////////////
+        //~~*~~*~~*TO DO*~~*~~*~~//
+        //level.reset method needed to reset tapnotes
+        //audioManager.resetSong method needed to reset song playback
+    }
+
+    pressFToContinueEvent = (e) => {
+        if(e.code === 'KeyF'){
+            this.app.stateMachine.setState(GAME_STATES.TITLE)
+        }
+    }
+    
+    addKeyEvents = () => {
+        window.addEventListener('keydown', this.pressFToContinueEvent)
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('keydown', this.pressFToContinueEvent)
+    }
 }
 
 class GameOverState {

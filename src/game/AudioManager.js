@@ -37,11 +37,11 @@ export default class AudioManager {
   }
 
   // loops through the manifest and loads all songs. uses promise.all bc it's quicker
-  //for big audio files
+  //for big wav files
   loadAllSongs = async () => {
       console.log('loading songs...')
 
-      //okkiiii first make the songs object into a little 2d array [[key, value], [key,value]...]
+      //okkiiii first make the songs object into a little 2d array [...[key, value], [key,value]...]
       const songEntries = Object.entries(this.audioAssetManifest.songs)
       console.log('DEBUGGGG, SONG ENTRIES: ', songEntries)
       //then convert each entry of that array into promises (loadSong returns a promiseXD)
