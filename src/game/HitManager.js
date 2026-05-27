@@ -43,9 +43,9 @@ export default class HitManager{
         }
         this.spawnHitEffect(hitScore, "ui")
         this.updateScore(hitScore)
-
         tapNote.hit = true
         tapNote.mesh.visible = false
+        tapNote.killSelf()
     }
 
     updateScore = (hitScore) => {

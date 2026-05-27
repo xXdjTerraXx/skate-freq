@@ -22,11 +22,11 @@ export default class TapNote{
         this.z = this.hitlineZPosition-(this.levelSpeed * currentTime)
 
         //SHAPE AND STUFF
-        const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1)
-        const material = new THREE.MeshBasicMaterial({ 
+        this.geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1)
+        this.material = new THREE.MeshBasicMaterial({ 
             color: 0xff00ff, transparent: true, opacity: 0.5 
         })
-        this.mesh = new THREE.Mesh(geometry, material)
+        this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.mesh.name = 'tap note'
 
         //sub lane positioning stuff here
@@ -58,6 +58,11 @@ export default class TapNote{
         tapNotesContainer.add(this.mesh)
     }
 
+    killSelf = () => {
+        if(this.geometry)this.geometry.dispose()
+        if(this.material)this.material.dispose()
+    }
+
     update(deltaTime, currentTime) {
 
         ////////////////////////////////
@@ -65,13 +70,13 @@ export default class TapNote{
         //a countdown until this tapNote at player
         const timeUntilHit = this.time - currentTime
         const dist = Math.abs(timeUntilHit)
-        // fade in as it approaches
-        this.mesh.material.opacity = Math.max(0, Math.min(0.6, 1.2 - dist))
 
-        // scale slightly near hit
+        /////opacity and scale change as note moves
+        this.mesh.material.opacity = Math.max(0, Math.min(0.6, 1.2 - dist))
         const scale = 1 + Math.max(0, 0.5 - dist) * 1.5
         this.mesh.scale.set(scale, scale, scale)
-        //update tapoNote z position
+
+        ///////update tapoNote z position
         this.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
         this.mesh.position.z = this.z
   }

@@ -399,6 +399,10 @@ export default class Level{
       ////////////////////////////////////////////
       // DEBUG - NO click
       note.update(deltaTime, this.currentTime)
+      //check for notes the player has missed and have passed the hitLine
+      if (!note.hit && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
+        this.app.hitManager.registerHit(note, -1000)
+      }
       ////////////////////////////////////////////
     })
 
