@@ -22,24 +22,29 @@ export default class Level{
     //bring in some constants from config
     this.levelSpeed = levelConfig.SPEED
     this.laneCount = levelConfig.LANE_COUNT
+    //radians measurement of a face
+    this.laneAngle = (Math.PI * 2) / this.laneCount
     this.playerCurrentLane = levelConfig.STARTING_LANE
     this.playerCurrentSubLane = levelConfig.STARTING_SUB_LANE
+    //4/4 time
+    this.beatsPerBar = 4
+    this.beatSubdivision = levelConfig.GATE_RING_BEAT_SUBDIVISION
+    //how many gate rings
+    this.ringCount = levelConfig.RING_COUNT    
+    //hitline aka where the notes are being timed to (also where the player sits in space)
+    this.hitlineZPosition = levelConfig.PLAYER_Z_VALUE
 
-    //MUSIC/BEAT STUFF
-    this.bpm = this.app.audioManager.getCurrentBpm()
-    // this.bpm = 100
-    this.secondsPerBeat = 60/this.bpm
+
+    //time-related stuff (<--there's a reset function for all this below)
     this.currentTime = 0.00
     this.lastBeat = 3
     this.currentBeat = 0
     this.currentBar = 0
-    //4/4 time
-    this.beatsPerBar = 4
-    //beat subdivision
-    this.beatSubdivision = levelConfig.GATE_RING_BEAT_SUBDIVISION
 
-    //HITLINE
-    this.hitlineZPosition = levelConfig.PLAYER_Z_VALUE
+   //establish some arrays to hold things
+    this.gateRings = []
+    this.tapNotes = []
+    this.ramps = []
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -77,8 +82,7 @@ export default class Level{
     this.worldHitFxContainer = new THREE.Group()
     this.worldHitFxContainer.name = 'world hit fx container'
     
-    //radians measurement of a face
-    this.laneAngle = (Math.PI * 2) / this.laneCount
+  
 
     //rotate the main container so that a side is at 6 oclock instead of vertex
     //(Math.PI * 2) / (levelConfig.LANE_COUNT / 2)
@@ -112,29 +116,28 @@ export default class Level{
     )
     this.tunnel2.add(this.line2)
 
-    //gate rings set up
-    this.gateRings = []
-    //how many rings
-    this.ringCount = levelConfig.RING_COUNT
-    //distance between each one
-    this.ringSpacing = this.secondsPerBeat/this.beatSubdivision
-
-
     //positioning
     this.rotation = 0
     this.rotationAccumulator = 0
     this.targetRotation = 0
     this.rotationVelocity = 0
 
-    //TAP NOTES
-    this.tapNotes = []
-    //RAMPS
-    this.ramps = []
+    //add tunnels to mainLevelContainer
+    this.tunnelsContainer.add(this.tunnel1)
+    this.tunnelsContainer.add(this.tunnel2)
+
+    //add everything to mainLevelContainer. on application start, mainLevelContainer
+    //gets added to Application.masterGameContainer which gets added to
+    //main scene
+    this.mainLevelContainer.add(this.tunnelsContainer)
+    this.mainLevelContainer.add(this.tapNotesContainer)
+    this.mainLevelContainer.add(this.rampContainer)
+    this.mainLevelContainer.add(this.ringContainer)
   }
 
   init = () => {
-    console.log('DEBUG---->BPM:', this.bpm)
-    console.log('DEBUG---->secondsPerBeat:', this.secondsPerBeat)
+    //sets song-dependant variables like bpm, secondsPerBeat
+    this.setSongState()
     //FOG EFFECT
     this.app.scene.fog = new THREE.Fog(0x000000, 2, 15)
 
@@ -182,17 +185,7 @@ export default class Level{
       this.ramps.push(ramp)
     })
     
-     //add tunnels to mainLevelContainer
-    this.tunnelsContainer.add(this.tunnel1)
-    this.tunnelsContainer.add(this.tunnel2)
 
-    //add everything to mainLevelContainer. on application start, mainLevelContainer
-    //gets added to Application.masterGameContainer which gets added to
-    //main scene
-    this.mainLevelContainer.add(this.tunnelsContainer)
-    this.mainLevelContainer.add(this.tapNotesContainer)
-    this.mainLevelContainer.add(this.rampContainer)
-    this.mainLevelContainer.add(this.ringContainer)
 
     //rotate whole level so lane 1 is at 6oclock
     this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
@@ -295,36 +288,52 @@ export default class Level{
     ramp.hit = true
   }
 
-  // registerHit = (tapNote) => {
-  //   //if player presses when no note
-  //   if (!tapNote) {
-  //     this.hitManager.spawnHitEffect("MISS", "ui")
-  //     return
-  //   }
-
-  //   //prevent double hitting
-  //   if (tapNote.hit) return
-    
-  //   //hit offset here just in case ever need it
-  //   const HIT_OFFSET = 0
-  //   const timeUntilHit = (tapNote.time - this.currentTime) - HIT_OFFSET
-
-  //   if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
-  //     this.hitManager.spawnHitEffect("PERFECT", "ui")
-  //   } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
-  //     this.hitManager.spawnHitEffect("GOOD", "ui")
-  //   } else {
-  //     this.hitManager.spawnHitEffect("MISS", "ui")
-  //   }
-
-  //   tapNote.hit = true
-  //   tapNote.mesh.visible = false
-  // }
-
-  endLevel = () => {
+  //resets all note nodes and gate rings
+  //gets called in the "onExit" method of the results state.
+  reset = () => {
     console.log('level complete!')
-    // stop the update loop somehow
-    // show score screen
+    //reset the gate rings array
+    this.gateRings = []
+    this.tapNotes = []
+    this.ramps = []
+    //reset time stuff
+    this.currentTime = 0.00
+    this.lastBeat = 3
+    this.currentBeat = 0
+    this.currentBar = 0
+    //reset rotation
+    this.rotation = 0
+    this.rotationAccumulator = 0
+    //aaaand clean up the geometry
+    // clear tap notes
+    while (this.tapNotesContainer.children.length > 0) {
+        const child = this.tapNotesContainer.children[0]
+        child.geometry.dispose()
+        child.material.dispose()
+        this.tapNotesContainer.remove(child)
+    }
+    // clear ramps
+    while (this.rampContainer.children.length > 0) {
+        const child = this.rampContainer.children[0]
+        child.geometry.dispose()
+        child.material.dispose()
+        this.rampContainer.remove(child)
+    }
+    // clear gate rings
+    while (this.ringContainer.children.length > 0) {
+        const child = this.ringContainer.children[0]
+        child.geometry.dispose()
+        child.material.dispose()
+        this.ringContainer.remove(child)
+    }
+  }
+
+  //sets properties related to the song and its bpm
+  setSongState = () => {
+      this.bpm = this.app.audioManager.getCurrentBpm()
+      this.secondsPerBeat = 60/this.bpm
+      //distance between each one
+      this.ringSpacing = this.secondsPerBeat/this.beatSubdivision
   }
 
   update = (deltaTime) => {
@@ -332,10 +341,10 @@ export default class Level{
     //increment time
     this.currentTime = this.app.audioManager.getCurrentTime()
 
-    //check if song is over
-    if(this.app.audioManager.isFinished()){
-      this.endLevel()
-    }
+    // //check if song is over
+    // if(this.app.audioManager.isFinished()){
+    //   this.endLevel()
+    // }
     
     //store last beat value
     this.lastBeat = this.currentBeat

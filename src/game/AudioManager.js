@@ -97,6 +97,11 @@ export default class AudioManager {
       return this.currentSong.audio.ended
   }
 
+  resetSong = () => {
+      this.currentSong.audio.pause()
+      this.currentSong.audio.currentTime = 0
+  }
+
   playClick = (isDownbeat = false, offset = 0) => {
     //audio context needs to be created here bc of that bullshit w the browser
     //needing to wait for user input before playing audio

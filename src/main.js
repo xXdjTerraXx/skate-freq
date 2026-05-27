@@ -78,7 +78,6 @@ const resultsScreen = new ResultsScreen(mainApplication)
 //pull the selected song's note map from the selected song in audio manager
 const levelNoteMap = audioManager.currentSong.noteMap 
 const level = new Level(mainApplication, hitManager, levelNoteMap)
-level.init()
 
 hitManager.init(ui.hitEffectsContainer, level.worldHitFxContainer)
 

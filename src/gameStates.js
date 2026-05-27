@@ -111,6 +111,8 @@ class PlayingState {
         console.log('entering PLAYING state')
         //toggle visibility
         this.container.visible = true
+        //set up level
+        this.app.level.init()
         //play song
         this.app.audioManager.playSong('testSong2')
     }
@@ -176,10 +178,8 @@ class ResultsState {
         this.app.scoreManager.resetAll()
         this.app.ui.resetScoreAndComboText()
         this.app.resultsScreen.resetResultsText()
-        /////////////////
-        //~~*~~*~~*TO DO*~~*~~*~~//
-        //level.reset method needed to reset tapnotes
-        //audioManager.resetSong method needed to reset song playback
+        this.app.audioManager.resetSong()
+        this.app.level.reset()
     }
 
     pressFToContinueEvent = (e) => {
