@@ -54,7 +54,7 @@ export default class UiManager{
             color: 0xffffff, 
             x: 0, y: 0, z: 0})
 
-        this.healthContainer.add(this.currentHealthText, this.maxHealthText)
+        this.healthContainer.add(this.currentHealthText)
     }
 
     init = () => {
@@ -72,6 +72,7 @@ export default class UiManager{
 
     updateHealth = (newHealth) => {
         this.currentHealthText.text = `${newHealth} / ${levelConfig.PLAYER_STARTING_HEALTH}`
+        this.currentHealthText.sync()
     }
 
     resetScoreAndComboText = () => {
@@ -79,5 +80,7 @@ export default class UiManager{
         this.scoreText.sync()
         this.comboText.text = ''
         this.comboText.sync()
+        this.currentHealthText.text = `${levelConfig.PLAYER_STARTING_HEALTH} / ${levelConfig.PLAYER_STARTING_HEALTH}`
+        this.currentHealthText.sync()
     }
 }

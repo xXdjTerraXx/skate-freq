@@ -127,6 +127,10 @@ class PlayingState {
         if (this.app.audioManager.isFinished()) {
             this.app.stateMachine.setState(GAME_STATES.RESULTS)
         }
+        //check if player health is at or below 0
+        if (this.app.scoreManager.health <= 0) {
+            this.app.stateMachine.setState(GAME_STATES.GAME_OVER)
+        }
     }
     
     onExit = () => {
@@ -198,16 +202,48 @@ class ResultsState {
 }
 
 class GameOverState {
-    constructor(app) { this.app = app }
+    constructor(app) { 
+        this.app = app
+        this.container = new THREE.Group()
+        this.container.name = 'game over state container'
+        this.container.add(this.app.gameOverScreen.mainContainer)
+        this.container.visible = false
+        this.app.scene.add(this.container)
+     }
     
     onEnter = () => {
         console.log('entering GAME_OVER state')
-        this.app.audioManager.pause()
+        this.addKeyEvents()
+        this.app.audioManager.resetSong()
+        //toggle visibility
+        this.container.visible = true
+        //set up screen
+        this.app.gameOverScreen.init()
     }
 
     update = (deltaTime) => {}
     
-    onExit = () => {}
+    onExit = () => {
+        this.container.visible = false
+        this.removeKeyEvents()
+        this.app.scoreManager.resetAll()
+        this.app.ui.resetScoreAndComboText()
+        this.app.level.reset()
+    }
+
+    pressFToContinueEvent = (e) => {
+        if(e.code === 'KeyF'){
+            this.app.stateMachine.setState(GAME_STATES.TITLE)
+        }
+    }
+    
+    addKeyEvents = () => {
+        window.addEventListener('keydown', this.pressFToContinueEvent)
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('keydown', this.pressFToContinueEvent)
+    }
 }
 
 

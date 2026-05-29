@@ -13,6 +13,7 @@ import StateMachine from './game/StateMachine'
 import TitleScreen from './game/TitleScreen'
 import ScoreManager from './game/ScoreManager'
 import ResultsScreen from './game/ResultsScreen'
+import GameOverScreen from './game/GameOverScreen'
 
 // const testMap = {
 //   patternLengthBeats: 16,
@@ -74,6 +75,7 @@ const hitManager = new HitManager(mainApplication)
 
 const titleScreen = new TitleScreen(mainApplication)
 const resultsScreen = new ResultsScreen(mainApplication)
+const gameOverScreen = new GameOverScreen(mainApplication)
 
 //pull the selected song's note map from the selected song in audio manager
 const levelNoteMap = audioManager.currentSong.noteMap 
@@ -92,7 +94,7 @@ controller.init()
 const scoreManager = new ScoreManager(mainApplication)
 
 //this setup function just gives the main app all the rest of the modules it needs
-mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen)
 
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)
