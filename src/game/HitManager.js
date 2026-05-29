@@ -22,7 +22,10 @@ export default class HitManager{
         //if player presses when no note
         if (!tapNote) {
             hitScore = 'MISS'
-            this.updateScore(hitScore)
+            //update score and health
+            this.app.scoreManager.updateScore(hitScore)
+            this.app.scoreManager.updateHealth(hitScore)
+            //spawn hit effect text
             this.spawnHitEffect("MISS", "ui")
             return
         }
@@ -41,17 +44,17 @@ export default class HitManager{
         } else {
             hitScore = 'MISS'
         }
+        //spawn a hit effect
         this.spawnHitEffect(hitScore, "ui")
-        this.updateScore(hitScore)
+        //update player score and health in the score manager
+        this.app.scoreManager.updateScore(hitScore)
+        this.app.scoreManager.updateHealth(hitScore)
         tapNote.hit = true
         tapNote.mesh.visible = false
         tapNote.killSelf()
     }
 
-    updateScore = (hitScore) => {
-        console.log("DEBUG HIT SCORE IN HIT MANAGER: ", hitScore)
-        this.app.scoreManager.updateScore(hitScore)
-    }
+
 
     //hit rating is 'PERFECT', 'GOOD', or 'MISS'
     spawnHitEffect = (hitRating, type = 'world') => {

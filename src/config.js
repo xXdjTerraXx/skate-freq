@@ -16,8 +16,15 @@ export const levelConfig = {
     PLAYER_Z_VALUE: .2,
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
+    PLAYER_STARTING_HEALTH: 30,
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.008,
+    //how much a miss good or perfect affect player health
+    HIT_RATING_VALUES:{
+        PERFECT: 3,
+        GOOD: 2,
+        MISS: -3
+    },
     UI_HIT_EFFECT_COLOR_DICT:{
         PERFECT: 0x00FFEE,//<--cyan from UI_COLOR_PALETTE
         GOOD: 0x00FF88,  //<--green from UI_COLOR_PALETTE

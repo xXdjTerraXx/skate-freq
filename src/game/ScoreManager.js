@@ -12,6 +12,7 @@ export default class ScoreManager{
             GOOD: 0,
             MISS: 0
         }
+        this.health = levelConfig.PLAYER_STARTING_HEALTH
     }
 
     updateScore =  (hitScore) => {
@@ -38,6 +39,16 @@ export default class ScoreManager{
         this.app.ui.updateScore(this.currentScore, this.currentCombo)
     }
 
+    updateHealth = (hitRating) => {
+        const changeInHealth = levelConfig.HIT_RATING_VALUES[hitRating]
+        this.health += changeInHealth
+        if(this.health>levelConfig.PLAYER_STARTING_HEALTH){
+            this.health = levelConfig.PLAYER_STARTING_HEALTH
+        }
+        //aaanad finally...update UI
+        this.app.ui.updateHealth(this.health)
+    }
+
     resetAll = () => {
         this.currentScore = 0
         this.currentCombo = 0
@@ -45,6 +56,7 @@ export default class ScoreManager{
         this.hitCounts.PERFECT = 0
         this.hitCounts.GOOD = 0
         this.hitCounts.MISS = 0
+        this.health = levelConfig.PLAYER_STARTING_HEALTH
     }
 
     //returns finals score (score WITH bonus multiplier)

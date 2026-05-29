@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import { Text } from 'troika-three-text'
+import { createTextNode } from '../utils'
+import { levelConfig } from '../config'
 
 export default class UiManager{
     constructor(app){
@@ -13,12 +15,13 @@ export default class UiManager{
         this.hitEffectsContainer.name = 'hit effect container'
         this.hitEffectsContainer.position.set(.5, .5, 0)
 
+////////////////////////////////////////////////////////////////////////
+///////////////////////~~*~~*  SCORE  *~~*~~////////////////////////////
         //where score dispaly lives
         this.scoreContainer = new THREE.Group()
         this.scoreContainer.name = 'score container'
         this.scoreContainer.position.set(.1, .9, 0)
 
-        /////TO DO --- figure out how to add text///////
         this.scoreText = new Text() 
         this.scoreText.label = 'score text'  
         this.scoreText.font = '/assets/fonts/OCRAEXT.TTF'
@@ -37,11 +40,25 @@ export default class UiManager{
         this.comboText.text = ''
         this.comboText.sync()
         
-        this.scoreContainer.add(this.scoreText, this.comboText)        
+        this.scoreContainer.add(this.scoreText, this.comboText)     
+        
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////~~*~~*  HEALH  *~~*~~///////////////////////////////////////
+        this.healthContainer = new THREE.Group()
+        this.healthContainer.name = 'health container'
+        this.healthContainer.position.set(.95, .95, 0)
+
+        this.currentHealthText = createTextNode({
+            text: `${levelConfig.PLAYER_STARTING_HEALTH} / ${levelConfig.PLAYER_STARTING_HEALTH}`, 
+            fontSize: 0.2, 
+            color: 0xffffff, 
+            x: 0, y: 0, z: 0})
+
+        this.healthContainer.add(this.currentHealthText, this.maxHealthText)
     }
 
     init = () => {
-        this.mainContainer.add(this.hitEffectsContainer, this.scoreContainer)
+        this.mainContainer.add(this.hitEffectsContainer, this.scoreContainer, this.healthContainer)
     }
 
     updateScore = (newScore, newCombo) => {
@@ -51,6 +68,10 @@ export default class UiManager{
         this.scoreText.sync()
         this.comboText.text = `x${newCombo}`
         this.comboText.sync()
+    }
+
+    updateHealth = (newHealth) => {
+        this.currentHealthText.text = `${newHealth} / ${levelConfig.PLAYER_STARTING_HEALTH}`
     }
 
     resetScoreAndComboText = () => {
