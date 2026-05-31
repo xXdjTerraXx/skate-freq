@@ -73,24 +73,25 @@ mainApplication.audioManager = audioManager
 const ui = new UiManager(mainApplication)
 ui.init()
 
-const hitManager = new HitManager(mainApplication)
 
+
+//init the different "screens"
 const titleScreen = new TitleScreen(mainApplication)
 const resultsScreen = new ResultsScreen(mainApplication)
 const gameOverScreen = new GameOverScreen(mainApplication)
 const songSelectScreen = new SongSelectScreen(mainApplication, audioManager.loadedSounds.songs)
+//hit manager here because level needs it
+const hitManager = new HitManager(mainApplication)
 const level = new Level(mainApplication, hitManager)
-//pull the selected song's note map from the selected song in audio manager
-// const levelNoteMap = audioManager.currentSong.noteMap 
-// const level = new Level(mainApplication, hitManager)
-
+//then init the hit manager
 hitManager.init(ui.hitEffectsContainer, level.worldHitFxContainer)
-
+//oooo now the player
 const player = new Player(mainApplication, level)
 player.init()
-
+//gib player
 level.setPlayer(player)
-
+//key events for menu navigation are in the respective state containers :o
+//all the core gameplay control happens in a dedicated controller class :3
 const controller = new Controller(mainApplication, level, player, hitManager)
 controller.init()
 

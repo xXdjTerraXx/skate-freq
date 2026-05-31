@@ -66,6 +66,7 @@ export default class SongSelectScreen{
         
         //get target rotation on key press
         this.targetRotation -= upOrDown * this.angleStep
+
     }
 
     

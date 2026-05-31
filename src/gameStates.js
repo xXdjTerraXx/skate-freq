@@ -45,6 +45,7 @@ class TitleState {
         console.log('entering TITLE state')
         this.addKeyEvents()
         this.container.visible = true
+        this.app.audioManager.playMenuMusic()
     }
 
     update = (deltaTime) => {
@@ -57,11 +58,13 @@ class TitleState {
     }
 
     titleKeyEvent = (e) => {
-            if(e.code === 'KeyF'){
-                //start eeeeverything
-                this.app.stateMachine.setState(GAME_STATES.SONG_SELECT)
-            }
+        if(e.code === 'KeyF'){
+            //start eeeeverything
+            this.app.stateMachine.setState(GAME_STATES.SONG_SELECT)
+            //play sfx
+            this.app.audioManager.playSfx("confirmSelection")
         }
+    }
 
     addKeyEvents = () => {
         window.addEventListener('keydown', this.titleKeyEvent)
@@ -85,22 +88,33 @@ class SongSelectState {
         this.app.songSelectScreen.initUi()
         this.container.visible = true
         this.addKeyEvents()
+        this.app.audioManager.playMenuMusic()
     }
 
     songSelectKeys = (e) => {
         //song selection up
         if(e.code === 'KeyW'){
             this.app.songSelectScreen.incrementSelection(1)
+            //play sound effect
+            this.app.audioManager.playSfx("changeSongSelection")
             console.log("rotate selection circle up")
         }
         //song selection down
         if(e.code === 'KeyS'){
             this.app.songSelectScreen.incrementSelection(-1)
+            //play sound effect
+            this.app.audioManager.playSfx("changeSongSelection")
             console.log("rotate selection circle down")
         }
         //select song
         if(e.code === 'Space'){
+            //reset and stop the menu music
+            this.app.audioManager.resetSong()
+            //play sfx
+            this.app.audioManager.playSfx("confirmSelection")
+            //this sets the song in audio manager
             this.app.songSelectScreen.handleSelect()
+            //change states...(song starts playing there)
             this.app.stateMachine.setState(GAME_STATES.PLAYING)
         }
     }
@@ -121,6 +135,7 @@ class SongSelectState {
         this.app.songSelectScreen.resetUi()
         this.container.visible = false
         this.removeKeyEvents()
+        
     }
 }
 
@@ -230,6 +245,9 @@ class ResultsState {
 
     pressFToContinueEvent = (e) => {
         if(e.code === 'KeyF'){
+            //play sfx
+            this.app.audioManager.playSfx("confirmSelection")
+            //change state
             this.app.stateMachine.setState(GAME_STATES.TITLE)
         }
     }
@@ -283,6 +301,9 @@ class GameOverState {
 
     pressFToContinueEvent = (e) => {
         if(e.code === 'KeyF'){
+            //play sfx
+            this.app.audioManager.playSfx("confirmSelection")
+            //change state
             this.app.stateMachine.setState(GAME_STATES.TITLE)
         }
     }

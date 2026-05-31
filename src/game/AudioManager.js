@@ -110,6 +110,17 @@ export default class AudioManager {
       this.currentSong.audio.currentTime = 0
   }
 
+  playMenuMusic = () => {
+    this.currentSong = this.loadedSounds.music.menuMusic1
+    this.playSong()
+  }
+
+  playSfx = (sfxKey) => {
+    const sfx = this.loadedSounds.sfx[sfxKey].audio
+    sfx.currentTime = 0
+    sfx.play()
+  }
+
   playClick = (isDownbeat = false, offset = 0) => {
     //audio context needs to be created here bc of that bullshit w the browser
     //needing to wait for user input before playing audio
