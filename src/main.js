@@ -14,6 +14,7 @@ import TitleScreen from './game/TitleScreen'
 import ScoreManager from './game/ScoreManager'
 import ResultsScreen from './game/ResultsScreen'
 import GameOverScreen from './game/GameOverScreen'
+import SongSelectScreen from './game/SongSelectScreen'
 
 // const testMap = {
 //   patternLengthBeats: 16,
@@ -62,9 +63,10 @@ const mainApplication = new Application()
 await mainApplication.initGaphicalAssets()
 
 const audioManager = new AudioManager(mainApplication, audioAssetManifest)
-await audioManager.loadAllSongs()
+await audioManager.loadAllSounds()
+
 //set a particular song as the currently selected song
-audioManager.selectSong('testSong3')
+// audioManager.selectSong('testSong3')
 // give application a reference to audioManager HERE
 mainApplication.audioManager = audioManager
 
@@ -76,10 +78,11 @@ const hitManager = new HitManager(mainApplication)
 const titleScreen = new TitleScreen(mainApplication)
 const resultsScreen = new ResultsScreen(mainApplication)
 const gameOverScreen = new GameOverScreen(mainApplication)
-
+const songSelectScreen = new SongSelectScreen(mainApplication, audioManager.loadedSounds.songs)
+const level = new Level(mainApplication, hitManager)
 //pull the selected song's note map from the selected song in audio manager
-const levelNoteMap = audioManager.currentSong.noteMap 
-const level = new Level(mainApplication, hitManager, levelNoteMap)
+// const levelNoteMap = audioManager.currentSong.noteMap 
+// const level = new Level(mainApplication, hitManager)
 
 hitManager.init(ui.hitEffectsContainer, level.worldHitFxContainer)
 
@@ -94,7 +97,7 @@ controller.init()
 const scoreManager = new ScoreManager(mainApplication)
 
 //this setup function just gives the main app all the rest of the modules it needs
-mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen, songSelectScreen)
 
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)

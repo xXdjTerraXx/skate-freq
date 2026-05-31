@@ -30,3 +30,32 @@ export const createTextNode = (options = {}) => {
     t.sync()
     return t
 }
+
+
+/**returns the ponts around a circle. used for generating the song select screen 
+@param {number} circleCenterX - the x of the center of the circle ya dingus!
+@param {number} circleCenterY - aaaand the y
+@param {number} circleRadius - and its radius
+@param {number} numberOfPoints - finally, the number of vertices 
+*/
+export const createCircleMath = (circleCenterX, circleCenterY, circleRadius, numberOfPoints, angleOffset) => {
+    //basically the distance between two vertices (distance around the circle)
+    const angleStep = Math.PI * 2 / numberOfPoints 
+    //this is what  will be returned
+    const arrayOfPoints = []
+    
+    for(let i = 0; i < numberOfPoints; i++){
+        
+        const angle = i * angleStep + angleOffset
+        const coordsObj = {x: null, y: null, z: null}
+        //get x and y for the points
+        // coordsObj.x = Math.cos(angle) * circleRadius + circleCenterX
+        // coordsObj.y = Math.sin(angle) * circleRadius + circleCenterY
+        coordsObj.x = Math.cos(angle) * circleRadius + circleCenterX
+        coordsObj.y = Math.sin(angle) * circleRadius + circleCenterY
+        coordsObj.z = Math.sin(angle) * circleRadius
+        arrayOfPoints.push(coordsObj)
+    }
+
+    return arrayOfPoints
+}

@@ -14,10 +14,10 @@ import TapNote from './TapNote'
 //   [tunnelsContainer]  [ringContainer]  [rampContainer]
 
 export default class Level{
-  constructor(app, hitManager, testLevelMap){
+  constructor(app, hitManager){
     this.app = app
     this.hitManager = hitManager
-    this.levelMap = testLevelMap
+    this.levelMap = null
     
     //bring in some constants from config
     this.levelSpeed = levelConfig.SPEED
@@ -135,7 +135,9 @@ export default class Level{
     this.mainLevelContainer.add(this.ringContainer)
   }
 
-  init = () => {
+  init = (noteMap) => {
+    //first set this levels map to selected song's note map in audio manager
+    this.levelMap = noteMap 
     //sets song-dependant variables like bpm, secondsPerBeat
     this.setSongState()
     //FOG EFFECT

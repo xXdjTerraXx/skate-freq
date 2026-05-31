@@ -4,7 +4,7 @@ export default class AudioManager {
     this.audioAssetManifest = audioAssetManifest
     this.audioContext = null
 
-    this.loadedSongs = {}
+    this.loadedSounds = {}
 
     this.isLoaded = false
     this.currentSong = null
@@ -13,8 +13,8 @@ export default class AudioManager {
   }
 
 
-  loadSong = (songKey, data) => {
-
+  loadSound = (songKey, data) => {
+ 
     return new Promise((resolve, reject) => {
       const audio = new Audio()
       audio.src = data.path
@@ -22,9 +22,8 @@ export default class AudioManager {
       //future me---know that canplaythrough is just an event that fires when
       //enough song has loaded so u can play it w/o stop for buffering
       audio.addEventListener('canplaythrough', () => {
-          this.loadedSongs[songKey] = {...data, audio: audio}
           console.log(`audio loaded: ${songKey}`)
-          resolve()
+          resolve({...data, audio: audio})
       })
 
       audio.addEventListener('error', (e) => {
@@ -38,43 +37,52 @@ export default class AudioManager {
 
   // loops through the manifest and loads all songs. uses promise.all bc it's quicker
   //for big wav files
-  loadAllSongs = async () => {
+  loadAllSounds = async () => {
       console.log('loading songs...')
-
+    for(let key in this.audioAssetManifest){
+      this.loadedSounds[key] = {}
       //okkiiii first make the songs object into a little 2d array [...[key, value], [key,value]...]
-      const songEntries = Object.entries(this.audioAssetManifest.songs)
-      console.log('DEBUGGGG, SONG ENTRIES: ', songEntries)
-      //then convert each entry of that array into promises (loadSong returns a promiseXD)
-      //and load them all at the same time.
-      await Promise.all(
-          songEntries.map(([songKey, data]) => this.loadSong(songKey, data))
+      const songEntries = Object.entries(this.audioAssetManifest[key])
+     
+      //map over that 2d array and call loadSound, which returns a promise
+      //then use Promise.all on that mapped array
+      const results = await Promise.all(
+          songEntries.map(([songKey, data]) => {
+            return this.loadSound(songKey, data)
+          })
       )
-
-      this.isLoaded = true
-      console.log('all songs loaded yaay! here they are:', this.loadedSongs)
+      console.log("FUUUUAAAAAAAARRRRRRRKK: ", results)
+      //then loop over the results array and put stuff in its respective dict/library/whatever
+      results.forEach((songData, i) => {
+        
+          this.loadedSounds[key][songEntries[i][0]] = songData
+      })
+    }
+    this.isLoaded = true
+    console.log('all songs loaded yaay! here they are:', this.loadedSounds)
   }
+
 
   selectSong = (songKey) => {
     //check that song exists first
-    if(!this.loadedSongs[songKey]){
+    if(!this.loadedSounds.songs[songKey]){
       console.warn(`song not found: ${songKey}`)
     }
-    this.currentSong = this.loadedSongs[songKey]
+    this.currentSong = this.loadedSounds.songs[songKey]
     console.log("WOO WOO WOOW OOO CURRENT OSNG: ", this.currentSong)
   }
 
   // sets the active song and plays it from the beginning
-  playSong = (songKey) => {
+  playSong = () => {
       if (!this.isLoaded) {
           console.warn('audio not loaded yet!')
           return
       }
-      if (!this.loadedSongs[songKey]) {
-          console.warn(`song not found: ${songKey}`)
+      if (!this.currentSong) {
+          console.warn(`no song selected!`)
           return
       }
 
-      // this.currentSong = this.loadedSongs[songKey]
       this.currentSong.audio.currentTime = 0
       this.currentSong.audio.play()
   }

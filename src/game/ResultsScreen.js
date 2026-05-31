@@ -152,7 +152,7 @@ export default class ResultsScreen{
         })
         this.scoreContainer.add(this.scoreLabel, this.scoreAmountText, this.finalScoreLabel, this.finalScoreAmountText)
 
-        // press F to continue prompt at the bottom
+        // press F to continue prompt 
         this.promptContainer = new THREE.Group()
         this.promptContainer.name = 'prompt_container'
         this.promptContainer.position.set(0, 0, 0)

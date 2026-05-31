@@ -59,7 +59,7 @@ class TitleState {
     titleKeyEvent = (e) => {
             if(e.code === 'KeyF'){
                 //start eeeeverything
-                this.app.stateMachine.setState(GAME_STATES.PLAYING)
+                this.app.stateMachine.setState(GAME_STATES.SONG_SELECT)
             }
         }
 
@@ -73,15 +73,55 @@ class TitleState {
 }
 
 class SongSelectState {
-    constructor(app) { this.app = app }
+    constructor(app) { 
+        this.app = app
+        this.container = new THREE.Group()
+        this.container.name = 'song select state container'
+        this.container.add(this.app.songSelectScreen.mainContainer)
+        this.container.visible = false
+        this.app.scene.add(this.container) }
     
     onEnter = () => {
-        console.log('entering SONG_SELECT state')
+        this.app.songSelectScreen.initUi()
+        this.container.visible = true
+        this.addKeyEvents()
     }
 
-    update = (deltaTime) => {}
+    songSelectKeys = (e) => {
+        //song selection up
+        if(e.code === 'KeyW'){
+            this.app.songSelectScreen.incrementSelection(1)
+            console.log("rotate selection circle up")
+        }
+        //song selection down
+        if(e.code === 'KeyS'){
+            this.app.songSelectScreen.incrementSelection(-1)
+            console.log("rotate selection circle down")
+        }
+        //select song
+        if(e.code === 'Space'){
+            this.app.songSelectScreen.handleSelect()
+            this.app.stateMachine.setState(GAME_STATES.PLAYING)
+        }
+    }
     
-    onExit = () => {}
+    addKeyEvents = () => {
+        window.addEventListener('keydown', this.songSelectKeys)
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('keydown', this.songSelectKeys)
+    }
+
+    update = (deltaTime) => {
+        this.app.songSelectScreen.update(deltaTime)
+    }
+    
+    onExit = () => {
+        this.app.songSelectScreen.resetUi()
+        this.container.visible = false
+        this.removeKeyEvents()
+    }
 }
 
 class CountdownState {
@@ -112,9 +152,11 @@ class PlayingState {
         //toggle visibility
         this.container.visible = true
         //set up level
-        this.app.level.init()
+        const noteMap = this.app.audioManager.currentSong.noteMap
+        console.log('DEBUGGING THE NOTEMAP NOTEMAP NOTEMAPD: ', noteMap)
+        this.app.level.init(noteMap)
         //play song
-        this.app.audioManager.playSong('testSong2')
+        this.app.audioManager.playSong()
     }
 
     update = (deltaTime) => {
@@ -209,6 +251,9 @@ class GameOverState {
         this.container.add(this.app.gameOverScreen.mainContainer)
         this.container.visible = false
         this.app.scene.add(this.container)
+
+        //used for pulsing effect of the continue prompt
+        this.elapsedTime = 0
      }
     
     onEnter = () => {
@@ -221,7 +266,11 @@ class GameOverState {
         this.app.gameOverScreen.init()
     }
 
-    update = (deltaTime) => {}
+    update = (deltaTime) => {
+        this.elapsedTime += deltaTime
+        const SPEED = 2
+        console.log(Math.sin(this.elapsedTime * SPEED))
+    }
     
     onExit = () => {
         this.container.visible = false
@@ -229,6 +278,7 @@ class GameOverState {
         this.app.scoreManager.resetAll()
         this.app.ui.resetScoreAndComboText()
         this.app.level.reset()
+        this.app.audioManager.resetSong()
     }
 
     pressFToContinueEvent = (e) => {

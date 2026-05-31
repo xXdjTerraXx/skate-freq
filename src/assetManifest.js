@@ -13,7 +13,7 @@ export const graphicsAssetManifest = {
 export const audioAssetManifest = {
     songs: {
         testSong: {
-            path: '/assets/audio/the-end-of-biters-prefuse-73.wav',
+            path: '/assets/audio/song_library/the_end_of_biters_prefuse_73.wav',
             bpm: 120,  
             title: 'The End of Biters',
             artist: 'Prefuse 73',
@@ -60,7 +60,7 @@ export const audioAssetManifest = {
             } 
         },
         testSong2: {
-            path: '/assets/audio/testSong2.wav',
+            path: '/assets/audio/song_library/test_song_2.wav',
             bpm: 100,  
             title: 'Test Song 2',
             artist: 'xXdjTerraXx',
@@ -107,7 +107,7 @@ export const audioAssetManifest = {
             }  
         },
         testSong3: {
-            path: '/assets/audio/testSong3.wav',
+            path: '/assets/audio/song_library/test_song_3.wav',
             bpm: 90,  
             title: 'Test Song 3',
             artist: 'xXdjTerraXx',
@@ -157,5 +157,21 @@ export const audioAssetManifest = {
                 }
             }  
         },
+    },
+
+    music: {
+        menuMusic1:{
+            path: '/assets/audio/ui/select_music.wav',
+        }
+    },
+
+    sfx:{
+        changeSongSelection:{
+            path: '/assets/audio/ui/sfx_change_song_selection.wav',
+        },
+        confirmSelection:{
+            path: '/assets/audio/ui/sfx_confirm_selection.wav',
+        }
     }
+
 }
