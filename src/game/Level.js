@@ -46,6 +46,9 @@ export default class Level{
     this.tapNotes = []
     this.ramps = []
 
+    //this property used for transition from countdown -> playing
+    this.isActivated = false
+
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
       levelConfig.TUNNEL_RADIUS,     // radius top
@@ -126,9 +129,10 @@ export default class Level{
     this.tunnelsContainer.add(this.tunnel1)
     this.tunnelsContainer.add(this.tunnel2)
 
-    //add everything to mainLevelContainer. on application start, mainLevelContainer
-    //gets added to Application.masterGameContainer which gets added to
-    //main scene
+    //add everything to mainLevelContainer. mainLevelContainer is actually
+    //not inside of a state's container like most other mainContainers. instead,
+    //it lives directly on app.scene, and the state wrappers for the
+    //playing state and the countdown state control its visibility
     this.mainLevelContainer.add(this.tunnelsContainer)
     this.mainLevelContainer.add(this.tapNotesContainer)
     this.mainLevelContainer.add(this.rampContainer)
@@ -157,7 +161,8 @@ export default class Level{
      
     //init tapNotes
     this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
-          const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat
+          const countdownOffset = 4 * this.secondsPerBeat
+          const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
           const tapNote = new TapNote(
             this.app, 
             this.hitlineZPosition,
@@ -186,11 +191,16 @@ export default class Level{
       ramp.init(this.rampContainer)
       this.ramps.push(ramp)
     })
-    
-
 
     //rotate whole level so lane 1 is at 6oclock
     this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
+  }
+
+  //this method fires from state wrapper when countdown substate changes to
+  //playing.
+  activate = () => {
+    console.log("DEBUG----------level activated!!!")
+    this.isActivated = true
   }
 
   setPlayer(player) {
@@ -306,6 +316,8 @@ export default class Level{
     //reset rotation
     this.rotation = 0
     this.rotationAccumulator = 0
+    //reset isActivated
+    this.isActivated = false
     //aaaand clean up the geometry
     // clear tap notes
     while (this.tapNotesContainer.children.length > 0) {
@@ -342,11 +354,6 @@ export default class Level{
     //UPDATE MUSIC/BEAT STUFF
     //increment time
     this.currentTime = this.app.audioManager.getCurrentTime()
-
-    // //check if song is over
-    // if(this.app.audioManager.isFinished()){
-    //   this.endLevel()
-    // }
     
     //store last beat value
     this.lastBeat = this.currentBeat
@@ -386,6 +393,14 @@ export default class Level{
         //     this.app.audioManager.playKeyPressClick()
         // }
     })
+   
+    //APPLY ROTATION
+    this.applyRotation(deltaTime)
+
+  }
+
+  updateNotes = (deltaTime) => {
+
 
     this.tapNotes.forEach(note => {
       //////////////////////////////////////////
@@ -403,7 +418,8 @@ export default class Level{
       note.update(deltaTime, this.currentTime)
       //check for notes the player has missed and have passed the hitLine
       if (!note.hit && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
-        this.app.hitManager.registerHit(note, -1000)
+        // note.hit = true
+        this.app.hitManager.registerHit(note, this.currentTime)
       }
       ////////////////////////////////////////////
     })
@@ -412,9 +428,5 @@ export default class Level{
     this.ramps.forEach(ramp => {
       ramp.update(deltaTime, this.currentTime)
     })
-
-    //APPLY ROTATION
-    this.applyRotation(deltaTime)
-
   }
 }

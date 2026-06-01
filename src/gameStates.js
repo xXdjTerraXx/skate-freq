@@ -154,32 +154,63 @@ class CountdownState {
 class PlayingState {
     constructor(app) { 
         this.app = app 
+
         this.container = new THREE.Group()
         this.container.name = 'playing state container'
-        this.container.add(this.app.level.mainLevelContainer)
-        this.container.add(this.app.ui.mainContainer)
         this.container.visible = false
+
+        this.countdownSubStateContainer = new THREE.Group()
+        this.countdownSubStateContainer.name = 'countdown sub state container'
+        this.countdownSubStateContainer.visible = true
+
+        this.playingSubStateContainer = new THREE.Group()
+        this.playingSubStateContainer.name = 'playing sub state container'
+        this.playingSubStateContainer.visible = true
+
+        this.playingSubStateContainer.add(this.app.level.mainLevelContainer, this.app.ui.mainContainer)
+        this.countdownSubStateContainer.add(this.app.countdownScreen.mainContainer)
+        this.container.add(this.countdownSubStateContainer, this.playingSubStateContainer)
+
         this.app.scene.add(this.container)
+
+        //PlayingState controls this substate that switches from the 
+        //countdown to the actual gameplay. ultimately determines
+        //what is happening during update
+        this.subState = 'COUNTDOWN' // or 'PLAYING'
     }
     
     onEnter = () => {
         console.log('entering PLAYING state')
-        //toggle visibility
-        this.container.visible = true
-        //set up level
-        const noteMap = this.app.audioManager.currentSong.noteMap
-        console.log('DEBUGGING THE NOTEMAP NOTEMAP NOTEMAPD: ', noteMap)
-        this.app.level.init(noteMap)
+
         //play song
         this.app.audioManager.playSong()
+
+        
+        //toggle visibility
+        this.container.visible = true
+
+        //set up level
+        const noteMap = this.app.audioManager.currentSong.noteMap
+
+        //init the level screen and the countdown screen
+        //countdown needs current song's bpm
+        const songBpm = this.app.audioManager.currentSong.bpm
+        this.app.countdownScreen.init(songBpm)
+        this.app.level.init(noteMap)
     }
 
-    update = (deltaTime) => {
+    //update method for PLAYING substate
+    playingUpdate = (deltaTime) => {
         this.app.controller.run(deltaTime)
         this.app.player.update(deltaTime)
         this.app.level.update(deltaTime)
-        this.app.hitManager.update(deltaTime)
-
+        //only shows notes, rings, and detect hits AFTER countdown
+        if(this.subState === 'PLAYING'){
+            this.app.hitManager.update(deltaTime)
+            
+        }
+        this.app.level.updateNotes(deltaTime)
+        
         // check if song ended
         if (this.app.audioManager.isFinished()) {
             this.app.stateMachine.setState(GAME_STATES.RESULTS)
@@ -189,10 +220,37 @@ class PlayingState {
             this.app.stateMachine.setState(GAME_STATES.GAME_OVER)
         }
     }
+
+    //aaand update method for COUNTDOWN substate
+    countdownUpdate = (deltaTime) => {
+        //check for countdown timer to be up to queue substate change
+        if (this.app.countdownScreen.isFinished) {
+            this.subState = 'PLAYING'
+            this.app.level.activate()
+            this.countdownSubStateContainer.visible = false
+            return
+        }
+        this.app.countdownScreen.update(deltaTime)
+    }
+
+    update = (deltaTime) =>{
+        if(this.subState === 'COUNTDOWN'){
+            this.countdownUpdate(deltaTime)
+            
+        }
+        //playing update plays no matter what, but 
+        this.playingUpdate(deltaTime)
+
+    }
     
     onExit = () => {
         console.log('exiting PLAYING state')
+        //hide main container
         this.container.visible = false
+        //buuut sub state container has to be set back to visible
+        this.countdownSubStateContainer.visible = true
+        //reset the sub state back to countdown so it always plays first
+        this.subState = 'COUNTDOWN'
     }
 }
 
@@ -241,6 +299,7 @@ class ResultsState {
         this.app.resultsScreen.resetResultsText()
         this.app.audioManager.resetSong()
         this.app.level.reset()
+        this.app.countdownScreen.reset()
     }
 
     pressFToContinueEvent = (e) => {
@@ -296,6 +355,7 @@ class GameOverState {
         this.app.scoreManager.resetAll()
         this.app.ui.resetScoreAndComboText()
         this.app.level.reset()
+        this.app.countdownScreen.reset()
         this.app.audioManager.resetSong()
     }
 

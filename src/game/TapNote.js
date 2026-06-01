@@ -61,6 +61,7 @@ export default class TapNote{
     killSelf = () => {
         if(this.geometry)this.geometry.dispose()
         if(this.material)this.material.dispose()
+        if(this.mesh)this.mesh.parent.remove(this.mesh)
     }
 
     update(deltaTime, currentTime) {

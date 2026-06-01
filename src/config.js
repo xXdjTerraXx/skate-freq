@@ -17,6 +17,7 @@ export const levelConfig = {
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
     PLAYER_STARTING_HEALTH: 30,
+    COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.008,
     //how much a miss good or perfect affect player health

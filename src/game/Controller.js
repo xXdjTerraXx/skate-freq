@@ -65,7 +65,7 @@ export default class Controller{
         this.player.setSubLane(index)
         //check for a tapNote hit inside of Level
         const { note, currentTime } = this.level.checkTapNoteHit(index)
-        this.hitManager.registerHit(note, currentTime)
+        if(this.app.level.isActivated)this.hitManager.registerHit(note, currentTime)
         //player pulse effect
         this.player.pulse()
     }
