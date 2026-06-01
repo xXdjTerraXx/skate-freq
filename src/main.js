@@ -16,6 +16,7 @@ import ResultsScreen from './game/ResultsScreen'
 import GameOverScreen from './game/GameOverScreen'
 import SongSelectScreen from './game/SongSelectScreen'
 import CountdownScreen from './game/CountdownScreen'
+import PauseScreen from './game/PauseScreen'
 
 // const testMap = {
 //   patternLengthBeats: 16,
@@ -81,6 +82,7 @@ const resultsScreen = new ResultsScreen(mainApplication)
 const gameOverScreen = new GameOverScreen(mainApplication)
 const songSelectScreen = new SongSelectScreen(mainApplication, audioManager.loadedSounds.songs)
 const countdownScreen = new CountdownScreen(mainApplication)
+const pauseScreen = new PauseScreen(mainApplication)
 
 //hit manager here because level needs it
 const hitManager = new HitManager(mainApplication)
@@ -102,7 +104,7 @@ controller.init()
 const scoreManager = new ScoreManager(mainApplication)
 
 //this setup function just gives the main app all the rest of the modules it needs
-mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen, pauseScreen)
 
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)

@@ -169,18 +169,50 @@ class PlayingState {
 
         this.playingSubStateContainer.add(this.app.level.mainLevelContainer, this.app.ui.mainContainer)
         this.countdownSubStateContainer.add(this.app.countdownScreen.mainContainer)
-        this.container.add(this.countdownSubStateContainer, this.playingSubStateContainer)
+        this.container.add(this.countdownSubStateContainer, this.playingSubStateContainer, this.app.pauseScreen.mainContainer)
 
         this.app.scene.add(this.container)
 
         //PlayingState controls this substate that switches from the 
         //countdown to the actual gameplay. ultimately determines
         //what is happening during update
-        this.subState = 'COUNTDOWN' // or 'PLAYING'
+        this.subState = 'COUNTDOWN' // or 'PLAYING' or 'PUASED'
+    }
+
+    pauseKeyEvent = (e) => {
+        if(e.code === 'KeyP' || e.code === 'Enter'){
+            if(this.subState === 'PLAYING'){
+                this.handlePause()
+            } else if(this.subState === 'PAUSED'){
+                this.handleUnpause()
+            }
+        }
+    }
+
+    handlePause = () => {
+        this.subState = 'PAUSED'
+        this.app.audioManager.pause()
+        this.app.pauseScreen.mainContainer.visible = true
+    }
+
+    handleUnpause = () => {
+        this.subState = 'PLAYING'
+        this.app.audioManager.resume()
+        this.app.pauseScreen.mainContainer.visible = false
+    }
+
+    addKeyEvents = () => {
+        window.addEventListener('keydown', this.pauseKeyEvent)
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('keydown', this.pauseKeyEvent)
     }
     
     onEnter = () => {
         console.log('entering PLAYING state')
+        //add key events
+        this.addKeyEvents()
 
         //play song
         this.app.audioManager.playSong()
@@ -210,7 +242,7 @@ class PlayingState {
             
         }
         this.app.level.updateNotes(deltaTime)
-        
+
         // check if song ended
         if (this.app.audioManager.isFinished()) {
             this.app.stateMachine.setState(GAME_STATES.RESULTS)
@@ -245,12 +277,16 @@ class PlayingState {
     
     onExit = () => {
         console.log('exiting PLAYING state')
+        //remove key events
+        this.removeKeyEvents()
         //hide main container
         this.container.visible = false
         //buuut sub state container has to be set back to visible
         this.countdownSubStateContainer.visible = true
         //reset the sub state back to countdown so it always plays first
         this.subState = 'COUNTDOWN'
+        //make sure pause screen visibility is reset to false
+        this.app.pauseScreen.mainContainer.visible = false
     }
 }
 

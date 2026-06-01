@@ -110,6 +110,14 @@ export default class AudioManager {
       this.currentSong.audio.currentTime = 0
   }
 
+  pause = () => {
+    this.currentSong.audio.pause()
+  }
+
+  resume = () => {
+    this.currentSong.audio.play()
+  }
+
   playMenuMusic = () => {
     this.currentSong = this.loadedSounds.music.menuMusic1
     this.playSong()
