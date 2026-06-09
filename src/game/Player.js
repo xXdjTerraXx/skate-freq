@@ -8,6 +8,7 @@ export default class Player {
     this.level = level
     this.initialZPosition = levelConfig.PLAYER_Z_VALUE
 
+
     this.mainPlayerContainer = new THREE.Group()
     this.mainPlayerContainer.name = 'player container'
 
@@ -23,6 +24,36 @@ export default class Player {
     })
     //MESH
     this.mesh = new THREE.Mesh(this.geometry, this.material)
+
+    ////CHARACTER SETUP
+    //later this value will come from character select ^-^
+    this.gltf = this.app.assetManager.getAsset('character', 'djTerra')
+    // the actual 3D model lives in gltf.scene
+    this.characterModel = this.gltf.scene
+    //scale and rotate
+    this.characterModel.rotation.x = -Math.PI / 2
+    this.characterModel.rotation.z = Math.PI / 2
+    this.characterModel.scale.set(.5, .5, .5)
+    // set up the animation mixer
+    this.mixer = new THREE.AnimationMixer(this.characterModel)
+    // store the animations by name so you can access them easily
+    this.animations = {}
+    this.gltf.animations.forEach((clip) => {
+      console.log('DEBUG DEBUGanimation clip name:', clip.name)
+        this.animations[clip.name] = this.mixer.clipAction(clip)
+    })
+    //set default current animation
+    this.currentAnimation = this.animations['idle']
+    // play idle by default
+    this.animations['idle'].play()
+    // attach the character model to the sphere
+    // so it follows all the spheres movement automatically
+    this.mesh.add(this.characterModel)
+
+    //~~~~~*****~~~~~~!!!  TO DOO   !!!~~~~~~******~~~~
+    //this light currently needed because of glb file setting or something asdfas
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2)
+    this.app.scene.add(ambientLight)
 
     // POSITIONING
     //measurement of one 'side'
@@ -84,7 +115,7 @@ export default class Player {
   }
 
   pulse = () => {
-    this.pulseAmount = 1.5  
+    this.pulseAmount = .4  
     this.isPulsing = true
   }
 
@@ -122,13 +153,23 @@ export default class Player {
   setSubLane = (index) => {
     this.subLane = index
     this.targetLaneOffset = this.subLaneOffsets[index]
+
+    console.log('setSubLane called with index:', index)
+    console.log('available animations:', Object.keys(this.animations))
+    console.log('pumpL exists:', !!this.animations['pump_L'])
+    console.log('pumpR exists:', !!this.animations['pump_R'])
+
+    if (index === 0) this.playAnimation('pump_L')
+    else if (index === 2) this.playAnimation('pump_R')
+    else this.playAnimation('pumpL') // center alternates, handle this next
   }
+
 
   updateMovement = (deltaTime) => {
     const lerpFactor = 1 - Math.pow(0.001, deltaTime)
     this.laneOffset += (this.targetLaneOffset - this.laneOffset) * lerpFactor
 
-    this.mesh.rotation.z = (this.targetLaneOffset - this.laneOffset) * 10
+    // this.mesh.rotation.z = (this.targetLaneOffset - this.laneOffset) * 10
   }
 
   updatePosition = () => {
@@ -147,12 +188,36 @@ export default class Player {
     this.playerRing.pulse(beatInBar)
   }
 
+  playAnimation = (name, crossfadeDuration = 0.1) => {
+    const next = this.animations[name]
+    if (!next || this.currentAnimation === next) return
+    
+    if (this.currentAnimation) {
+        this.currentAnimation.crossFadeTo(next, crossfadeDuration, true)
+    }
+    
+    next.reset().play()
+    this.currentAnimation = next
+
+    // only set return-to-idle timeout for pump animations
+    if (name !== 'idle') {
+        clearTimeout(this.pumpTimeout)
+        this.pumpTimeout = setTimeout(() => {
+            this.playAnimation('idle')
+        }, 500)
+    }
+}
+
   update = (deltaTime) => {
     this.updateJumpPhysics()
     // if(this.isMoving !== false){this.updateMovement(deltaTime)}
     this.updateMovement(deltaTime)
 
+    //animations
+    if (this.mixer) this.mixer.update(deltaTime)
+
     this.updatePosition()
+
     //update player ring
     this.playerRing.update()
 

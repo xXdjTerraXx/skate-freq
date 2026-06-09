@@ -1,5 +1,5 @@
 
-export const graphicsAssetManifest = {
+export const graphics2DAssetManifest = {
     hitEffects: {
         PERFECT: '/assets/img/ui_hits/perfect.png',
         GOOD: '/assets/img/ui_hits/good.png',
@@ -8,6 +8,13 @@ export const graphicsAssetManifest = {
     titleScreen:{
         titleScreen1: '/assets/img/title_screen/title_screen.png'
     }
+}
+
+export const graphics3DAssetManifest = {
+    character: {
+        djTerra: '/assets/models/characters/terra_model.glb'
+    },
+    environment: {}
 }
 
 export const audioAssetManifest = {

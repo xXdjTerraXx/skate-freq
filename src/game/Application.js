@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { levelConfig } from '../config'
 import AssetManager from './AssetManager'
-import { graphicsAssetManifest } from "../assetManifest"
+import { graphics2DAssetManifest, graphics3DAssetManifest } from "../assetManifest"
 import StateMachine from './StateMachine'
 import { GAME_STATES } from '../gameStates'
 
@@ -43,7 +43,7 @@ export default class Application{
   }
 
   initGaphicalAssets = async () => {
-    this.assetManager = new AssetManager(graphicsAssetManifest)
+    this.assetManager = new AssetManager(graphics2DAssetManifest, graphics3DAssetManifest)
     await this.assetManager.loadAllAssets()
   }
 
