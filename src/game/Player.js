@@ -42,8 +42,13 @@ export default class Player {
       console.log('DEBUG DEBUGanimation clip name:', clip.name)
         this.animations[clip.name] = this.mixer.clipAction(clip)
     })
+    //set idle so that it plays through and holds
+    this.animations['crouch'].setLoop(THREE.LoopOnce)
+    this.animations['crouch'].clampWhenFinished = true
     //set default current animation
     this.currentAnimation = this.animations['idle']
+    //set last animation same as current initially
+    this.lastAnimation = this.currentAnimation
     // play idle by default
     this.animations['idle'].play()
     // attach the character model to the sphere
@@ -69,7 +74,9 @@ export default class Player {
     this.gravity = levelConfig.WORLD_GRAVITY
     this.friction = levelConfig.WORLD_FRICTION
 
-    //stuff for jumping
+    //JUMP/CROUCH STUFF
+    //used to prevent multiple jump/crouch press
+    this.isCrouching = false
     this.isJumping = false
     //value of jump velocity when plyr hits actually jumps. never changes
     this.TARGET_JUMP_VELOCITY = .09
@@ -101,6 +108,7 @@ export default class Player {
     //baseScale is just the default scale - 1
     this.baseScale = 1
 
+
     //place player on inner wall of tunnel
     this.updatePosition()
   }
@@ -130,10 +138,13 @@ export default class Player {
   //8. ????
   //9. profit
   jump = () => {
+    //stop crouching
+    this.isCrouching = false
     if(!this.isJumping){
       this.isJumping = true
       this.jumpVelocity = this.TARGET_JUMP_VELOCITY
     }
+    this.playAnimation('crouch')
   }
 
   updateJumpPhysics = () => {
@@ -154,16 +165,19 @@ export default class Player {
     this.subLane = index
     this.targetLaneOffset = this.subLaneOffsets[index]
 
-    console.log('setSubLane called with index:', index)
-    console.log('available animations:', Object.keys(this.animations))
-    console.log('pumpL exists:', !!this.animations['pump_L'])
-    console.log('pumpR exists:', !!this.animations['pump_R'])
+    //play a pumping animation - left for left lane, right for right
+    // if (index === 0) this.playAnimation('pump_LL')
+    // else if (index === 2) this.playAnimation('pump_RR')
+    // // center alternates, handle this next
+    // else {
+    //   if(this.lastAnimation === this.animations['pump_RR']) this.playAnimation('pump_LL')
+    //   else this.playAnimation('pump_RR')
+    // } 
 
-    if (index === 0) this.playAnimation('pump_L')
-    else if (index === 2) this.playAnimation('pump_R')
-    else this.playAnimation('pumpL') // center alternates, handle this next
+    //TESTING THIS: play alternate pumping every key press
+    if(this.lastAnimation === this.animations['pump_RR']) this.playAnimation('pump_LL')
+      else this.playAnimation('pump_RR')
   }
-
 
   updateMovement = (deltaTime) => {
     const lerpFactor = 1 - Math.pow(0.001, deltaTime)
@@ -189,8 +203,11 @@ export default class Player {
   }
 
   playAnimation = (name, crossfadeDuration = 0.1) => {
+    //store upcoming animation
     const next = this.animations[name]
-    if (!next || this.currentAnimation === next) return
+    if (!next ) return
+    //and save the current one as the last one
+    this.lastAnimation = this.currentAnimation
     
     if (this.currentAnimation) {
         this.currentAnimation.crossFadeTo(next, crossfadeDuration, true)
@@ -200,13 +217,21 @@ export default class Player {
     this.currentAnimation = next
 
     // only set return-to-idle timeout for pump animations
-    if (name !== 'idle') {
-        clearTimeout(this.pumpTimeout)
-        this.pumpTimeout = setTimeout(() => {
-            this.playAnimation('idle')
-        }, 500)
-    }
+    // if (name !== 'idle') {
+    //     clearTimeout(this.pumpTimeout)
+    //     this.pumpTimeout = setTimeout(() => {
+    //         if(!this.isCrouching && !this.isJumping)this.playAnimation('idle')
+    //     }, 500)
+    // }
 }
+
+  handleCrouch = () => {
+    if(!this.isCrouching){
+      this.playAnimation('crouch')
+      this.isCrouching = true
+    }  
+  }
+
 
   update = (deltaTime) => {
     this.updateJumpPhysics()

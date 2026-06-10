@@ -8,7 +8,7 @@ export const levelConfig = {
     SUB_LANE_COUNT: 3,
     STARTING_LANE: 0,
     STARTING_SUB_LANE: 1,
-    SPEED: 5,
+    SPEED: 7,
     RING_COUNT: 12,
     RING_SPACING: 2,
     GATE_RING_BEAT_SUBDIVISION: 2,
@@ -19,7 +19,7 @@ export const levelConfig = {
     PLAYER_STARTING_HEALTH: 30000,
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
-    WORLD_GRAVITY: -.008,
+    WORLD_GRAVITY: -.007,
     //how much a miss good or perfect affect player health
     HIT_RATING_VALUES:{
         PERFECT: 3,

@@ -25,9 +25,9 @@ export default class Controller{
             if (e.code ===  this.rightArrow || e.code === this.eKey) {
                 this.rotateLeftPress()
             }
-            //jump
+            //crouch
             if(e.code === this.spacebar){
-                this.jump()
+                this.crouch()
             }
             //player subLane movement
             if(e.code === this.aKey){
@@ -40,16 +40,30 @@ export default class Controller{
                 this.playerSubLaneSwitch(2)
             }
         })
+
+        window.addEventListener('keyup', (e) => {
+             //jump
+            if(e.code === this.spacebar){
+                this.jump()
+            }
+        })
     }
 
     rotateLeftPress = () => {
         console.log("LEFT KEY PRESS")
         this.level.changeLane(1)
+        this.player.playAnimation('powerslide')
     }
 
     rotateRightPress = () => {
         console.log("RIGHT KEY PRESS")
         this.level.changeLane(-1)
+        this.player.playAnimation('powerslide')
+    }
+
+    crouch = () => {
+        console.log("CROUCH PRESS")
+        this.player.handleCrouch()
     }
 
     jump = () => {
