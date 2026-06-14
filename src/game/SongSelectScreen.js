@@ -139,11 +139,12 @@ class SongCard {
         this.FONT_SIZE = .1
 
         this.backgroundGeometry = new THREE.PlaneGeometry(1.8, 0.5)
-        this.backgroundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff})
+        this.backgroundMaterial = new THREE.MeshBasicMaterial({ color: levelConfig.UI_COLOR_PALETTE.black })
         this.backgroundMesh = new THREE.Mesh(this.backgroundGeometry, this.backgroundMaterial)
+        this.backgroundMesh.layers.set(1)
 
         this.borderGeometry = new THREE.EdgesGeometry(this.backgroundGeometry)
-        this.borderMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff })
+        this.borderMaterial = new THREE.LineBasicMaterial({ color: levelConfig.UI_COLOR_PALETTE.cyan })
         this.borderMesh = new THREE.LineSegments(this.borderGeometry, this.borderMaterial)
         this.borderMesh.position.z = 0.01
 

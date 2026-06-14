@@ -88,24 +88,16 @@ export default class FloorPanel{
         this.glassPanelGeometry = new THREE.PlaneGeometry(this.panelWidth, this.panelLengthGlass)
 
         //GLASS MATERIAL
-        // this.glassMaterial = new THREE.MeshStandardMaterial({
-        //     color: 0x88ffff,        // slight teal tint to match your aesthetic
-        //     transparent: true,       // MUST be true to enable transparency
-        //     opacity: 0.01,           // how see-through (0 = invisible, 1 = solid)
-        //     side: THREE.FrontSide,
-        //     depthWrite: false        // important! prevents glass from messing up rendering order
-        // })
-
         this.glassMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x88ffff,
-    transmission: 0.95,   // more transparent than OC panels
-    roughness: 0.35,      // very shiny/clear
-    metalness: 0.0,
-    thickness: 0.1,
-    transparent: true,
-    depthWrite: false,
-    side: THREE.FrontSide
-})
+            color: 0x88ffff,
+            transmission: 0.95,  
+            roughness: 0.35,      
+            metalness: 0.0,
+            thickness: 0.1,
+            transparent: true,
+            depthWrite: false,
+            side: THREE.FrontSide
+        })
 
         //GLASS MESH
         this.glassMesh = new THREE.Mesh(this.glassPanelGeometry, this.glassMaterial)
@@ -161,8 +153,8 @@ export default class FloorPanel{
                 map: colorMapTextureCLONE,
                 emissiveMap: emissiveMapTextureCLONE,
                 emissive: new THREE.Color(0xffffff),
-                emissiveIntensity: 0.5,
-                transmission: 0.99,
+                emissiveIntensity: 0.1,
+                transmission: 0.89,
                 roughness: 0.9,
                 metalness: 0.4,
                 thickness: 0.5,

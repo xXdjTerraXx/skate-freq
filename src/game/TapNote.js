@@ -54,6 +54,7 @@ export default class TapNote{
         const y = Math.sin(finalAngle) * radius
         this.mesh.rotation.z = finalAngle + Math.PI / 4
         this.mesh.position.set(x, y, this.z)
+
         //set color based on sublane
         this.mesh.material.color.setHSL(this.subLane/levelConfig.SUB_LANE_COUNT,1,0.5)
         tapNotesContainer.add(this.mesh)

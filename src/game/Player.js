@@ -8,7 +8,6 @@ export default class Player {
     this.level = level
     this.initialZPosition = levelConfig.PLAYER_Z_VALUE
 
-
     this.mainPlayerContainer = new THREE.Group()
     this.mainPlayerContainer.name = 'player container'
 
@@ -24,6 +23,7 @@ export default class Player {
     })
     //MESH
     this.mesh = new THREE.Mesh(this.geometry, this.material)
+
 
     ////CHARACTER SETUP
     //later this value will come from character select ^-^
@@ -54,10 +54,21 @@ export default class Player {
     // attach the character model to the sphere
     // so it follows all the spheres movement automatically
     this.mesh.add(this.characterModel)
+    //put mesh in layer 1 - NO BLOOM
+    this.mesh.layers.set(1)
+    //character model too. but this has to be done with this traverse method
+    this.characterModel.traverse(child => {
+        if(child.isMesh){
+            child.layers.set(1)
+        }
+    })
 
     //~~~~~*****~~~~~~!!!  TO DOO   !!!~~~~~~******~~~~
     //this light currently needed because of glb file setting or something asdfas
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 5)
+    //light has to be ENABLED on layer 1 to illuminate objects on that layer
+    //light now works on objects on layers 0 (by default) and 1
+    ambientLight.layers.set(1)
     this.app.scene.add(ambientLight)
 
     // POSITIONING

@@ -25,6 +25,9 @@ export default class GateRing {
 
     //mesh
     this.mesh = new THREE.Mesh(this.geometry, this.material)
+    //layer 1 is no bloom
+    // this.mesh.layers.set(1)
+
   }
 
   init() {

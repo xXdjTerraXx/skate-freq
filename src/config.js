@@ -61,5 +61,13 @@ export const levelConfig = {
         FLOOR_OVERCLOCK: 2,   // opaque circuit board panels
         WORLD_FX: 3,          // hit effects in world space
         UI: 4                 // HUD, score, combo text
+    },
+    GRAPHICS: {
+        BLOOM: {
+            STRENGTH: .5,
+            RADIUS: 0.4,
+            THRESHOLD: 0.3,
+        },
+        TONE_MAPPING_EXPOSURE: 1.0,
     }
 }

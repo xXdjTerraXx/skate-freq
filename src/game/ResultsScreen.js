@@ -69,52 +69,68 @@ export default class ResultsScreen{
             fontSize: .2, 
             color: levelConfig.UI_HIT_EFFECT_COLOR_DICT.PERFECT, 
             font: levelConfig.UI_FONTS_DICT.uiFont2,
-            x: 0, y: 0, z: 0
+            x: 0, y: 0, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.goodText = createTextNode({
             text: 'good:', 
             fontSize: .2, 
             color: levelConfig.UI_HIT_EFFECT_COLOR_DICT.GOOD, 
             font: levelConfig.UI_FONTS_DICT.uiFont2,
-            x: 0, y: this.LINE_HEIGHT, z: 0
+            x: 0, y: this.LINE_HEIGHT, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.missText = createTextNode({
             text: 'miss:', 
             fontSize: .2, 
             color: levelConfig.UI_HIT_EFFECT_COLOR_DICT.MISS, 
             font: levelConfig.UI_FONTS_DICT.uiFont2,
-            x: 0, y: this.LINE_HEIGHT*2, z: 0
+            x: 0, y: this.LINE_HEIGHT*2, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.maxComboText = createTextNode({
             text: 'max combo:', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.orange, 
-            x: 0, y: this.LINE_HEIGHT*3, z: 0
+            x: 0, y: this.LINE_HEIGHT*3, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         //text for the actual numbers of each hit type 
         this.perfectCountText = createTextNode({
             text: '', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.purple, 
-            x: 0, y: 0, z: 0
+            x: 0, y: 0, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.goodCountText = createTextNode({
             text: '', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.purple, 
-            x: 0, y: this.LINE_HEIGHT, z: 0
+            x: 0, y: this.LINE_HEIGHT, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.missCountText = createTextNode({
             text: '', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.purple, 
-            x: 0, y: this.LINE_HEIGHT*2, z: 0
+            x: 0, y: this.LINE_HEIGHT*2, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.maxComboAmountText = createTextNode({
             text: '', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.purple, 
-            x: 0, y: this.LINE_HEIGHT*3, z: 0
+            x: 0, y: this.LINE_HEIGHT*3, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
 
         this.hitCountsLeft.add(this.perfectText, this.goodText, this.missText, this.maxComboText)
@@ -130,25 +146,33 @@ export default class ResultsScreen{
             text: 'score:',
             fontSize: .2,
             color: levelConfig.UI_COLOR_PALETTE.orange,
-            x: this.SCREEN_LEFT, y: -(this.LINE_HEIGHT * 5), z: 0
+            x: this.SCREEN_LEFT, y: -(this.LINE_HEIGHT * 5), z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.scoreAmountText = createTextNode({
             text: '',
             fontSize: .2,
             color: levelConfig.UI_COLOR_PALETTE.purple,
-            x: this.SCREEN_RIGHT, y: -(this.LINE_HEIGHT * 5), z: 0
+            x: this.SCREEN_RIGHT, y: -(this.LINE_HEIGHT * 5), z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.finalScoreLabel = createTextNode({
             text: 'final score:',
             fontSize: .2,
             color: levelConfig.UI_COLOR_PALETTE.orange,
-            x: this.SCREEN_LEFT, y: -(this.LINE_HEIGHT * 6), z: 0
+            x: this.SCREEN_LEFT, y: -(this.LINE_HEIGHT * 6), z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.finalScoreAmountText = createTextNode({
             text: '',
             fontSize: .25,
             color: levelConfig.UI_COLOR_PALETTE.cyan,
-            x: this.SCREEN_RIGHT, y: -(this.LINE_HEIGHT * 6), z: 0
+            x: this.SCREEN_RIGHT, y: -(this.LINE_HEIGHT * 6), z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.scoreContainer.add(this.scoreLabel, this.scoreAmountText, this.finalScoreLabel, this.finalScoreAmountText)
 
@@ -161,7 +185,8 @@ export default class ResultsScreen{
             text: 'press F to continue',
             fontSize: .15,
             color: levelConfig.UI_COLOR_PALETTE.white,
-            x: 0, y: this.SCREEN_BOTTOM, z: 0
+            x: 0, y: this.SCREEN_BOTTOM, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI
         })
         this.promptText.anchorX = 'center'
         this.promptContainer.add(this.promptText)

@@ -29,6 +29,7 @@ export default class UiManager{
         this.scoreText.color = 0xffffff
         this.scoreText.position.set(0,0,0)
         this.scoreText.text = ''
+        this.scoreText.layers.set(1)
         this.scoreText.sync()
 
         this.comboText = new Text()  
@@ -38,6 +39,7 @@ export default class UiManager{
         this.comboText.color = 0xffffff  
         this.comboText.position.set(0.5,0,0) 
         this.comboText.text = ''
+        this.comboText.layers.set(1)
         this.comboText.sync()
         
         this.scoreContainer.add(this.scoreText, this.comboText)     
@@ -53,7 +55,8 @@ export default class UiManager{
             fontSize: 0.2, 
             color: 0xffffff, 
             x: 0, y: 0, z: 0,
-            renderOrder: levelConfig.RENDER_ORDER.UI
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
 
         this.healthContainer.add(this.currentHealthText)

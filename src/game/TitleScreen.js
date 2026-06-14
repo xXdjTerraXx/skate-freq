@@ -23,6 +23,7 @@ export default class TitleScreen{
         this.titleSprite.label = 'title_sprite'
         this.titleSprite.scale.set(4, 2, 1)
         this.titleSprite.position.set(0,0,0)
+        this.titleSprite.layers.set(1)
 
         this.titleContainer.add(this.titleSprite)
         this.mainContainer.add(this.titleContainer)

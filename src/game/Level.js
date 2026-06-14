@@ -65,7 +65,8 @@ export default class Level{
     this.material = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       wireframe: true,
-      side: THREE.BackSide // THIS puts you inside the tunnel
+      side: THREE.BackSide, // THIS puts you inside the tunnel
+
     })
 
     //MAIN LEVEL CONTAINER, EVERYTHING LEVEL RELATED GOES HERE
@@ -105,10 +106,14 @@ export default class Level{
     this.tunnel1 = new THREE.Mesh(this.geometry, this.material)
     //tunnels have to be rotated 90 deg on x so youre going THROUGH it
     this.tunnel1.rotation.x = Math.PI / 2
+    //put tunnel in layer 1 - NO BLOOM
+    this.tunnel1.layers.set(1)
 
     this.tunnel2 = new THREE.Mesh(this.geometry, this.material)
     this.tunnel2.rotation.x = Math.PI / 2
-    
+    //put tunnel in layer 1 - NO BLOOM
+    this.tunnel2.layers.set(1)
+  
     
     //EDGES
     this.edges = new THREE.EdgesGeometry(this.geometry)

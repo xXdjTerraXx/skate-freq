@@ -20,7 +20,8 @@ export default class PlayerRing {
       opacity: 0.3
     });
 
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh = new THREE.Mesh(this.geometry, this.material)
+    this.mesh.layers.set(1)
 
     this.mesh.rotation.z = Math.PI / levelConfig.LANE_COUNT
 
