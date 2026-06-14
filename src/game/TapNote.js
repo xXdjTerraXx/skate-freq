@@ -22,9 +22,13 @@ export default class TapNote{
         this.z = this.hitlineZPosition-(this.levelSpeed * currentTime)
 
         //SHAPE AND STUFF
-        this.geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1)
-        this.material = new THREE.MeshBasicMaterial({ 
-            color: 0xff00ff, transparent: true, opacity: 0.5 
+        this.geometry = new THREE.BoxGeometry(0.15, 0.15, 0.05)
+                this.material = new THREE.MeshStandardMaterial({
+            color: levelConfig.TAP_NOTE_COLORS[this.subLane],
+            emissive: new THREE.Color(levelConfig.TAP_NOTE_COLORS[this.subLane]),
+            emissiveIntensity: 1.5,
+            transparent: true,
+            opacity: 0.9,
         })
         this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.mesh.name = 'tap note'
@@ -56,7 +60,7 @@ export default class TapNote{
         this.mesh.position.set(x, y, this.z)
 
         //set color based on sublane
-        this.mesh.material.color.setHSL(this.subLane/levelConfig.SUB_LANE_COUNT,1,0.5)
+        // this.mesh.material.color.setHSL(this.subLane/levelConfig.SUB_LANE_COUNT,1,0.5)
         tapNotesContainer.add(this.mesh)
     }
 

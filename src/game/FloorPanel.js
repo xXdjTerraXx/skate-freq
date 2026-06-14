@@ -11,6 +11,7 @@ export default class FloorPanel{
         floorPanelsContainer, 
         colorMap, 
         emissiveMap, 
+        alphaMap,
         index, 
         overclockSectionsArray, 
         songLength, 
@@ -29,6 +30,7 @@ export default class FloorPanel{
         //the color and emissive maps for the overclock texture
         this.colorMapTexture = colorMap
         this.emissiveMapTexture = emissiveMap
+        this.alphaMapTexture = alphaMap
         //an array of objects, each object is data for an overclock section from level noteMap:   
         this.overclockSectionsArray = overclockSectionsArray
         //song length in seconds
@@ -147,15 +149,24 @@ export default class FloorPanel{
             emissiveMapTextureCLONE.wrapS = THREE.RepeatWrapping
             emissiveMapTextureCLONE.wrapT = THREE.RepeatWrapping
             emissiveMapTextureCLONE.repeat.set(1, textureRepeatCount) 
+
+            const alphaMapTextureCLONE = this.alphaMapTexture.clone()
+            alphaMapTextureCLONE.needsUpdate = true
+            alphaMapTextureCLONE.wrapS = THREE.RepeatWrapping
+            alphaMapTextureCLONE.wrapT = THREE.RepeatWrapping
+            alphaMapTextureCLONE.repeat.set(1, textureRepeatCount) 
             
             //INIT MATERIAL
             const overclockMaterial = new THREE.MeshPhysicalMaterial({
                 map: colorMapTextureCLONE,
                 emissiveMap: emissiveMapTextureCLONE,
                 emissive: new THREE.Color(0xffffff),
-                emissiveIntensity: 0.1,
-                transmission: 0.89,
-                roughness: 0.9,
+                alphaMap: alphaMapTextureCLONE,
+                transparent: true,        // ← MUST be true for alphaMap to work
+                depthWrite: false,        // ← prevents transparency sorting issues
+                emissiveIntensity: 0.8,
+                transmission: 0.2,
+                roughness: 0.5,
                 metalness: 0.4,
                 thickness: 0.5,
                 side: THREE.FrontSide

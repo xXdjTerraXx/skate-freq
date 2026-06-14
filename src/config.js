@@ -45,6 +45,11 @@ export const levelConfig = {
         red: '#FF2244',
         highlight: '#F0F0FF',
     },
+    TAP_NOTE_COLORS: {
+        0: '#FFD700',
+        1: '#00FF88',
+        2: '#FF2244'
+    },
     //timing windows for all note node - ramps, rails, tapNotes
     NOTE_TIMING: {
         GOOD: 0.3,

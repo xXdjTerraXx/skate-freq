@@ -167,6 +167,7 @@ export default class Level{
     //store the textures for floor panels from texture loader
     const floorPanelColorMapTexture = this.app.assetManager.loadedAssets.textures.circuitColor
     const floorPanelEmissiveMapTexture = this.app.assetManager.loadedAssets.textures.circuitEmissive
+    const floorPanelAlphaMap = this.app.assetManager.loadedAssets.textures.circuitAlphaMap
     const songLength = this.app.audioManager.getSongDuration()
     //make one panel per lane
     for(let i = 0; i < this.laneCount; i++){
@@ -181,6 +182,7 @@ export default class Level{
         this.floorPanelsContainer, 
         floorPanelColorMapTexture, 
         floorPanelEmissiveMapTexture, 
+        floorPanelAlphaMap,
         i,
         overclockSections,
         songLength,
