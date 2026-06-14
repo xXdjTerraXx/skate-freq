@@ -97,7 +97,11 @@ export default class AudioManager {
   getCurrentBpm = () => {
     if (!this.currentSong) return null
     return this.currentSong.bpm
-}
+  }
+
+  getSongDuration() {
+    return this.currentSong.audio.duration
+  }
 
   // check if the song has ended
   isFinished = () => {

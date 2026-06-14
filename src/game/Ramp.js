@@ -25,6 +25,8 @@ export default class Ramp {
     })
     material.opacity = .5
     this.mesh = new THREE.Mesh(geometry, material)
+    this.mesh.name = 'ramp'
+    this.mesh.renderOrder = levelConfig.RENDER_ORDER.WORLD_OPAQUE
 
     //this prevents players double hitting ramps
     //gets reset to false when ramp goes off screen

@@ -3,6 +3,7 @@ import { levelConfig } from '../config'
 import GateRing from './GateRing'
 import Ramp from './Ramp'
 import TapNote from './TapNote'
+import FloorPanel from './FloorPanel'
 
 //the whole scene tree for the game looks like this:
 //           [app scene]
@@ -45,6 +46,7 @@ export default class Level{
     this.gateRings = []
     this.tapNotes = []
     this.ramps = []
+    this.floorPanels = []
 
     //this property used for transition from countdown -> playing
     this.isActivated = false
@@ -72,6 +74,9 @@ export default class Level{
     //TUNNELS CONTAINER
     this.tunnelsContainer = new THREE.Group()
     this.tunnelsContainer.name = 'tunnels container'
+    //FLOOR PANELS CONTAINER
+    this.floorPanelsContainer = new THREE.Group()
+    this.floorPanelsContainer.name = 'floor panels container'
     //RING CONTAINER
     this.ringContainer = new THREE.Group()
     this.ringContainer.name = 'rings container'
@@ -134,6 +139,7 @@ export default class Level{
     //it lives directly on app.scene, and the state wrappers for the
     //playing state and the countdown state control its visibility
     this.mainLevelContainer.add(this.tunnelsContainer)
+    this.mainLevelContainer.add(this.floorPanelsContainer)
     this.mainLevelContainer.add(this.tapNotesContainer)
     this.mainLevelContainer.add(this.rampContainer)
     this.mainLevelContainer.add(this.ringContainer)
@@ -151,6 +157,39 @@ export default class Level{
     this.tunnel1.position.z = 0
     // position second tunnel exactly one length behind
     this.tunnel2.position.z = -levelConfig.TUNNEL_LENGTH 
+
+    //init floor panels
+    //store the textures for floor panels from texture loader
+    const floorPanelColorMapTexture = this.app.assetManager.loadedAssets.textures.circuitColor
+    const floorPanelEmissiveMapTexture = this.app.assetManager.loadedAssets.textures.circuitEmissive
+    const songLength = this.app.audioManager.getSongDuration()
+    //make one panel per lane
+    for(let i = 0; i < this.laneCount; i++){
+      //loop over the oc section of this levels notemap, find oc sections for this lane
+      const overclockSections = this.levelMap.overclockSections.filter((data, dataIndex) => {
+        return data.lane === i
+      })
+      const countdownOffset = 4 * this.secondsPerBeat
+      const panelBeginTimeInSeconds = countdownOffset
+      const newFloorPanel = new FloorPanel(
+        this.app, 
+        this.floorPanelsContainer, 
+        floorPanelColorMapTexture, 
+        floorPanelEmissiveMapTexture, 
+        i,
+        overclockSections,
+        songLength,
+        this.beatsPerBar,
+        this.secondsPerBeat,
+        this.levelSpeed,
+        this.currentTime,
+        panelBeginTimeInSeconds,
+        this.zRotationOffset
+      )
+      newFloorPanel.init()
+      //save in array for later
+      this.floorPanels.push(newFloorPanel)
+    }
 
     //init gate rings
     for(let i = 0; i < this.ringCount; i++){
@@ -223,6 +262,7 @@ export default class Level{
     
       // apply rotation to everything
       this.tunnelsContainer.rotation.z = this.rotation + this.zRotationOffset
+      this.floorPanelsContainer.rotation.z = this.rotation + this.zRotationOffset
       this.tapNotesContainer.rotation.z = this.rotation + this.zRotationOffset
       this.rampContainer.rotation.z = this.rotation + this.zRotationOffset
       this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
@@ -308,6 +348,7 @@ export default class Level{
     this.gateRings = []
     this.tapNotes = []
     this.ramps = []
+    this.floorPanels = []
     //reset time stuff
     this.currentTime = 0.00
     this.lastBeat = 3
@@ -339,6 +380,13 @@ export default class Level{
         child.geometry.dispose()
         child.material.dispose()
         this.ringContainer.remove(child)
+    }
+    // clear floor panels
+    while (this.floorPanelsContainer.children.length > 0) {
+        const child = this.floorPanelsContainer.children[0]
+        child.geometry.dispose()
+        child.material.dispose()
+        this.floorPanelsContainer.remove(child)
     }
   }
 
@@ -400,6 +448,10 @@ export default class Level{
   }
 
   updateNotes = (deltaTime) => {
+
+    this.floorPanels.forEach(panel => {
+      panel.update(deltaTime, this.currentTime)
+    })
 
 
     this.tapNotes.forEach(note => {

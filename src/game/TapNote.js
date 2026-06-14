@@ -28,6 +28,7 @@ export default class TapNote{
         })
         this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.mesh.name = 'tap note'
+        this.mesh.renderOrder = levelConfig.RENDER_ORDER.WORLD_OPAQUE
 
         //sub lane positioning stuff here
         //measurementOfOneSide is the angle size of one side of the level

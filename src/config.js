@@ -54,5 +54,12 @@ export const levelConfig = {
         PERFECT: 100,
         GOOD: 50,
         MISS: 0
+    },
+    RENDER_ORDER: {
+        WORLD_OPAQUE: 0,      // tunnel, notes, ramps, rings
+        FLOOR_GLASS: 1,       // transparent glass panels
+        FLOOR_OVERCLOCK: 2,   // opaque circuit board panels
+        WORLD_FX: 3,          // hit effects in world space
+        UI: 4                 // HUD, score, combo text
     }
 }

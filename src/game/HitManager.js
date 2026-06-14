@@ -137,6 +137,7 @@ class UiHitEffect extends HitEffect{
         this.mesh = new THREE.Sprite(this.material)
         this.mesh.name = 'ui hit effect'
         this.mesh.scale.set(this.currentScale)
+        this.mesh.renderOrder = levelConfig.RENDER_ORDER.UI
         container.add(this.mesh)
     }
 

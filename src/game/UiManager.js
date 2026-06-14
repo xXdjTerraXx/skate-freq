@@ -52,7 +52,9 @@ export default class UiManager{
             text: `${levelConfig.PLAYER_STARTING_HEALTH} / ${levelConfig.PLAYER_STARTING_HEALTH}`, 
             fontSize: 0.2, 
             color: 0xffffff, 
-            x: 0, y: 0, z: 0})
+            x: 0, y: 0, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI
+        })
 
         this.healthContainer.add(this.currentHealthText)
     }

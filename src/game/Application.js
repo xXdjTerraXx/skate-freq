@@ -4,6 +4,9 @@ import AssetManager from './AssetManager'
 import { graphics2DAssetManifest, graphics3DAssetManifest } from "../assetManifest"
 import StateMachine from './StateMachine'
 import { GAME_STATES } from '../gameStates'
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 
 export default class Application{
   constructor(){
@@ -29,6 +32,20 @@ export default class Application{
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(this.renderer.domElement)
+    // COMPOSER setup
+    this.composer = new EffectComposer(this.renderer)
+    this.composer.setSize(window.innerWidth, window.innerHeight)
+
+    const renderPass = new RenderPass(this.scene, this.camera)
+    this.composer.addPass(renderPass)
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.8,  // strength
+      0.4,  // radius
+      0.88  // threshold
+    )
+    this.composer.addPass(bloomPass)
     
     //add a clock
     this.clock = new THREE.Clock()
@@ -65,6 +82,10 @@ export default class Application{
   start = () => {
     console.log("kicking it all off...")
     this.stateMachine.setState(levelConfig.INITIAL_GAME_STATE)
+    //DEBUG AXES HELPER
+    // const axesHelper = new THREE.AxesHelper(5)
+    // this.scene.add(axesHelper)
+    /////////
     this.masterUpdate()
   }
 
@@ -77,6 +98,8 @@ export default class Application{
     this.stateMachine.update(deltaTime)
 
     //RENDER
-    this.renderer.render(this.scene, this.camera)
+    // this.renderer.render(this.scene, this.camera)
+    //use composter isntead of renderer for post fx
+    this.composer.render()
   }
 }
