@@ -217,7 +217,9 @@ export default class Level{
             this.currentTime, 
             tapNoteInLevelMap.lane, 
             tapNoteInLevelMap.subLane, 
+            tapNoteInLevelMap.beat,
             timeInSeconds,
+            
           ) 
           tapNote.init(this.tapNotesContainer)
           this.tapNotes.push(tapNote)
@@ -245,8 +247,11 @@ export default class Level{
   //this method fires from state wrapper when countdown substate changes to
   //playing.
   activate = () => {
-    console.log("DEBUG----------level activated!!!")
     this.isActivated = true
+    // this is sort of an offset for the countdown. used to keep every system's beat 1
+    // synced
+    this.songStartBeat = this.currentBeat
+    console.log("LEVEL ACTIVATED, songStartBeat: ", this.songStartBeat)
   }
 
   setPlayer(player) {
@@ -290,10 +295,10 @@ export default class Level{
         if (timeUntilHit > 0.5) return acc
         if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
         if (absTime < acc.timeDiff) {
-          return { note: note, timeDiff: absTime, currentTime: this.currentTime }
+          return { tapNote: note, timeDiff: absTime, currentTime: this.currentTime }
         }
         return acc
-      }, { note: null, timeDiff: Infinity, currentTime: null }
+      }, { tapNote: null, timeDiff: Infinity, currentTime: null }
     )
 
     return closestTapNoteInTime
@@ -418,7 +423,6 @@ export default class Level{
 
     //check fo ra new beat
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
-      // console.log(this.currentBar, Math.floor(this.currentBeat)%this.beatsPerBar)
       this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
       this.app.audioManager.playClick()
     }

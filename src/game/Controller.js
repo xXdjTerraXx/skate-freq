@@ -73,13 +73,17 @@ export default class Controller{
     }
 
     playerSubLaneSwitch = (index) => {
+        // console.log('111 subState:', this.app.stateMachine.statesDict.PLAYING.subState)
+        // console.log('222 note:', this.level.checkTapNoteHit(index).note)
+        // console.log('333 currentTime:', this.level.currentTime)
+        // console.log('444 first note time:', this.level.tapNotes[0].time)
         //DEBUG play key press click
         this.app.audioManager.playKeyPressClick()
         //move the player to the correct sub lane
         this.player.setSubLane(index)
         //check for a tapNote hit inside of Level
-        const { note, currentTime } = this.level.checkTapNoteHit(index)
-        if(this.app.level.isActivated)this.hitManager.registerHit(note, currentTime)
+        const { tapNote, currentTime } = this.level.checkTapNoteHit(index)
+        if(this.app.level.isActivated) this.hitManager.registerHit(tapNote, currentTime)
         //player pulse effect
         this.player.pulse()
     }

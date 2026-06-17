@@ -91,8 +91,8 @@ export default class FloorPanel{
 
         //GLASS MATERIAL
         this.glassMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0x88ffff,
-            transmission: 0.95,  
+            color: 0xffffff,
+            transmission: 0.9,  
             roughness: 0.35,      
             metalness: 0.0,
             thickness: 0.1,
@@ -177,7 +177,7 @@ export default class FloorPanel{
             overclockMesh.name = `floor panel lane ${this.lane} OVERCLOCK`
             overclockMesh.renderOrder = levelConfig.RENDER_ORDER.FLOOR_OVERCLOCK
 
-            const startOffset = dataObj.startBeat * this.secondsPerBeat * this.levelSpeed
+            const startOffset = (dataObj.startBeat - 1) * this.secondsPerBeat * this.levelSpeed
             geometry.translate(0, -(panelLengthWorldUnits / 2) - startOffset, 0)
             //TO DO: POSITION THE MESH 
             overclockMesh.position.set(0, 0, 0)

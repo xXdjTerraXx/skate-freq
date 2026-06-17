@@ -31,7 +31,9 @@ export default class ResultsScreen{
             text: 'results://', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.purple, 
-            x: 0, y: 0, z: 0
+            x: 0, y: 0, z: 0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.titleContainer.add(this.titleText)
         this.titleContainer.position.set(this.SCREEN_LEFT, this.SCREEN_TOP)
@@ -46,7 +48,9 @@ export default class ResultsScreen{
             text: ``, 
             fontSize: .2, 
             color: levelConfig.UI_HIT_EFFECT_COLOR_DICT.PERFECT, 
-            x: this.SCREEN_CENTER_Y, y: this.SCREEN_TOP-this.LINE_HEIGHT,z:0
+            x: this.SCREEN_CENTER_Y, y: this.SCREEN_TOP-this.LINE_HEIGHT,z:0,
+            renderOrder: levelConfig.RENDER_ORDER.UI,
+            layers: 1
         })
         this.songTitleText.anchorX = 'center'
         this.levelDetailsContainer.add(this.songTitleText)

@@ -31,7 +31,6 @@ export default class CountdownScreen{
         this.bpm = songBpm
         this.secondsPerBeat = 60 / this.bpm
         this.elapsedTime = this.secondsPerBeat
-        console.log("HEYEAYERYEW BPMBPMBPMB", this.bpm)
 
         //populate the countdown array
         for(let i = this.countdownLength; i > 0; i--){
@@ -59,21 +58,25 @@ export default class CountdownScreen{
     update = (deltaTime) => {
 
         this.elapsedTime += deltaTime
-        const currentBeat = Math.floor(this.elapsedTime / this.secondsPerBeat)
-        if(currentBeat > 0 && currentBeat < 5){
 
+        const currentBeat = Math.floor(this.elapsedTime / this.secondsPerBeat)
+        // const currentBeat = this.app.level.currentBeat
+
+        // if(currentBeat > 0 && currentBeat < 5){
+        if(currentBeat >= 0 && currentBeat <= 4){
             if(currentBeat !== this.lastNumber){
                 this.lastNumber = currentBeat
                 console.log("COUNTDOWN: ", currentBeat)
+                console.log("LEVEL CURRENT BEAT: ", this.app.level.currentBeat)
                 //increment the index
                 if(this.countdownTimerIndex <= this.countdownLength)this.countdownTimerIndex++
                 this.app.audioManager.playClick()
-            }
-            
+            }    
         } else{
             //end it on the fourth countdown number
             this.isFinished = true
             console.log("COUNTDOWN TIME UP")
+            console.log("HEEEY KID IM A COMPUTER!!!: ", this.app.level.currentBeat)
             return
         }
         
@@ -123,7 +126,6 @@ class CountdownNumber{
             return
         }
         else{
-            console.log('A BIG STUPID DODOO HEAD')
             this.isFinished = true
             this.numberText.visible = false
         }

@@ -139,7 +139,17 @@ class SongCard {
         this.FONT_SIZE = .1
 
         this.backgroundGeometry = new THREE.PlaneGeometry(1.8, 0.5)
-        this.backgroundMaterial = new THREE.MeshBasicMaterial({ color: levelConfig.UI_COLOR_PALETTE.black })
+        // this.backgroundMaterial = new THREE.MeshBasicMaterial({ color: levelConfig.UI_COLOR_PALETTE.black })
+        this.backgroundMaterial = new THREE.MeshPhysicalMaterial({
+                    color: 0xffffff,
+                    transmission: 0.85,  
+                    roughness: 0.15,      
+                    metalness: 0.0,
+                    thickness: 0.1,
+                    transparent: true,
+                    depthWrite: false,
+                    side: THREE.FrontSide
+                })
         this.backgroundMesh = new THREE.Mesh(this.backgroundGeometry, this.backgroundMaterial)
         this.backgroundMesh.layers.set(1)
 
@@ -147,9 +157,10 @@ class SongCard {
         this.borderMaterial = new THREE.LineBasicMaterial({ color: levelConfig.UI_COLOR_PALETTE.cyan })
         this.borderMesh = new THREE.LineSegments(this.borderGeometry, this.borderMaterial)
         this.borderMesh.position.z = 0.01
+        this.borderMesh.layers.set(1)
 
-        this.titleText = createTextNode({text: `${this.songTitle}`, fontSize: this.FONT_SIZE, color: 0xffffff, x: 0, y: -.1, z: 0})
-        this.artistText = createTextNode({text: `${this.songArtist}`, fontSize: this.FONT_SIZE, color: 0xffffff, x: 0, y: 0, z: 0})
+        this.titleText = createTextNode({text: `${this.songTitle}`, fontSize: this.FONT_SIZE, color: 0xffffff, x: 0, y: -.1, z: 0, layers: 1})
+        this.artistText = createTextNode({text: `${this.songArtist}`, fontSize: this.FONT_SIZE, color: 0xffffff, x: 0, y: 0, z: 0, layers: 1})
 
         this.geometryGroup.add(this.backgroundMesh, this.borderMesh)
         this.textGroup.add(this.titleText, this.artistText)

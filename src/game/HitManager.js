@@ -26,7 +26,11 @@ export default class HitManager{
             this.app.scoreManager.updateScore(hitScore)
             this.app.scoreManager.updateHealth(hitScore)
             //spawn hit effect text
-            this.spawnHitEffect("MISS", "ui")
+            this.spawnHitEffect(hitScore, "ui")
+            //break surge panel if player is on one
+            if(this.app.surgeManager.surging){
+                this.app.surgeManager.handleNotHit(hitScore, tapNote.beat)
+            }
             return
         }
 
@@ -44,17 +48,20 @@ export default class HitManager{
         } else {
             hitScore = 'MISS'
         }
+        //if player is surging, handle a surge section note
+        if(this.app.surgeManager.surging === true){
+            this.app.surgeManager.handleNotHit(hitScore, tapNote.beat)
+        }
         //spawn a hit effect
         this.spawnHitEffect(hitScore, "ui")
         //update player score and health in the score manager
         this.app.scoreManager.updateScore(hitScore)
         this.app.scoreManager.updateHealth(hitScore)
+        
         tapNote.hit = true
         tapNote.mesh.visible = false
         tapNote.killSelf()
     }
-
-
 
     //hit rating is 'PERFECT', 'GOOD', or 'MISS'
     spawnHitEffect = (hitRating, type = 'world') => {
@@ -69,6 +76,11 @@ export default class HitManager{
         }
     }
 
+    //called from surge manager every frame player is on a surge panel
+    setSurge = (isOnSurgePanel) => {
+        this.playerIsOnSurgePanel= isOnSurgePanel
+    }
+
     update = (deltaTime) => {
         if(this.activeHits.length > 0){
             // 1) update everything
@@ -76,7 +88,6 @@ export default class HitManager{
             // 2) remove dead ones
             this.activeHits = this.activeHits.filter(hit => !hit.isDead)
         }
-        
     }
 }
 

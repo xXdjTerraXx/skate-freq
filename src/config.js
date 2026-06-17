@@ -16,7 +16,8 @@ export const levelConfig = {
     PLAYER_Z_VALUE: .2,
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
-    PLAYER_STARTING_HEALTH: 30000,
+    PLAYER_STARTING_HEALTH: 300,
+    SURGE_LIMIT: 4,  //how much surge u need to overclock
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,

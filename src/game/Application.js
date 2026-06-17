@@ -128,7 +128,7 @@ this.shaderPass.needsSwap = true
     await this.assetManager.loadAllAssets()
   }
 
-   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen, pauseScreen) => {
+   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen, pauseScreen) => {
     this.level = level
     this.player = player
     this.controller = controller
@@ -136,6 +136,7 @@ this.shaderPass.needsSwap = true
     this.ui = ui
     this.titleScreen = titleScreen
     this.scoreManager = scoreManager
+    this.surgeManager = surgeManager
     this.resultsScreen = resultsScreen
     this.gameOverScreen = gameOverScreen
     this.songSelectScreen = songSelectScreen

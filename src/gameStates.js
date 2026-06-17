@@ -49,7 +49,7 @@ class TitleState {
     }
 
     update = (deltaTime) => {
-        
+        this.app.titleScreen.update(deltaTime)
     }
     
     onExit = () => {
@@ -176,7 +176,7 @@ class PlayingState {
         //PlayingState controls this substate that switches from the 
         //countdown to the actual gameplay. ultimately determines
         //what is happening during update
-        this.subState = 'COUNTDOWN' // or 'PLAYING' or 'PUASED'
+        this.subState = 'COUNTDOWN' // or 'PLAYING' or 'PAUSED'
     }
 
     pauseKeyEvent = (e) => {
@@ -229,6 +229,7 @@ class PlayingState {
         const songBpm = this.app.audioManager.currentSong.bpm
         this.app.countdownScreen.init(songBpm)
         this.app.level.init(noteMap)
+        this.app.surgeManager.init(noteMap)
     }
 
     //update method for PLAYING substate
@@ -238,8 +239,8 @@ class PlayingState {
         this.app.level.update(deltaTime)
         //only shows notes, rings, and detect hits AFTER countdown
         if(this.subState === 'PLAYING'){
+            this.app.surgeManager.update(deltaTime)
             this.app.hitManager.update(deltaTime)
-            
         }
         this.app.level.updateNotes(deltaTime)
 
@@ -364,9 +365,6 @@ class GameOverState {
         this.container.add(this.app.gameOverScreen.mainContainer)
         this.container.visible = false
         this.app.scene.add(this.container)
-
-        //used for pulsing effect of the continue prompt
-        this.elapsedTime = 0
      }
     
     onEnter = () => {
@@ -380,9 +378,7 @@ class GameOverState {
     }
 
     update = (deltaTime) => {
-        this.elapsedTime += deltaTime
-        const SPEED = 2
-        console.log(Math.sin(this.elapsedTime * SPEED))
+        this.app.gameOverScreen.update(deltaTime)
     }
     
     onExit = () => {

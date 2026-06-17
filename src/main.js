@@ -17,6 +17,7 @@ import GameOverScreen from './game/GameOverScreen'
 import SongSelectScreen from './game/SongSelectScreen'
 import CountdownScreen from './game/CountdownScreen'
 import PauseScreen from './game/PauseScreen'
+import SurgeManager from './game/SurgeManager'
 
 // const testMap = {
 //   patternLengthBeats: 16,
@@ -83,10 +84,12 @@ const gameOverScreen = new GameOverScreen(mainApplication)
 const songSelectScreen = new SongSelectScreen(mainApplication, audioManager.loadedSounds.songs)
 const countdownScreen = new CountdownScreen(mainApplication)
 const pauseScreen = new PauseScreen(mainApplication)
-
 //hit manager here because level needs it
 const hitManager = new HitManager(mainApplication)
 const level = new Level(mainApplication, hitManager)
+const scoreManager = new ScoreManager(mainApplication)
+const surgeManager = new SurgeManager(mainApplication, scoreManager, level, hitManager)
+
 //then init the hit manager
 hitManager.init(ui.hitEffectsContainer, level.worldHitFxContainer)
 
@@ -101,10 +104,8 @@ level.setPlayer(player)
 const controller = new Controller(mainApplication, level, player, hitManager)
 controller.init()
 
-const scoreManager = new ScoreManager(mainApplication)
-
 //this setup function just gives the main app all the rest of the modules it needs
-mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen, pauseScreen)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen, pauseScreen)
 
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)

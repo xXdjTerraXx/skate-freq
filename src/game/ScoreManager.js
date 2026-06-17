@@ -13,6 +13,8 @@ export default class ScoreManager{
             MISS: 0
         }
         this.health = levelConfig.PLAYER_STARTING_HEALTH
+        this.surge = 0 // 0 - 4
+        this.overclock = false
     }
 
     updateScore =  (hitScore) => {
@@ -49,6 +51,19 @@ export default class ScoreManager{
         this.app.ui.updateHealth(this.health)
     }
 
+    updateSurge = (currentSurgePanel, noteBeat) => {
+        //check if last note in surge sequence
+        if(currentSurgePanel.endBeat === noteBeat){
+            console.log("SURGE INCREASED!! SURGE VALUE IS AT ", this.surge)
+            this.surge++
+            //check if surge is full 
+            if(this.surge === levelConfig.SURGE_LIMIT){
+                this.overclock = true
+                console.log("OVERCLOCK COMMENCING!!!!")
+            }
+        }
+    }
+
     resetAll = () => {
         this.currentScore = 0
         this.currentCombo = 0
@@ -57,6 +72,8 @@ export default class ScoreManager{
         this.hitCounts.GOOD = 0
         this.hitCounts.MISS = 0
         this.health = levelConfig.PLAYER_STARTING_HEALTH
+        this.surge = 0 
+        this.overclock = false
     }
 
     //returns finals score (score WITH bonus multiplier)

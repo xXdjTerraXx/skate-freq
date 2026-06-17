@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 
 export default class TapNote{
-    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, time){
+    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, beat, time){
         this.app = app 
         this.hitlineZPosition = hitlineZPosition
         this.levelSpeed = levelSpeed
@@ -12,6 +12,8 @@ export default class TapNote{
         this.lane = lane 
         //which sublane of the lane this note exists in: 0, 1, or 2
         this.subLane = subLane
+        //the beat this note should reach the player 
+        this.beat = beat
         //the time in seconds this note should reach the player
         this.time = time 
 
