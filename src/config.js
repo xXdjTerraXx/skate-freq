@@ -17,7 +17,7 @@ export const levelConfig = {
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
     PLAYER_STARTING_HEALTH: 300,
-    SURGE_LIMIT: 4,  //how much surge u need to overclock
+    SURGE_LIMIT: 1,  //how much surge u need to overclock
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
@@ -61,6 +61,28 @@ export const levelConfig = {
         GOOD: 50,
         MISS: 0
     },
+    OVERCLOCK_VISUALS_SETTINGS:{
+        WhooshEmitter: {
+            //amount of emitters to spawn at the beginning of level to save resources
+            amount: 14,
+            //the speed the emitter travels down the lane
+            speed: 10,
+            particleColor: 0x00ffff,
+            particleSize: 0.12 ,
+            particleSpeed: 3,
+            numberOfParticles: 500,
+            lifetime: 1.5,
+            lifetimeVariation: 1,
+            velocity: .05,
+            velocityVariation: 1
+        }
+    },
+
+
+
+
+
+
     RENDER_ORDER: {
         WORLD_OPAQUE: 0,      // tunnel, notes, ramps, rings
         FLOOR_GLASS: 1,       // transparent glass panels

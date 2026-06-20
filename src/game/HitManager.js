@@ -29,7 +29,7 @@ export default class HitManager{
             this.spawnHitEffect(hitScore, "ui")
             //break surge panel if player is on one
             if(this.app.surgeManager.surging){
-                this.app.surgeManager.handleNotHit(hitScore, tapNote.beat)
+                this.app.surgeManager.handleNoteHit(hitScore, tapNote.beat)
             }
             return
         }
@@ -50,7 +50,7 @@ export default class HitManager{
         }
         //if player is surging, handle a surge section note
         if(this.app.surgeManager.surging === true){
-            this.app.surgeManager.handleNotHit(hitScore, tapNote.beat)
+            this.app.surgeManager.handleNoteHit(hitScore, tapNote.beat)
         }
         //spawn a hit effect
         this.spawnHitEffect(hitScore, "ui")

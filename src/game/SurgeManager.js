@@ -1,4 +1,5 @@
 import { levelConfig } from "../config"
+import WhooshEmitter from "./WhooshEmitter"
 
 export default class SurgeManager{
     constructor(app, scoreManager, level, surgeObj){
@@ -13,7 +14,9 @@ export default class SurgeManager{
         //whether or not player has achieved "overclock" (full surge meter)
         this.playerIsOverclocked = false
         //which surge object from the level's note map is player on
-        this.currentSurgePanel = null
+        this.currentSurgeObject = null
+        //whoosh emitter gets instantiated and inited during init
+        this.whooshEmitter = null
     }
 
     //formatting overclock to add a status property:
@@ -24,26 +27,39 @@ export default class SurgeManager{
             this.surgeArray.push(reformatted)
         })
         this.secondsPerBeat = this.level.secondsPerBeat
+
+        //also init the whoosh emitter!
+        this.whooshEmitter = new WhooshEmitter(this.app)
+        //pass floor panel width to init
+        this.whooshEmitter.init(this.app.level.floorPanels[0].panelWidth)
     }
 
     //hit manager calls this on note hit
-    handleNotHit = (hitScore, noteBeat) => {
-        if(!this.currentSurgePanel) return
+    handleNoteHit = (hitScore, noteBeat) => {
+        if(!this.currentSurgeObject) return
 
         if(hitScore === 'PERFECT' || hitScore === 'GOOD'){
-            this.app.scoreManager.updateSurge(this.currentSurgePanel, noteBeat)
+            this.app.scoreManager.updateSurge(this.currentSurgeObject, noteBeat)
         }
         else if(hitScore === 'MISS'){
             this.surging = false
-            this.currentSurgePanel.status = 'BROKEN'
-            this.currentSurgePanel = null
+            this.currentSurgeObject.status = 'BROKEN'
+            this.currentSurgeObject = null
             console.log("U BROKE UR SURGE")
         }
     }
 
-    update = () => {
+    //spawns whoosh effect and marks completed surge section's status as 'COMPLETE'
+    handleSurgeSectionCompleted = () => {
+        this.whooshEmitter.handleStart(this.currentSurgeObject)
+    }
+
+    update = (deltaTime) => {
         //first reset surging to false
         this.surging = false
+
+        //run whoosh emitter update
+        if(this.whooshEmitter.activated)this.whooshEmitter.update(deltaTime)
 
         //filter surgeArray for surge areas in same lane as player AND has status IDLE
         const filteredLaneMatchArray = this.surgeArray.filter(surge => (surge.lane === this.level.playerCurrentLane ))
@@ -58,12 +74,12 @@ export default class SurgeManager{
                     //ok so a player is on a panel...now what?
                     if((match.status === 'BROKEN' || match.status === 'COMPLETED')){
                         this.surging = false
-                        this.currentSurgePanel = null
+                        this.currentSurgeObject = null
                         return
                     }
                     else if(match.status === 'IDLE' || match.status === 'IN_PROGRESS'){
                         this.surging = true
-                        this.currentSurgePanel = match
+                        this.currentSurgeObject = match
                         match.status = 'IN_PROGRESS'
                         console.log('SURGING BABY')
                         // console.log("surge section start beat: ", filteredLaneMatchArray[0].startBeat)

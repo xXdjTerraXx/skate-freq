@@ -51,17 +51,24 @@ export default class ScoreManager{
         this.app.ui.updateHealth(this.health)
     }
 
-    updateSurge = (currentSurgePanel, noteBeat) => {
+    updateSurge = (currentSurgeObject, noteBeat) => {
         //check if last note in surge sequence
-        if(currentSurgePanel.endBeat === noteBeat){
+        if(currentSurgeObject.endBeat === noteBeat){
             console.log("SURGE INCREASED!! SURGE VALUE IS AT ", this.surge)
             this.surge++
+            this.app.surgeManager.handleSurgeSectionCompleted()
             //check if surge is full 
             if(this.surge === levelConfig.SURGE_LIMIT){
                 this.overclock = true
+                this.app.level.handleStartOverclock(currentSurgeObject)
                 console.log("OVERCLOCK COMMENCING!!!!")
             }
         }
+
+        /////DEBUG
+        // this.overclock = true
+        // this.app.level.startOverclock(currentSurgeObject)
+        // console.log("OVERCLOCK COMMENCING!!!!")
     }
 
     resetAll = () => {

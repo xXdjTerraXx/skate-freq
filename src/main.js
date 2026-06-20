@@ -18,48 +18,7 @@ import SongSelectScreen from './game/SongSelectScreen'
 import CountdownScreen from './game/CountdownScreen'
 import PauseScreen from './game/PauseScreen'
 import SurgeManager from './game/SurgeManager'
-
-// const testMap = {
-//   patternLengthBeats: 16,
-//   patterns: {
-//     tapNotes: [
-//   // beat 1-4: straight quarter notes center lane
-//   { lane: 0, subLane: 1, beat: 1 },
-//   { lane: 0, subLane: 1, beat: 2 },
-//   { lane: 0, subLane: 1, beat: 3 },
-//   { lane: 0, subLane: 1, beat: 4 },
-
-//   // beat 5-8: alternating left and right
-//   { lane: 0, subLane: 0, beat: 5 },
-//   { lane: 0, subLane: 2, beat: 6 },
-//   { lane: 0, subLane: 0, beat: 7 },
-//   { lane: 0, subLane: 2, beat: 8 },
-
-//   // beat 9-12: eighth notes center
-//   { lane: 0, subLane: 1, beat: 9 },
-//   { lane: 0, subLane: 1, beat: 9.5 },
-//   { lane: 0, subLane: 1, beat: 10 },
-//   { lane: 0, subLane: 1, beat: 10.5 },
-//   { lane: 0, subLane: 1, beat: 11 },
-//   { lane: 0, subLane: 1, beat: 11.5 },
-
-//   // beat 13-16: mixed pattern
-//   { lane: 0, subLane: 0, beat: 13 },
-//   { lane: 0, subLane: 1, beat: 13.5 },
-//   { lane: 0, subLane: 2, beat: 14 },
-//   { lane: 0, subLane: 1, beat: 14.5 },
-//   { lane: 0, subLane: 0, beat: 15 },
-//   { lane: 0, subLane: 2, beat: 16 },
-// ],
-
-//     ramps: [
-//       // simple ramps on strong beats
-//       { lane: 0, beat: 4 },
-//       { lane: 1, beat: 8 },
-//       { lane: 2, beat: 12 }
-//     ]
-//   }
-// }
+import OverclockVisualsManager from './game/OverclockVisualsManager'
 
 
 const mainApplication = new Application()
@@ -86,7 +45,8 @@ const countdownScreen = new CountdownScreen(mainApplication)
 const pauseScreen = new PauseScreen(mainApplication)
 //hit manager here because level needs it
 const hitManager = new HitManager(mainApplication)
-const level = new Level(mainApplication, hitManager)
+const overclockVisualsManager = new OverclockVisualsManager(mainApplication)
+const level = new Level(mainApplication, hitManager, overclockVisualsManager)
 const scoreManager = new ScoreManager(mainApplication)
 const surgeManager = new SurgeManager(mainApplication, scoreManager, level, hitManager)
 

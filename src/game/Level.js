@@ -15,9 +15,10 @@ import FloorPanel from './FloorPanel'
 //   [tunnelsContainer]  [ringContainer]  [rampContainer]
 
 export default class Level{
-  constructor(app, hitManager){
+  constructor(app, hitManager, overclockVisualsManager){
     this.app = app
     this.hitManager = hitManager
+    this.overclockVisualsManager = overclockVisualsManager
     this.levelMap = null
     
     //bring in some constants from config
@@ -350,6 +351,24 @@ export default class Level{
     }
     //set ramp hit to true
     ramp.hit = true
+  }
+
+  handleStartOverclock = (currentSurgeObject) => {
+    //call the overclock visuals manager to start all the cool fx
+    this.overclockVisualsManager.onOverclockStart(currentSurgeObject)
+
+    //TO DO :  HIDE ALL SURGE PANELS BUT NOT GLASS PANELKS
+    this.floorPanels.forEach(panel => {
+
+    })
+  }
+
+  handleEndOverclock = () => {
+    this.overclockVisualsManager.onOverclockEnd(currentSurgeObject)
+    //TO DO :  SHOW ALL SURGE PANELS BUT NOT GLASS PANELKS
+    this.floorPanels.forEach(panel => {
+
+    })
   }
 
   //resets all note nodes and gate rings
