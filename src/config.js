@@ -66,15 +66,33 @@ export const levelConfig = {
             //amount of emitters to spawn at the beginning of level to save resources
             amount: 14,
             //the speed the emitter travels down the lane
-            speed: 10,
+            emitterSpeed: 14,
             particleColor: 0x00ffff,
-            particleSize: 0.12 ,
+            particleSize: 0.2 ,
             particleSpeed: 3,
-            numberOfParticles: 500,
-            lifetime: 1.5,
+            numberOfParticles: 300,
+            
+            lifetime: 2,
             lifetimeVariation: 1,
-            velocity: .05,
-            velocityVariation: 1
+            velocity: {
+                x: .0025, 
+                y: .0025,
+                z: 0
+            },
+            velocityVariation: 1,
+            
+            trailParticles: {
+                speed : 14,
+                size: 0.3,
+                velocity: {
+                    x: 0.01,
+                    y: 0.21,
+                    z: 0.0
+                },
+                lifetime: .5,
+                numberOfParticles: 4,
+                color: 0xffffff
+            }
         }
     },
 
