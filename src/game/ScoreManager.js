@@ -38,7 +38,7 @@ export default class ScoreManager{
         this.hitCounts[hitScore]++
 
         //aaanad finally...update UI
-        this.app.ui.updateScore(this.currentScore, this.currentCombo)
+        this.app.ui.gameplayHUD.updateScore(this.currentScore, this.currentCombo)
     }
 
     updateHealth = (hitRating) => {
@@ -48,7 +48,7 @@ export default class ScoreManager{
             this.health = levelConfig.PLAYER_STARTING_HEALTH
         }
         //aaanad finally...update UI
-        this.app.ui.updateHealth(this.health)
+        this.app.ui.gameplayHUD.updateHealth(this.health)
     }
 
     updateSurge = (currentSurgeObject, noteBeat) => {

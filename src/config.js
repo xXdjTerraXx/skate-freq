@@ -16,8 +16,8 @@ export const levelConfig = {
     PLAYER_Z_VALUE: .2,
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
-    PLAYER_STARTING_HEALTH: 300,
-    SURGE_LIMIT: 1,  //how much surge u need to overclock
+    PLAYER_STARTING_HEALTH: 3000,
+    SURGE_LIMIT: 3,  //how much surge u need to overclock
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
@@ -46,6 +46,50 @@ export const levelConfig = {
         red: '#FF2244',
         highlight: '#F0F0FF',
     },
+    //general ui settings:
+    UI_SETTINGS: {
+        width: 1600,
+        height: 900,
+    },
+    //UI COORD SYSTEM IS:
+    //               450
+    //                |
+    //                |
+    //   -800<--------+------->800
+    //                |
+    //                |
+    //              -450
+    //positions, sizes, etc for individual ui "components" (meters, indicators, ui text)
+    UI_COMPONENT_SETTINGS:{
+        surgeMeter: {
+            //pos of component main container 
+            position: {x: -600, y: 350, z: 0},
+            nodeSize: 30,
+            nodeColorActive: 0x00ffff, 
+            nodeColorInactive: 0x0000ff
+        },
+        hitEffects: {
+            //pos of component main container 
+            position: {x: 0, y: 0, z: 0}
+        },
+        scoreContainer: {
+            fontSize: 50,
+            //pos of component main container 
+            position: {x: 300, y: 200, z: 0}
+        },
+        comboContainer: {
+            fontSize: 50,
+            //pos of component main container 
+            position: {x: -200, y: -100, z: 0}
+        },
+        healthContainer: {
+            fontSize: 50,
+            //pos of component main container 
+            position: {x: 300, y: 350, z: 0}
+        }
+    },
+
+
     TAP_NOTE_COLORS: {
         0: '#FFD700',
         1: '#00FF88',

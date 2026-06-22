@@ -27,6 +27,7 @@ export const createTextNode = (options = {}) => {
         options.y ?? 0,
         options.z ?? 0
     )
+    t.name = options.name ?? 'nameless_text_obj'
     t.renderOrder = options.renderOrder ?? levelConfig.RENDER_ORDER.UI
     if(options.layers)t.layers.set(options.layers)
     t.sync()

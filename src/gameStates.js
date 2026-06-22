@@ -167,7 +167,7 @@ class PlayingState {
         this.playingSubStateContainer.name = 'playing sub state container'
         this.playingSubStateContainer.visible = true
 
-        this.playingSubStateContainer.add(this.app.level.mainLevelContainer, this.app.ui.mainContainer)
+        this.playingSubStateContainer.add(this.app.level.mainLevelContainer)
         this.countdownSubStateContainer.add(this.app.countdownScreen.mainContainer)
         this.container.add(this.countdownSubStateContainer, this.playingSubStateContainer, this.app.pauseScreen.mainContainer)
 
@@ -216,10 +216,12 @@ class PlayingState {
 
         //play song
         this.app.audioManager.playSong()
-
         
         //toggle visibility
         this.container.visible = true
+
+        //toggle ui scene visibility
+        this.app.uiScene.visible = true
 
         //set up level
         const noteMap = this.app.audioManager.currentSong.noteMap
@@ -237,6 +239,7 @@ class PlayingState {
         this.app.controller.run(deltaTime)
         this.app.player.update(deltaTime)
         this.app.level.update(deltaTime)
+        this.app.ui.update(deltaTime)
         //only shows notes, rings, and detect hits AFTER countdown
         if(this.subState === 'PLAYING'){
             this.app.surgeManager.update(deltaTime)
@@ -282,6 +285,8 @@ class PlayingState {
         this.removeKeyEvents()
         //hide main container
         this.container.visible = false
+        //hide ui scene as well
+        this.app.uiScene.visible = true
         //buuut sub state container has to be set back to visible
         this.countdownSubStateContainer.visible = true
         //reset the sub state back to countdown so it always plays first
@@ -332,7 +337,7 @@ class ResultsState {
         //since the song/level is over, reset everything:
         //the score in ScoreManager, the ui, and the results screen
         this.app.scoreManager.resetAll()
-        this.app.ui.resetScoreAndComboText()
+        this.app.ui.reset()
         this.app.resultsScreen.resetResultsText()
         this.app.audioManager.resetSong()
         this.app.level.reset()
@@ -385,7 +390,7 @@ class GameOverState {
         this.container.visible = false
         this.removeKeyEvents()
         this.app.scoreManager.resetAll()
-        this.app.ui.resetScoreAndComboText()
+        this.app.ui.reset()
         this.app.level.reset()
         this.app.countdownScreen.reset()
         this.app.audioManager.resetSong()

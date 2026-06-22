@@ -5,7 +5,7 @@ import Level from './game/Level'
 import Application from './game/Application'
 import Controller from './game/Controller'
 import HitManager from './game/HitManager'
-import UiManager from './game/UiManager'
+import UiManager from './game/ui/UiManager'
 import AudioManager from "./game/AudioManager"
 
 import { createGameStates } from './gameStates'
@@ -51,7 +51,7 @@ const scoreManager = new ScoreManager(mainApplication)
 const surgeManager = new SurgeManager(mainApplication, scoreManager, level, hitManager)
 
 //then init the hit manager
-hitManager.init(ui.hitEffectsContainer, level.worldHitFxContainer)
+hitManager.init(ui.gameplayHUD.hitEffectsContainer, level.worldHitFxContainer)
 
 //ooook now the player
 const player = new Player(mainApplication, level)
