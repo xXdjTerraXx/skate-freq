@@ -56,6 +56,7 @@ export default class ScoreManager{
         if(currentSurgeObject.endBeat === noteBeat){
             console.log("SURGE INCREASED!! SURGE VALUE IS AT ", this.surge)
             this.surge++
+            this.app.ui.gameplayHUD.surgeMeter.updateMeter(this.surge)
             this.app.surgeManager.handleSurgeSectionCompleted()
             //check if surge is full 
             if(this.surge === levelConfig.SURGE_LIMIT){

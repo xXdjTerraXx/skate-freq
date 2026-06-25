@@ -52,39 +52,44 @@ export const levelConfig = {
         height: 900,
     },
     //UI COORD SYSTEM IS:
-    //               450
-    //                |
-    //                |
-    //   -800<--------+------->800
-    //                |
-    //                |
-    //              -450
+    //               height/2
+    //                  |
+    //                  |
+    // -width/2<--------+------->width/2
+    //                  |
+    //                  |
+    //              -height/2
     //positions, sizes, etc for individual ui "components" (meters, indicators, ui text)
     UI_COMPONENT_SETTINGS:{
+        //all positions here are positions of the component's main container
+        //local positioning within a main container handled in each class
         surgeMeter: {
-            //pos of component main container 
             position: {x: -600, y: 350, z: 0},
+            //meter nodes
             nodeSize: 30,
-            nodeColorActive: 0x00ffff, 
-            nodeColorInactive: 0x0000ff
+            fillColor: 0x00ffff, 
+            outlineColor: 0x00ffff,
+            //meter connecting line stuff
+            connectingLineColorInactive: 0xffffff,
+            connectingLineColorActive: 0xc979f0,
+            baseWaveAmplitude: 1,
+            maxWaveAmplitude: 5,
+            beatIntensity: 2,
+            connectingLineWidth: .02,
         },
         hitEffects: {
-            //pos of component main container 
             position: {x: 0, y: 0, z: 0}
         },
         scoreContainer: {
             fontSize: 50,
-            //pos of component main container 
             position: {x: 300, y: 200, z: 0}
         },
         comboContainer: {
             fontSize: 50,
-            //pos of component main container 
             position: {x: -200, y: -100, z: 0}
         },
         healthContainer: {
             fontSize: 50,
-            //pos of component main container 
             position: {x: 300, y: 350, z: 0}
         }
     },

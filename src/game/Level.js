@@ -429,6 +429,12 @@ export default class Level{
       this.ringSpacing = this.secondsPerBeat/this.beatSubdivision
   }
 
+  onBeat = () => {
+      this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
+      this.app.audioManager.playClick()
+      this.app.ui.gameplayHUD.surgeMeter.onBeat()
+  }
+
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
@@ -442,8 +448,7 @@ export default class Level{
 
     //check fo ra new beat
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
-      this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
-      this.app.audioManager.playClick()
+      this.onBeat()
     }
 
     // move tunnels toward camera

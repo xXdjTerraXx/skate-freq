@@ -269,14 +269,14 @@ export const audioAssetManifest = {
     // beats 1-4 are SIGNAL WARMUP, OC sections start at beat 5
     // =====================
     overclockSections: [
-        // { lane: 0, startBeat: 5,   endBeat: 7  },  // DEBUG
-        // { lane: 1, startBeat: 37,  endBeat: 39  },  // DEBUG
-        // { lane: 2, startBeat: 69,  endBeat: 100 },  // DEBUG
-        // { lane: 3, startBeat: 101, endBeat: 132 },  // DEBUG
-        { lane: 0, startBeat: 5,   endBeat: 36  },  // bars 2-9
-        { lane: 1, startBeat: 37,  endBeat: 68  },  // bars 10-17
-        { lane: 2, startBeat: 69,  endBeat: 100 },  // bars 18-25
-        { lane: 3, startBeat: 101, endBeat: 132 },  // bars 26-33
+        { lane: 0, startBeat: 5,   endBeat: 7  },  // DEBUG
+        { lane: 1, startBeat: 37,  endBeat: 39  },  // DEBUG
+        { lane: 2, startBeat: 69,  endBeat: 100 },  // DEBUG
+        { lane: 3, startBeat: 101, endBeat: 132 },  // DEBUG
+        // { lane: 0, startBeat: 5,   endBeat: 36  },  // bars 2-9
+        // { lane: 1, startBeat: 37,  endBeat: 68  },  // bars 10-17
+        // { lane: 2, startBeat: 69,  endBeat: 100 },  // bars 18-25
+        // { lane: 3, startBeat: 101, endBeat: 132 },  // bars 26-33
     ]
 }
         },

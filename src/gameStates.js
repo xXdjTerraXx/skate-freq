@@ -286,7 +286,7 @@ class PlayingState {
         //hide main container
         this.container.visible = false
         //hide ui scene as well
-        this.app.uiScene.visible = true
+        this.app.uiScene.visible = false
         //buuut sub state container has to be set back to visible
         this.countdownSubStateContainer.visible = true
         //reset the sub state back to countdown so it always plays first
