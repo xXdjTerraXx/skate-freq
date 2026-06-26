@@ -34,7 +34,8 @@ export const levelConfig = {
     },
     UI_FONTS_DICT: {
         uiFont1: '/assets/fonts/OCRAEXT.TTF',
-        uiFont2: '/assets/fonts/whitrabt.ttf'
+        uiFont2: '/assets/fonts/whitrabt.ttf',
+        judgements: '/assets/fonts/judgements_font.otf'
     },
     UI_COLOR_PALETTE: {
         black: '#050510',
@@ -77,8 +78,14 @@ export const levelConfig = {
             beatIntensity: 2,
             connectingLineWidth: .02,
         },
+        uplinkMeter:{
+            position:{x: 690, y: 40, z: 0},
+            backgroundPadding: 10,
+            meterWidth: 20,
+            meterHeight: 380
+        },
         hitEffects: {
-            position: {x: 0, y: 0, z: 0}
+            position: {x: -400, y: 0, z: 0}
         },
         scoreContainer: {
             fontSize: 50,

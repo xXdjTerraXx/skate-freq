@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { createTextNode } from '../../utils'
 import { levelConfig } from '../../config'
 import SurgeMeter from './components/SurgeMeter'
+import UplinkMeter from './components/UplinkMeter'
 
 
 export default class GameplayHUD{
@@ -102,6 +103,18 @@ export default class GameplayHUD{
         })
 
         this.healthContainer.add(this.currentHealthText)
+///////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////~~*~~*  UPLINK  *~~*~~//////////////////////////////////////
+         //where UPLINK meter lives
+        this.uplinkMeter = new UplinkMeter(this.mainContainer)
+        this.uplinkMeter.init()
+        this.uplinkMeter.mainContainer.position.set(
+            levelConfig.UI_COMPONENT_SETTINGS.uplinkMeter.position.x,
+            levelConfig.UI_COMPONENT_SETTINGS.uplinkMeter.position.y,
+            levelConfig.UI_COMPONENT_SETTINGS.uplinkMeter.position.z
+        )
+
+
 
         //add any components with an update method to components array
         this.components = [this.surgeMeter]

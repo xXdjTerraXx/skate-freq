@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { levelConfig } from '../config'
+import { createTextNode } from '../utils'
 
 //decides which type of hit effect to spawn and which container to put
 //it in. each hit effect is responsible for its own movement and deletion
@@ -71,7 +72,8 @@ export default class HitManager{
             this.activeHits.push(newHitEffect)
         }
         else if(type === 'ui'){
-            const newHitEffect = new UiHitEffect(hitRating,this.uiHitFxContainer,texture)
+            const newHitEffect = new UiHitEffect(hitRating,this.app.ui.gameplayHUD.hitEffectsContainer,texture, this.app)
+            // const newHitEffect = new UiHitEffect(hitRating,this.app.scene,texture)
             this.activeHits.push(newHitEffect)
         }
     }
@@ -122,33 +124,41 @@ class WorldHitEffect extends HitEffect{
 //these are the text good, perfect, or miss that live in a fixed space 
 //as part of the ui
 class UiHitEffect extends HitEffect{
-    constructor(hitRating, container, texture){
+    constructor(hitRating, container, texture, app){
         super(hitRating, container, texture)
         this.currentScale = 1
-        this.terminalScale = 2
-        this.scaleIncrementSpeed = 1.5
+        this.terminalScale = 1.2
+        this.scaleIncrementSpeed = .001
+        this.app = app 
 
-        // this.geometry = new THREE.SphereGeometry(0.5, 8, 8)
-        // this.material = new THREE.MeshBasicMaterial({
-        //       color: levelConfig.UI_HIT_EFFECT_COLOR_DICT[this.hitRating]
-        //     })
-        // this.material.transparent = true
-        // this.mesh = new THREE.Mesh(this.geometry, this.material)
-        // this.mesh.name = 'ui hit effect'
-        // this.mesh.scale.set(this.currentScale)
-        // container.add(this.mesh)    
 
         this.material = new THREE.SpriteMaterial({
             map: texture,
             transparent: true,
-            color: levelConfig.UI_HIT_EFFECT_COLOR_DICT[this.hitRating],
-            blending: THREE.AdditiveBlending
+            // color: levelConfig.UI_HIT_EFFECT_COLOR_DICT[this.hitRating],
+            // blending: THREE.AdditiveBlending
             })
+        
+        const translatedHitRatings = {
+            'PERFECT': 'LOCKED!',
+            'GOOD': 'CLEAN',
+            'MISS': 'DROPPED'
+        }
 
-        this.mesh = new THREE.Sprite(this.material)
+        // this.mesh = new THREE.Sprite(this.material)
+        this.mesh = createTextNode({
+            text:`${translatedHitRatings[hitRating]}`,
+            fontSize: 100,
+            color: levelConfig.UI_HIT_EFFECT_COLOR_DICT[hitRating],
+            font: levelConfig.UI_FONTS_DICT.judgements,
+            x: 0, y: 0, z: 0,
+        })
+        this.mesh.outlineWidth = 7     
+        this.mesh.outlineColor = 0x00ffcc 
+        this.mesh.outlineOpacity = 5.0   
         this.mesh.name = 'ui hit effect'
         this.mesh.scale.set(this.currentScale)
-        this.mesh.renderOrder = levelConfig.RENDER_ORDER.UI
+        // this.mesh.renderOrder = levelConfig.RENDER_ORDER.UI
         container.add(this.mesh)
     }
 
@@ -157,18 +167,22 @@ class UiHitEffect extends HitEffect{
         if(this.currentScale >= this.terminalScale){
             //mark for deletion from HitManager's activeHits array
             this.isDead = true
-            this.removeSelf()
+            this.mesh.dispose()
+
+            this.container.remove(this.mesh)
         }
         
         else{
             //move up some
-            this.mesh.position.y += 0.5 * deltaTime
+            // this.mesh.position.y += 0.1 * deltaTime
             //increase the scale and set it
-            this.currentScale += this.scaleIncrementSpeed * deltaTime
-            this.mesh.scale.set(this.currentScale, this.currentScale, this.currentScale)
+            const lerpFactor = 1 - Math.pow(.001, deltaTime)
+            this.currentScale = Math.max(0, this.currentScale + .12 * lerpFactor)
+            // this.currentScale += lerpFactor * .5
+            this.mesh.scale.set(this.currentScale* .45, this.currentScale * .45, 1)
             //then **air horns** scaling functiooonnnnnn
             //aka reduce opacity as scale increases 
-            this.material.opacity = 1 - (this.currentScale / this.terminalScale)
+            // this.mesh.material.opacity = 1 - (this.currentScale / this.terminalScale * .5) 
         }
     }
 }
