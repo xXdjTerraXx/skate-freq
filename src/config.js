@@ -17,20 +17,29 @@ export const levelConfig = {
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
     PLAYER_STARTING_HEALTH: 3000,
+    PLAYER_STARTING_UPLINK: 700,
+    PLAYER_MAX_UPLINK: 1000,
     SURGE_LIMIT: 3,  //how much surge u need to overclock
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
     //how much a miss good or perfect affect player health
     HIT_RATING_VALUES:{
-        PERFECT: 3,
-        GOOD: 2,
-        MISS: -3
+        PERFECT: {health: 3, uplink: 30},
+        GOOD: {health: 2, uplink: 10},
+        MISS: {health: -3, uplink: -70}
     },
     UI_HIT_EFFECT_COLOR_DICT:{
-        PERFECT: 0x00FFEE,//<--cyan from UI_COLOR_PALETTE
-        GOOD: 0x00FF88,  //<--green from UI_COLOR_PALETTE
-        MISS: 0xFF2244 
+        fill:{
+            PERFECT: 0x1485fb,//<--cyan from UI_COLOR_PALETTE
+            GOOD: 0x14fb16,  //<--green 
+            MISS: 0xFF2244  //<---red from 
+        },
+        outline:{
+            PERFECT: 0xF0F0FF,//<--white from UI_COLOR_PALETTE
+            GOOD: 0xFfFfFF,  //<--white from UI_COLOR_PALETTE
+            MISS: 0xF0F0FF  //<---white from UI_COLOR_PALETTE
+        } 
     },
     UI_FONTS_DICT: {
         uiFont1: '/assets/fonts/OCRAEXT.TTF',
@@ -79,10 +88,16 @@ export const levelConfig = {
             connectingLineWidth: .02,
         },
         uplinkMeter:{
-            position:{x: 690, y: 40, z: 0},
+            position:{x: 610, y: 40, z: 0},
             backgroundPadding: 10,
-            meterWidth: 20,
-            meterHeight: 380
+            meterWidth: 380,
+            meterHeight: 20,
+            meterColors: {
+                healthy: 0x00FFEE, // cyan from color dict
+                warning: 0x00FF88, // green from color dict
+                critical: 0xFF2244, // red from color dict
+                peakHat: 0xffffff
+            },
         },
         hitEffects: {
             position: {x: -400, y: 0, z: 0}

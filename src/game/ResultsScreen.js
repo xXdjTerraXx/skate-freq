@@ -28,7 +28,7 @@ export default class ResultsScreen{
         this.titleContainer.name = 'score_screen_title_container'
         this.titleContainer.position.set(0,0,0)
         this.titleText = createTextNode({
-            text: 'results://', 
+            text: 'transmission_end://', 
             fontSize: .2, 
             color: levelConfig.UI_COLOR_PALETTE.purple, 
             x: 0, y: 0, z: 0,

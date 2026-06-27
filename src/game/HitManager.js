@@ -149,12 +149,12 @@ class UiHitEffect extends HitEffect{
         this.mesh = createTextNode({
             text:`${translatedHitRatings[hitRating]}`,
             fontSize: 100,
-            color: levelConfig.UI_HIT_EFFECT_COLOR_DICT[hitRating],
+            color: levelConfig.UI_HIT_EFFECT_COLOR_DICT.fill[hitRating],
             font: levelConfig.UI_FONTS_DICT.judgements,
             x: 0, y: 0, z: 0,
         })
         this.mesh.outlineWidth = 7     
-        this.mesh.outlineColor = 0x00ffcc 
+        this.mesh.outlineColor = levelConfig.UI_HIT_EFFECT_COLOR_DICT.outline[hitRating]
         this.mesh.outlineOpacity = 5.0   
         this.mesh.name = 'ui hit effect'
         this.mesh.scale.set(this.currentScale)

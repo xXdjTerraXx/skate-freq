@@ -252,7 +252,7 @@ class PlayingState {
             this.app.stateMachine.setState(GAME_STATES.RESULTS)
         }
         //check if player health is at or below 0
-        if (this.app.scoreManager.health <= 0) {
+        if (this.app.scoreManager.health <= 0 || this.app.scoreManager.uplink <= 0) {
             this.app.stateMachine.setState(GAME_STATES.GAME_OVER)
         }
     }

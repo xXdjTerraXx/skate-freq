@@ -433,6 +433,7 @@ export default class Level{
       this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
       this.app.audioManager.playClick()
       this.app.ui.gameplayHUD.surgeMeter.onBeat()
+      this.app.ui.gameplayHUD.uplinkMeter.onBeat()
   }
 
   update = (deltaTime) => {

@@ -117,7 +117,7 @@ export default class GameplayHUD{
 
 
         //add any components with an update method to components array
-        this.components = [this.surgeMeter]
+        this.components = [this.surgeMeter, this.uplinkMeter]
     }
 
     init = () => {
@@ -141,6 +141,10 @@ export default class GameplayHUD{
     updateHealth = (newHealth) => {
         this.currentHealthText.text = `${newHealth} / ${levelConfig.PLAYER_STARTING_HEALTH}`
         this.currentHealthText.sync()
+    }
+
+    updateUplink = (newUplinkValue) => {
+        this.uplinkMeter.updateUplink(newUplinkValue)
     }
 
     reset = () => {

@@ -13,6 +13,7 @@ export default class ScoreManager{
             MISS: 0
         }
         this.health = levelConfig.PLAYER_STARTING_HEALTH
+        this.uplink = levelConfig.PLAYER_STARTING_UPLINK
         this.surge = 0 // 0 - 4
         this.overclock = false
     }
@@ -42,13 +43,24 @@ export default class ScoreManager{
     }
 
     updateHealth = (hitRating) => {
-        const changeInHealth = levelConfig.HIT_RATING_VALUES[hitRating]
+        const changeInHealth = levelConfig.HIT_RATING_VALUES[hitRating].health
+        const changeInUplink = levelConfig.HIT_RATING_VALUES[hitRating].uplink
+
+        //update health here
         this.health += changeInHealth
         if(this.health>levelConfig.PLAYER_STARTING_HEALTH){
             this.health = levelConfig.PLAYER_STARTING_HEALTH
         }
+        
+        //update uplink here
+        this.uplink += changeInUplink
+        if(this.uplink > levelConfig.PLAYER_MAX_UPLINK){
+            this.uplink = levelConfig.PLAYER_MAX_UPLINK
+        }
+
         //aaanad finally...update UI
         this.app.ui.gameplayHUD.updateHealth(this.health)
+        this.app.ui.gameplayHUD.updateUplink(this.uplink)
     }
 
     updateSurge = (currentSurgeObject, noteBeat) => {
