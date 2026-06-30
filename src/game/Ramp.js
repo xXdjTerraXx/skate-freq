@@ -4,7 +4,8 @@ import { levelConfig } from '../config'
 export default class Ramp {
   constructor(app, 
     hitlineZPosition, 
-    lane, duration, time, 
+    lane, duration, beat,
+    time, 
     levelZRotationOffset, 
     levelSpeed, 
     currentTime, 
@@ -19,6 +20,8 @@ export default class Ramp {
     // which lane this ramp is in
     this.lane = lane 
     this.duration = duration
+    this.beat = beat
+
     this.levelZRotationOffset = levelZRotationOffset
     
     this.measurementOfOneSide = (Math.PI * 2) / levelConfig.LANE_COUNT

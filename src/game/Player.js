@@ -141,16 +141,13 @@ export default class Player {
     this.isPulsing = true
   }
 
-  //JUMP SYSTEM EXPLAINED:
-  //1. player hits spacebar
-  //2. the "isInAir" variable gets set to true
-  //3. "jumpVelocity" gets set to the constant value "TARGET_JUMP_VELOCITY"
-  //4. "isInAir" being true now allows "updateJumpPhysics" func to run
-  //5. in that func, "gravity" slows "jumpVeloctity" a bit every time it runs
-  //6. "jumVelocity" gets added to "jumpOffset" variable, which is added to "baseRadius"
-  //7.  the value of that is the new radius - how far the player is from center
-  //8. ????
-  //9. profit
+  handleCrouch = () => {
+    if(!this.isCrouching){
+      this.playAnimation('crouch')
+      this.isCrouching = true
+    }  
+  }
+
   handleJump = () => {
     //stop crouching
     this.isCrouching = false
@@ -161,12 +158,6 @@ export default class Player {
     this.playAnimation('crouch')
   }
 
-  handleCrouch = () => {
-    if(!this.isCrouching){
-      this.playAnimation('crouch')
-      this.isCrouching = true
-    }  
-  }
 
   // updateJumpPhysics = () => {
   //   if (this.isInAir) {
@@ -188,12 +179,32 @@ export default class Player {
     this.landingTime = landingTime
   }
 
-  updateJumpArc = () => {
+//   updateJumpArc = () => {
+//     if (!this.isInAir) return
+
+//     if (this.app.level.currentTime >= this.landingTime) {
+//         // snap to ground on landing beat
+//         this.jumpOffset = 0
+//         this.isInAir = false
+//         this.landingTime = null
+//         this.airStartTime = null
+//         this.app.level.handlePlayerLand()
+//         return
+//     }
+
+//     // 0 at launch, 1 at landing
+//     const airProgress = (this.app.level.currentTime - this.airStartTime) / (this.landingTime - this.airStartTime)
+//     // parabola: 0 at start, peaks at 0.5, back to 0 at 1
+//     this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * airProgress * (1 - airProgress)
+//     // const skewed = Math.pow(airProgress, 2.2)
+//     // this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * skewed * (1 - skewed)
+// }
+
+updateJumpArc = () => {
     if (!this.isInAir) return
 
     if (this.app.level.currentTime >= this.landingTime) {
-        // snap to ground on landing beat
-        this.jumpOffset = 0
+         this.jumpOffset = 0
         this.isInAir = false
         this.landingTime = null
         this.airStartTime = null
@@ -201,12 +212,21 @@ export default class Player {
         return
     }
 
-    // 0 at launch, 1 at landing
-    const airProgress = (this.app.level.currentTime - this.airStartTime) / (this.landingTime - this.airStartTime)
-    // parabola: 0 at start, peaks at 0.5, back to 0 at 1
-    this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * airProgress * (1 - airProgress)
-    // const skewed = Math.pow(airProgress, 2.2)
-    // this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * skewed * (1 - skewed)
+    const totalAirTime = this.landingTime - this.airStartTime
+    const elapsed = this.app.level.currentTime - this.airStartTime
+    const t = elapsed / totalAirTime  // 0 to 1
+
+    const RISE_PORTION = 0.35  // rise takes 35% of air time, fall takes 65%
+
+    if (t < RISE_PORTION) {
+        // rising — ease out (fast start, slow finish into the float)
+        const riseT = t / RISE_PORTION
+        this.jumpOffset = this.MAX_JUMP_HEIGHT * (1 - Math.pow(1 - riseT, 2))
+    } else {
+        // falling — ease in hard (slow start, fast snap down)
+        const fallT = (t - RISE_PORTION) / (1 - RISE_PORTION)
+        this.jumpOffset = this.MAX_JUMP_HEIGHT * (1 - Math.pow(fallT, 3))
+    }
 }
 
   setSubLane = (index) => {

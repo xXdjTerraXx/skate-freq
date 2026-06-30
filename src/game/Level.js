@@ -247,6 +247,7 @@ export default class Level{
         this.hitlineZPosition,
         mapNode.lane, 
         mapNode.duration,
+        mapNode.beat,
         timeInSeconds, 
         this.zRotationOffset, 
         this.levelSpeed, 

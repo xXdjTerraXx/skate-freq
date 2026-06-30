@@ -1,3 +1,5 @@
+import { levelConfig } from "../config"
+
 export default class Controller{
     constructor(app, level, player, hitManager){
         this.app = app
@@ -59,7 +61,9 @@ export default class Controller{
                 }
             }
             if(e.code === this.wKey){
-                if(this.level.playerIsInAir){
+                //this check needs to happen even a little after player acutally lands
+                const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED_CHECK_GRACE_PERIOD
+                if (Math.abs(this.level.currentTime - this.level.landingTime) < LANDING_WINDOW) {
                     this.handlePlayerLand()
                 }
             }
@@ -107,8 +111,9 @@ export default class Controller{
 
     handlePlayerLand = () => {
         this.player.setSubLane(1)
-        const currentTime = this.level.handlePlayerLand
-        this.hitManager.registerLandingHit(currentTime)
+        const currentTime = this.level.currentTime
+        const landingTime = this.level.landingTime
+        this.hitManager.registerLandingHit(currentTime, landingTime)
     }
 
     handlePlayerSubLaneSwitch = (index) => {

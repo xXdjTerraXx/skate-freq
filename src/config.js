@@ -24,6 +24,7 @@ export const levelConfig = {
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
+    //enom for note node types
     NOTE_NODE_TYPE: {
         TAPNOTE: 'TAPNOTE',
         RAMP: 'RAMP'
@@ -38,12 +39,16 @@ export const levelConfig = {
         fill:{
             PERFECT: 0x1485fb,//<--cyan from UI_COLOR_PALETTE
             GOOD: 0x14fb16,  //<--green 
-            MISS: 0xFF2244  //<---red from 
+            MISS: 0xFF2244,  //<---red from 
+            RESYNCED: 0xedffec,
+            SYNC_BROKEN: 0xFF2244
         },
         outline:{
             PERFECT: 0xF0F0FF,//<--white from UI_COLOR_PALETTE
             GOOD: 0xFfFfFF,  //<--white from UI_COLOR_PALETTE
-            MISS: 0xF0F0FF  //<---white from UI_COLOR_PALETTE
+            MISS: 0xF0F0FF,  //<---white from UI_COLOR_PALETTE
+            RESYNCED: 0xf7ff29,
+            SYNC_BROKEN: 0xF0F0FF
         } 
     },
     UI_FONTS_DICT: {
@@ -66,6 +71,71 @@ export const levelConfig = {
         width: 1600,
         height: 900,
     },
+    TAP_NOTE_COLORS: {
+        0: '#FFD700',
+        1: '#00FF88',
+        2: '#FF2244'
+    },
+    //timing windows for all note node judgements - ramps, rails, tapNotes
+    NOTE_TIMING: {
+        GOOD: 0.3,
+        PERFECT: 0.15,
+        //resynced is landing from ramp
+        //this grace period is how long before and after landing to check for w press
+        RESYNCED_CHECK_GRACE_PERIOD: 0.25,
+        RESYNCED: 0.15
+    },
+    NOTE_NODE_SCORE_DICT: {
+        PERFECT: 100,
+        GOOD: 50,
+        MISS: 0,
+        A: 50,
+        S: 50,
+        D: 50,
+        //currently resynced (landing from a ramp) doesnt reward points jst continues combo
+        //but i need this reference here for score manager updateScore to work w resyncs
+        RESYNCED: 0,
+        SYNC_BROKEN: 0
+    },
+    OVERCLOCK_VISUALS_SETTINGS:{
+        WhooshEmitter: {
+            //amount of emitters to spawn at the beginning of level to save resources
+            amount: 14,
+            //the speed the emitter travels down the lane
+            emitterSpeed: 14,
+            particleColor: 0x00ffff,
+            particleSize: 0.2 ,
+            particleSpeed: 3,
+            numberOfParticles: 300,
+            
+            lifetime: 2,
+            lifetimeVariation: 1,
+            velocity: {
+                x: .0025, 
+                y: .0025,
+                z: 0
+            },
+            velocityVariation: 1,
+            
+            trailParticles: {
+                speed : 14,
+                size: 0.3,
+                velocity: {
+                    x: 0.01,
+                    y: 0.21,
+                    z: 0.0
+                },
+                lifetime: .5,
+                numberOfParticles: 4,
+                color: 0xffffff
+            }
+        }
+    },
+
+
+
+
+
     //UI COORD SYSTEM IS:
     //               height/2
     //                  |
@@ -120,67 +190,6 @@ export const levelConfig = {
             position: {x: 300, y: 350, z: 0}
         }
     },
-
-
-    TAP_NOTE_COLORS: {
-        0: '#FFD700',
-        1: '#00FF88',
-        2: '#FF2244'
-    },
-    //timing windows for all note node - ramps, rails, tapNotes
-    NOTE_TIMING: {
-        GOOD: 0.3,
-        PERFECT: 0.15,
-        LANDING: 0.2
-    },
-    TAP_NOTE_SCORE_DICT: {
-        PERFECT: 100,
-        GOOD: 50,
-        MISS: 0,
-        A: 50,
-        S: 50,
-        D: 50
-    },
-    OVERCLOCK_VISUALS_SETTINGS:{
-        WhooshEmitter: {
-            //amount of emitters to spawn at the beginning of level to save resources
-            amount: 14,
-            //the speed the emitter travels down the lane
-            emitterSpeed: 14,
-            particleColor: 0x00ffff,
-            particleSize: 0.2 ,
-            particleSpeed: 3,
-            numberOfParticles: 300,
-            
-            lifetime: 2,
-            lifetimeVariation: 1,
-            velocity: {
-                x: .0025, 
-                y: .0025,
-                z: 0
-            },
-            velocityVariation: 1,
-            
-            trailParticles: {
-                speed : 14,
-                size: 0.3,
-                velocity: {
-                    x: 0.01,
-                    y: 0.21,
-                    z: 0.0
-                },
-                lifetime: .5,
-                numberOfParticles: 4,
-                color: 0xffffff
-            }
-        }
-    },
-
-
-
-
-
-
     RENDER_ORDER: {
         WORLD_OPAQUE: 0,      // tunnel, notes, ramps, rings
         FLOOR_GLASS: 1,       // transparent glass panels

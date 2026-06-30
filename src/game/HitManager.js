@@ -83,12 +83,21 @@ export default class HitManager{
         this.app.scoreManager.updateScore(hitScore)
     }
 
-    registerLandingHit = (currentTime) => {
-        
+    registerLandingHit = (currentTime, landingTime) => {
+        if(landingTime === null)return     //just in case
+
+        const timeUntilHit = (landingTime - currentTime)
+        console.log('SHEEEEEIIIIITT',timeUntilHit, levelConfig.NOTE_TIMING.RESYNCED)
+        if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.RESYNCED) {
+            this.spawnHitEffect("RESYNCED", "ui")
+        } 
+        else{
+            this.spawnHitEffect("SYNC_BROKEN", "ui")
+        }
     }
 
     //hit rating is 'PERFECT', 'GOOD', or 'MISS'
-    spawnHitEffect = (hitRating, type = 'world') => {
+    spawnHitEffect = (hitRating, type) => {
         if(type === 'world'){
             const newHitEffect = new WorldHitEffect(hitRating,this.worldHitFxContainer)
             this.activeHits.push(newHitEffect)
@@ -159,7 +168,9 @@ class UiHitEffect extends HitEffect{
             'MISS': 'DROPPED',
             'A': 'MUTE GRAB',
             'S': 'ROYALE GRAB',
-            'D': 'BACKFLIP'
+            'D': 'BACKFLIP',
+            'RESYNCED': 'RESYNCED',
+            'SYNC_BROKEN': 'SYNC BROKEN'
         }
 
         // this.mesh = new THREE.Sprite(this.material)

@@ -13,7 +13,8 @@ export default class ScoreManager{
             MISS: 0,
             A: 0,
             S: 0,
-            D: 0
+            D: 0,
+            LANDS: 0
         }
         this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.uplink = levelConfig.PLAYER_STARTING_UPLINK
@@ -23,7 +24,7 @@ export default class ScoreManager{
 
     updateScore =  (hitScore) => {
         //get point value and increase currentScore
-        const pointValue = levelConfig.TAP_NOTE_SCORE_DICT[hitScore]
+        const pointValue = levelConfig.NOTE_NODE_SCORE_DICT[hitScore]
         this.currentScore += pointValue
         
         //handle combo breaks on MISS.if combo is broken, the value ofcurrentScore 
@@ -44,6 +45,7 @@ export default class ScoreManager{
         //aaanad finally...update UI
         this.app.ui.gameplayHUD.updateScore(this.currentScore, this.currentCombo)
     }
+
 
     updateHealth = (hitRating) => {
         const changeInHealth = levelConfig.HIT_RATING_VALUES[hitRating].health
@@ -97,6 +99,7 @@ export default class ScoreManager{
         this.hitCounts.A = 0,
         this.hitCounts.S = 0,
         this.hitCounts.D = 0
+        this.hitCounts.LANDS = 0
         this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.surge = 0 
         this.overclock = false
