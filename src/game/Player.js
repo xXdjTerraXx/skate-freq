@@ -88,10 +88,13 @@ export default class Player {
     //JUMP/CROUCH STUFF
     //used to prevent multiple jump/crouch press
     this.isCrouching = false
-    this.isJumping = false
-    //value of jump velocity when plyr hits actually jumps. never changes
+    this.isInAir = false
+    this.landingTime = null
+    this.airStartTime = null
+    this.landingTime = null
+    //value of jump velocity when plyr hits actually jumps
     this.TARGET_JUMP_VELOCITY = .09
-    //
+    this.MAX_JUMP_HEIGHT = levelConfig.PLAYER_MAX_JUMP_HEIGHT
     this.jumpVelocity = 0
     //jump offset is distance from ground  
     this.jumpOffset = 0
@@ -140,37 +143,71 @@ export default class Player {
 
   //JUMP SYSTEM EXPLAINED:
   //1. player hits spacebar
-  //2. the "isJumping" variable gets set to true
+  //2. the "isInAir" variable gets set to true
   //3. "jumpVelocity" gets set to the constant value "TARGET_JUMP_VELOCITY"
-  //4. "isJumping" being true now allows "updateJumpPhysics" func to run
+  //4. "isInAir" being true now allows "updateJumpPhysics" func to run
   //5. in that func, "gravity" slows "jumpVeloctity" a bit every time it runs
   //6. "jumVelocity" gets added to "jumpOffset" variable, which is added to "baseRadius"
   //7.  the value of that is the new radius - how far the player is from center
   //8. ????
   //9. profit
-  jump = () => {
+  handleJump = () => {
     //stop crouching
     this.isCrouching = false
-    if(!this.isJumping){
-      this.isJumping = true
+    if(!this.isInAir){
+      this.isInAir = true
       this.jumpVelocity = this.TARGET_JUMP_VELOCITY
     }
     this.playAnimation('crouch')
   }
 
-  updateJumpPhysics = () => {
-    if (this.isJumping) {
-      //jump velocity slowed over time by gravity
-      this.jumpVelocity += this.gravity
-      this.jumpOffset += this.jumpVelocity 
-      //landing check
-      if (this.jumpOffset <= 0) {
-        this.jumpOffset = 0
-        this.jumpVelocity = 0
-        this.isJumping = false
-      }
-    }
+  handleCrouch = () => {
+    if(!this.isCrouching){
+      this.playAnimation('crouch')
+      this.isCrouching = true
+    }  
   }
+
+  // updateJumpPhysics = () => {
+  //   if (this.isInAir) {
+  //     //jump velocity slowed over time by gravity
+  //     this.jumpVelocity += this.gravity
+  //     this.jumpOffset += this.jumpVelocity 
+  //     //landing check
+  //     if (this.jumpOffset <= 0) {
+  //       this.jumpOffset = 0
+  //       this.jumpVelocity = 0
+  //       this.isInAir = false
+  //     }
+  //   }
+  // }
+
+  startJumpArc = (launchTime, landingTime) => {
+    this.isInAir = true
+    this.airStartTime = launchTime
+    this.landingTime = landingTime
+  }
+
+  updateJumpArc = () => {
+    if (!this.isInAir) return
+
+    if (this.app.level.currentTime >= this.landingTime) {
+        // snap to ground on landing beat
+        this.jumpOffset = 0
+        this.isInAir = false
+        this.landingTime = null
+        this.airStartTime = null
+        this.app.level.handlePlayerLand()
+        return
+    }
+
+    // 0 at launch, 1 at landing
+    const airProgress = (this.app.level.currentTime - this.airStartTime) / (this.landingTime - this.airStartTime)
+    // parabola: 0 at start, peaks at 0.5, back to 0 at 1
+    this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * airProgress * (1 - airProgress)
+    // const skewed = Math.pow(airProgress, 2.2)
+    // this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * skewed * (1 - skewed)
+}
 
   setSubLane = (index) => {
     this.subLane = index
@@ -231,22 +268,15 @@ export default class Player {
     // if (name !== 'idle') {
     //     clearTimeout(this.pumpTimeout)
     //     this.pumpTimeout = setTimeout(() => {
-    //         if(!this.isCrouching && !this.isJumping)this.playAnimation('idle')
+    //         if(!this.isCrouching && !this.isInAir)this.playAnimation('idle')
     //     }, 500)
     // }
-}
-
-  handleCrouch = () => {
-    if(!this.isCrouching){
-      this.playAnimation('crouch')
-      this.isCrouching = true
-    }  
   }
 
-
   update = (deltaTime) => {
-    this.updateJumpPhysics()
-    // if(this.isMoving !== false){this.updateMovement(deltaTime)}
+    // this.updateJumpPhysics()
+    this.updateJumpArc()
+
     this.updateMovement(deltaTime)
 
     //animations

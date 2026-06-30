@@ -10,7 +10,10 @@ export default class ScoreManager{
         this.hitCounts = {
             PERFECT: 0,
             GOOD: 0,
-            MISS: 0
+            MISS: 0,
+            A: 0,
+            S: 0,
+            D: 0
         }
         this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.uplink = levelConfig.PLAYER_STARTING_UPLINK
@@ -91,6 +94,9 @@ export default class ScoreManager{
         this.hitCounts.PERFECT = 0
         this.hitCounts.GOOD = 0
         this.hitCounts.MISS = 0
+        this.hitCounts.A = 0,
+        this.hitCounts.S = 0,
+        this.hitCounts.D = 0
         this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.surge = 0 
         this.overclock = false

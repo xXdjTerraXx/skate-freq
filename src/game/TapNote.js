@@ -2,7 +2,9 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 
 export default class TapNote{
-    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, beat, time){
+    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, beat, time, eventEmitter){
+        this.noteNodeType = levelConfig.NOTE_NODE_TYPE.TAPNOTE
+        
         this.app = app 
         this.hitlineZPosition = hitlineZPosition
         this.levelSpeed = levelSpeed
@@ -45,6 +47,8 @@ export default class TapNote{
             0, 
             this.maxSubLaneOffset
         ]
+
+        this.eventEmitter = eventEmitter
     } 
 
     init = (tapNotesContainer) => {
@@ -70,6 +74,9 @@ export default class TapNote{
         if(this.geometry)this.geometry.dispose()
         if(this.material)this.material.dispose()
         if(this.mesh)this.mesh.parent.remove(this.mesh)
+        
+        //emit event
+        this.eventEmitter.emit("noteKilled") 
     }
 
     update(deltaTime, currentTime) {

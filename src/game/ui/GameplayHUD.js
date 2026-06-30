@@ -13,6 +13,10 @@ export default class GameplayHUD{
         this.mainContainer = new THREE.Group()
         this.mainContainer.name = 'gameplay hud main container'
 
+        //this just tracked here for score lerping (idk if really lerping in this case o_O)
+        this.targetScore = 0
+        this.displayScore = 0
+
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////~~*~~*  HITS  *~~*~~///////////////////////////////////////
         
@@ -132,8 +136,10 @@ export default class GameplayHUD{
     updateScore = (newScore, newCombo) => {
         // console.log(`score updated! new score is ${newScore} -- your combo is at ${newCombo}`)
         //quirk of this text library - u have to call sync when changing any text
-        this.scoreText.text = `${newScore}`
-        this.scoreText.sync()
+        // this.scoreText.text = `${newScore}`
+        // this.scoreText.sync()
+        this.targetScore = newScore
+        
         this.comboText.text = `x${newCombo}`
         this.comboText.sync()
     }
@@ -160,6 +166,19 @@ export default class GameplayHUD{
     }
 
     update = (deltaTime) => {
+        //score update
+        if(this.displayScore !== this.targetScore){
+            this.displayScore = Math.round(
+                this.displayScore + (this.targetScore - this.displayScore) * 0.15
+            )
+            //snap to targetScore bc it gets stuck 
+            if (Math.abs(this.targetScore - this.displayScore) < 5) {
+                this.displayScore = this.targetScore
+            }
+            this.scoreText.text = `${this.displayScore}`
+            this.scoreText.sync()
+        }
+
         this.components.forEach(comp => comp.update(deltaTime))
     }
 }

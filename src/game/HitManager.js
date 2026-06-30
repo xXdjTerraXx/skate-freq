@@ -17,30 +17,31 @@ export default class HitManager{
         this.worldHitFxContainer = worldHitFxContainer
     }
 
-    registerHit = (tapNote, currentTime) => {
+    registerHit = (noteNode, currentTime) => {
+
         let hitScore 
 
         //if player presses when no note
-        if (!tapNote) {
+        if (!noteNode) {
             hitScore = 'MISS'
             //update score and health
             this.app.scoreManager.updateScore(hitScore)
             this.app.scoreManager.updateHealth(hitScore)
             //spawn hit effect text
             this.spawnHitEffect(hitScore, "ui")
-            //break surge panel if player is on one
+            //break surge panel streak if player is on one
             if(this.app.surgeManager.surging){
-                this.app.surgeManager.handleNoteHit(hitScore, tapNote.beat)
+                this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
             }
             return
         }
 
         //prevent double hitting
-        if (tapNote.hit) return
+        if (noteNode.hit) return
         
         //hit offset here just in case ever need it
         const HIT_OFFSET = 0
-        const timeUntilHit = (tapNote.time - currentTime) - HIT_OFFSET
+        const timeUntilHit = (noteNode.time - currentTime) - HIT_OFFSET
         
         if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
             hitScore = 'PERFECT'
@@ -51,7 +52,7 @@ export default class HitManager{
         }
         //if player is surging, handle a surge section note
         if(this.app.surgeManager.surging === true){
-            this.app.surgeManager.handleNoteHit(hitScore, tapNote.beat)
+            this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
         }
         //spawn a hit effect
         this.spawnHitEffect(hitScore, "ui")
@@ -59,20 +60,41 @@ export default class HitManager{
         this.app.scoreManager.updateScore(hitScore)
         this.app.scoreManager.updateHealth(hitScore)
         
-        tapNote.hit = true
-        tapNote.mesh.visible = false
-        tapNote.killSelf()
+        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.TAPNOTE){
+            noteNode.hit = true
+            noteNode.mesh.visible = false
+            noteNode.killSelf()
+        }
+        else if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAMP){
+            this.app.level.handleRampHit(noteNode)
+            noteNode.handleOnHit()
+        }   
+    }
+
+    registerTrickHit = (trick, currentTime) => {
+        let hitScore
+
+        //this is all palceholder so no timing yet.
+        //this is hacky until phase 3 when the full trick system will be added
+        //trick currently is just a string: either "A", "S", or "D"
+
+        hitScore = trick
+        this.spawnHitEffect(hitScore, "ui")
+        this.app.scoreManager.updateScore(hitScore)
+    }
+
+    registerLandingHit = (currentTime) => {
+        
     }
 
     //hit rating is 'PERFECT', 'GOOD', or 'MISS'
     spawnHitEffect = (hitRating, type = 'world') => {
-        const texture = this.app.assetManager.getAsset('hitEffects', hitRating)
         if(type === 'world'){
-            const newHitEffect = new WorldHitEffect(hitRating,this.worldHitFxContainer,texture)
+            const newHitEffect = new WorldHitEffect(hitRating,this.worldHitFxContainer)
             this.activeHits.push(newHitEffect)
         }
         else if(type === 'ui'){
-            const newHitEffect = new UiHitEffect(hitRating,this.app.ui.gameplayHUD.hitEffectsContainer,texture, this.app)
+            const newHitEffect = new UiHitEffect(hitRating,this.app.ui.gameplayHUD.hitEffectsContainer, this.app)
             // const newHitEffect = new UiHitEffect(hitRating,this.app.scene,texture)
             this.activeHits.push(newHitEffect)
         }
@@ -94,10 +116,10 @@ export default class HitManager{
 }
 
 class HitEffect{
-    constructor(hitRating, container, texture){
+    constructor(hitRating, container, app){
         this.hitRating = hitRating
         this.container = container
-        this.texture = texture
+        this.app = app
 
         this.isDead = false
     }
@@ -124,25 +146,20 @@ class WorldHitEffect extends HitEffect{
 //these are the text good, perfect, or miss that live in a fixed space 
 //as part of the ui
 class UiHitEffect extends HitEffect{
-    constructor(hitRating, container, texture, app){
-        super(hitRating, container, texture)
+    constructor(hitRating, container, app){
+        super(hitRating, container, app)
         this.currentScale = 1
         this.terminalScale = 1.2
         this.scaleIncrementSpeed = .001
         this.app = app 
-
-
-        this.material = new THREE.SpriteMaterial({
-            map: texture,
-            transparent: true,
-            // color: levelConfig.UI_HIT_EFFECT_COLOR_DICT[this.hitRating],
-            // blending: THREE.AdditiveBlending
-            })
         
         const translatedHitRatings = {
             'PERFECT': 'LOCKED!',
             'GOOD': 'CLEAN',
-            'MISS': 'DROPPED'
+            'MISS': 'DROPPED',
+            'A': 'MUTE GRAB',
+            'S': 'ROYALE GRAB',
+            'D': 'BACKFLIP'
         }
 
         // this.mesh = new THREE.Sprite(this.material)

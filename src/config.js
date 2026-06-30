@@ -9,6 +9,7 @@ export const levelConfig = {
     STARTING_LANE: 0,
     STARTING_SUB_LANE: 1,
     SPEED: 7,
+    PLAYER_MAX_JUMP_HEIGHT: 1.5,
     RING_COUNT: 12,
     RING_SPACING: 2,
     GATE_RING_BEAT_SUBDIVISION: 2,
@@ -23,6 +24,10 @@ export const levelConfig = {
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
+    NOTE_NODE_TYPE: {
+        TAPNOTE: 'TAPNOTE',
+        RAMP: 'RAMP'
+    },
     //how much a miss good or perfect affect player health
     HIT_RATING_VALUES:{
         PERFECT: {health: 3, uplink: 30},
@@ -125,12 +130,16 @@ export const levelConfig = {
     //timing windows for all note node - ramps, rails, tapNotes
     NOTE_TIMING: {
         GOOD: 0.3,
-        PERFECT: 0.15
+        PERFECT: 0.15,
+        LANDING: 0.2
     },
     TAP_NOTE_SCORE_DICT: {
         PERFECT: 100,
         GOOD: 50,
-        MISS: 0
+        MISS: 0,
+        A: 50,
+        S: 50,
+        D: 50
     },
     OVERCLOCK_VISUALS_SETTINGS:{
         WhooshEmitter: {

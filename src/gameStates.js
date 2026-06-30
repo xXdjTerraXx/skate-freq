@@ -240,8 +240,9 @@ class PlayingState {
         this.app.player.update(deltaTime)
         this.app.level.update(deltaTime)
         this.app.ui.update(deltaTime)
-        //only shows notes, rings, and detect hits AFTER countdown
+        //only detect hits AFTER countdown
         if(this.subState === 'PLAYING'){
+            //TODO: surge manager update can probly be moved out of this check
             this.app.surgeManager.update(deltaTime)
             this.app.hitManager.update(deltaTime)
         }
@@ -252,9 +253,9 @@ class PlayingState {
             this.app.stateMachine.setState(GAME_STATES.RESULTS)
         }
         //check if player health is at or below 0
-        if (this.app.scoreManager.health <= 0 || this.app.scoreManager.uplink <= 0) {
-            this.app.stateMachine.setState(GAME_STATES.GAME_OVER)
-        }
+        // if (this.app.scoreManager.health <= 0 || this.app.scoreManager.uplink <= 0) {
+        //     this.app.stateMachine.setState(GAME_STATES.GAME_OVER)
+        // }
     }
 
     //aaand update method for COUNTDOWN substate

@@ -12,6 +12,7 @@ export default class Controller{
         this.aKey = 'KeyA'
         this.sKey = 'KeyS'
         this.dKey = 'KeyD'
+        this.wKey = 'KeyW'
         this.spacebar = 'Space'
     }
 
@@ -29,15 +30,38 @@ export default class Controller{
             if(e.code === this.spacebar){
                 this.crouch()
             }
-            //player subLane movement
+            //player subLane movement/tricks
             if(e.code === this.aKey){
-                this.playerSubLaneSwitch(0)
+                //is the player on a ramp?
+                if(this.level.playerIsInAir){
+                //if so handle an air trick
+                    this.handlePlayerTrick('A')
+                }
+                //if not, sublane switch
+                else{
+                    this.handlePlayerSubLaneSwitch(0)
+                }
             }
             if(e.code === this.sKey){
-                this.playerSubLaneSwitch(1)
+                if(this.level.playerIsInAir){
+                    this.handlePlayerTrick('S')
+                }
+                else{
+                    this.handlePlayerSubLaneSwitch(1)
+                }
             }
             if(e.code === this.dKey){
-                this.playerSubLaneSwitch(2)
+                if(this.level.playerIsInAir){
+                    this.handlePlayerTrick('D')
+                }
+                else{
+                    this.handlePlayerSubLaneSwitch(2)
+                }
+            }
+            if(e.code === this.wKey){
+                if(this.level.playerIsInAir){
+                    this.handlePlayerLand()
+                }
             }
         })
 
@@ -67,16 +91,27 @@ export default class Controller{
     }
 
     jump = () => {
-        console.log("SPACE BAR PRESS")
-        this.player.jump()
-        this.level.checkRampHit()
+        console.log("SPACE BAR UP")
+
+        const { ramp, currentTime } = this.level.checkRampHit()
+        console.log("DEBUGGIN SOME SHIT",ramp, currentTime)
+        this.player.handleJump()
+        if(this.app.level.isActivated) this.hitManager.registerHit(ramp, currentTime)
+        this.player.pulse()
     }
 
-    playerSubLaneSwitch = (index) => {
-        // console.log('111 subState:', this.app.stateMachine.statesDict.PLAYING.subState)
-        // console.log('222 note:', this.level.checkTapNoteHit(index).note)
-        // console.log('333 currentTime:', this.level.currentTime)
-        // console.log('444 first note time:', this.level.tapNotes[0].time)
+    handlePlayerTrick = (keyString) => {
+        const { trick, currentTime } = this.level.handlePlayerTrick(keyString)
+        if(this.app.level.isActivated) this.hitManager.registerTrickHit(trick, currentTime)
+    }
+
+    handlePlayerLand = () => {
+        this.player.setSubLane(1)
+        const currentTime = this.level.handlePlayerLand
+        this.hitManager.registerLandingHit(currentTime)
+    }
+
+    handlePlayerSubLaneSwitch = (index) => {
         //DEBUG play key press click
         this.app.audioManager.playKeyPressClick()
         //move the player to the correct sub lane

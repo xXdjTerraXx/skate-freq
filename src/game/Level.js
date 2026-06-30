@@ -4,6 +4,7 @@ import GateRing from './GateRing'
 import Ramp from './Ramp'
 import TapNote from './TapNote'
 import FloorPanel from './FloorPanel'
+import EventEmitter from './EventEmitter'
 
 //the whole scene tree for the game looks like this:
 //           [app scene]
@@ -49,8 +50,15 @@ export default class Level{
     this.ramps = []
     this.floorPanels = []
 
+    //this flag is for cleaning up note arrays after a note has been hit
+    this.dirtyNotesExist = false
+
     //this property used for transition from countdown -> playing
     this.isActivated = false
+
+    //these properties for ramp hit stuff
+    this.playerIsInAir = false
+    this.landingTime = null
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -149,6 +157,10 @@ export default class Level{
     this.mainLevelContainer.add(this.tapNotesContainer)
     this.mainLevelContainer.add(this.rampContainer)
     this.mainLevelContainer.add(this.ringContainer)
+
+    //init event emitter here
+    this.eventEmitter = new EventEmitter()
+    this.eventEmitter.on('noteKilled', () => this.dirtyNotesExist = true)
   }
 
   init = (noteMap) => {
@@ -220,7 +232,7 @@ export default class Level{
             tapNoteInLevelMap.subLane, 
             tapNoteInLevelMap.beat,
             timeInSeconds,
-            
+            this.eventEmitter
           ) 
           tapNote.init(this.tapNotesContainer)
           this.tapNotes.push(tapNote)
@@ -228,15 +240,20 @@ export default class Level{
 
     //init ramps
     this.levelMap.patterns.ramps.forEach(mapNode => {
-      const timeInSeconds = (mapNode.beat - 1) * this.secondsPerBeat
+      const countdownOffset = 4 * this.secondsPerBeat
+      const timeInSeconds = (mapNode.beat - 1) * this.secondsPerBeat + countdownOffset
       const ramp = new Ramp(
         this.app, 
         this.hitlineZPosition,
-        mapNode.lane - 1, 
+        mapNode.lane, 
+        mapNode.duration,
         timeInSeconds, 
         this.zRotationOffset, 
         this.levelSpeed, 
-        this.currentTime) 
+        this.currentTime,
+        this.secondsPerBeat,
+        this.eventEmitter
+      ) 
       ramp.init(this.rampContainer)
       this.ramps.push(ramp)
     })
@@ -268,6 +285,7 @@ export default class Level{
       console.log('DEBUG: PLAYER CURRENT LANE: ', this.playerCurrentLane)
   }
 
+  //for lane rotation
   applyRotation = (deltaTime) => {
       //figure the new rotation
       const lerpFactor = 1 - Math.pow(0.001, deltaTime)
@@ -286,71 +304,77 @@ export default class Level{
   checkTapNoteHit = (subLane) => {
     const playerLane = this.playerCurrentLane
 
-    const closestTapNoteInTime = this.tapNotes.reduce(
+    const tapNotesInPlayerLane = this.tapNotes.filter(note => {
+      return note.lane === playerLane
+    })
+
+    const closestTapNoteInTime = tapNotesInPlayerLane.reduce(
       (acc, note) => {
         const timeUntilHit = (note.time - this.currentTime)
         const absTime = Math.abs(timeUntilHit)
         if (note.hit) return acc
-        if (note.lane !== playerLane) return acc
         if (note.subLane !== this.player.subLane) return acc
         if (timeUntilHit > 0.5) return acc
         if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
         if (absTime < acc.timeDiff) {
-          return { tapNote: note, timeDiff: absTime, currentTime: this.currentTime }
+          return {tapNote: note, timeDiff: absTime, currentTime: this.currentTime}
         }
         return acc
-      }, { tapNote: null, timeDiff: Infinity, currentTime: null }
+      }, {tapNote: null, timeDiff: Infinity, currentTime: null}
     )
+
 
     return closestTapNoteInTime
 }
 
   checkRampHit = () => {
+
+    //return a miss if the player is NOT courching already
+    if(!this.player.isCrouching) {
+          console.log("not crouched dog")
+      return {
+      ramp: null, timeDiff: Infinity, currentTime: null
+      }
+    }
+    
     const playerLane = this.playerCurrentLane
 
+    const rampsInPlayerLane = this.ramps.filter(ramp => ramp.lane === playerLane)
+    console.log("FUUUUUUUUCKKASKDASDASDASDA", rampsInPlayerLane)
     // walk through ramps and return closest ramp in front of player
-    const closestRampInTime = this.ramps.reduce(
+    const closestRampInTime = rampsInPlayerLane.reduce(
       (acc, ramp) => {
-      const timeUntilHit = ramp.time - this.currentTime
-      const absTime = Math.abs(timeUntilHit)
-      if (ramp.hit) return acc
-      if (absTime > 2.0) return acc
-      if(absTime < acc.timeDiff){
-        return { ramp: ramp, timeDiff: absTime }
-      }  
-      return acc
-      }, { ramp: null, timeDiff: Infinity }
+        const timeUntilHit = ramp.time - this.currentTime
+        const absTime = Math.abs(timeUntilHit)
+        if (ramp.hit) return acc
+        if (timeUntilHit > this.secondsPerBeat) return acc
+        if(absTime < acc.timeDiff){
+          return { ramp: ramp, timeDiff: absTime, currentTime: this.currentTime }
+        }  
+        return acc
+      }, { ramp: null, timeDiff: Infinity, currentTime: null }
     )
 
-    const ramp = closestRampInTime.ramp
+    return closestRampInTime
+  }
 
-    if (!ramp) {
-      console.log("MISS (no ramp)")
-      return
-    }
+  handleRampHit = (ramp) => {
+      this.playerIsInAir = true
+      this.landingTime = ramp.time + ramp.duration * this.secondsPerBeat
+      // pass these to player so it can drive make jump arc
+      this.player.startJumpArc(ramp.time, this.landingTime)
+  }
 
-    const timeUntilHit = ramp.time - this.currentTime
+  handlePlayerTrick = (keyString) => {
+    console.log(`WHOAH!!!! U DID  ATRICK BY HITTING THE ${keyString} KEY`)
+    const trick = keyString
+    return { trick, currentTime: this.currentTime}
+  }
 
-
-    //check to prevent double hit on ramp
-    if(ramp.hit) return
-
-    // lane check
-    if (ramp.lane !== playerLane) {
-      this.hitManager.spawnHitEffect("MISS", "ui")
-      return
-    }
-
-    //check timing and spawn and effect!
-    if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
-      this.hitManager.spawnHitEffect("PERFECT", "ui")
-    } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
-      this.hitManager.spawnHitEffect("GOOD", "ui")
-    } else {
-      this.hitManager.spawnHitEffect("MISS", "ui")
-    }
-    //set ramp hit to true
-    ramp.hit = true
+  handlePlayerLand = () => {
+    this.playerIsInAir = false
+    //this is placeholder for later!!! atm just need to return currentTime
+    return this.currentTime
   }
 
   handleStartOverclock = (currentSurgeObject) => {
@@ -490,6 +514,15 @@ export default class Level{
     })
 
 
+        //remove already hit notes from note arrays
+    if(this.dirtyNotesExist){
+      console.log("FILTER ARRAYS FOR DIRTY NOTES")
+      this.ramps = this.ramps.filter(ramp => ramp.hit !== true)
+      this.tapNotes = this.tapNotes.filter(note => note.hit !== true)
+      this.dirtyNotesExist = false
+    }
+
+
     this.tapNotes.forEach(note => {
       //////////////////////////////////////////
       // DEBUG - checking timing with a click
@@ -515,6 +548,13 @@ export default class Level{
     //update ramps
     this.ramps.forEach(ramp => {
       ramp.update(deltaTime, this.currentTime)
+      if (!ramp.hit && this.currentTime > ramp.time + levelConfig.NOTE_TIMING.GOOD) {
+        // note.hit = true
+        this.app.hitManager.registerHit(ramp, this.currentTime)
+      }
     })
+
   }
+
+
 }
