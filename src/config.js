@@ -9,6 +9,7 @@ export const levelConfig = {
     STARTING_LANE: 0,
     STARTING_SUB_LANE: 1,
     SPEED: 7,
+    PLAYER_DEFAULT_JUMP_HEIGHT: .5,
     PLAYER_MAX_JUMP_HEIGHT: 1.5,
     RING_COUNT: 12,
     RING_SPACING: 2,

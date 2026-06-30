@@ -70,6 +70,12 @@ export default class TapNote{
         tapNotesContainer.add(this.mesh)
     }
 
+    handleOnHit = () => {
+        this.hit = true
+        this.mesh.visible = false
+        this.killSelf()
+    }
+
     killSelf = () => {
         if(this.geometry)this.geometry.dispose()
         if(this.material)this.material.dispose()

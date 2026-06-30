@@ -89,12 +89,11 @@ export default class Player {
     //used to prevent multiple jump/crouch press
     this.isCrouching = false
     this.isInAir = false
-    this.landingTime = null
     this.airStartTime = null
     this.landingTime = null
-    //value of jump velocity when plyr hits actually jumps
-    this.TARGET_JUMP_VELOCITY = .09
     this.MAX_JUMP_HEIGHT = levelConfig.PLAYER_MAX_JUMP_HEIGHT
+    this.DEFAULT_JUMP_HEIGHT = levelConfig.PLAYER_DEFAULT_JUMP_HEIGHT
+    this.jumpHeight = this.DEFAULT_JUMP_HEIGHT
     this.jumpVelocity = 0
     //jump offset is distance from ground  
     this.jumpOffset = 0
@@ -148,86 +147,56 @@ export default class Player {
     }  
   }
 
-  handleJump = () => {
-    //stop crouching
-    this.isCrouching = false
-    if(!this.isInAir){
-      this.isInAir = true
-      this.jumpVelocity = this.TARGET_JUMP_VELOCITY
-    }
-    this.playAnimation('crouch')
-  }
-
-
-  // updateJumpPhysics = () => {
-  //   if (this.isInAir) {
-  //     //jump velocity slowed over time by gravity
-  //     this.jumpVelocity += this.gravity
-  //     this.jumpOffset += this.jumpVelocity 
-  //     //landing check
-  //     if (this.jumpOffset <= 0) {
-  //       this.jumpOffset = 0
-  //       this.jumpVelocity = 0
-  //       this.isInAir = false
-  //     }
+  //this function basically just sets isCrouching to false and isInAir to true and
+  //sets the jump velocity so that updatePosition in update will move the player up
+  // handleJump = () => {
+  //   //stop crouching
+  //   this.isCrouching = false
+  //   if(!this.isInAir){
+  //     this.isInAir = true
+  //     this.jumpVelocity = this.TARGET_JUMP_VELOCITY
   //   }
+  //   this.playAnimation('jump')
   // }
 
-  startJumpArc = (launchTime, landingTime) => {
+  launch = (launchTime, landingTime, jumpHeight = this.DEFAULT_JUMP_HEIGHT) => {
+    this.isCrouching = false
+    this.playAnimation('jump')
     this.isInAir = true
     this.airStartTime = launchTime
     this.landingTime = landingTime
+    this.jumpHeight = jumpHeight
   }
 
-//   updateJumpArc = () => {
-//     if (!this.isInAir) return
+  updateJumpArc = () => {
+      if (!this.isInAir) return
 
-//     if (this.app.level.currentTime >= this.landingTime) {
-//         // snap to ground on landing beat
-//         this.jumpOffset = 0
-//         this.isInAir = false
-//         this.landingTime = null
-//         this.airStartTime = null
-//         this.app.level.handlePlayerLand()
-//         return
-//     }
+      if (this.app.level.currentTime >= this.landingTime) {
+          this.jumpOffset = 0
+          this.isInAir = false
+          // this.landingTime = null
+          // this.airStartTime = null
+          this.app.level.handlePlayerLand()
+          console.log("ICH BIN WEIDER HIER")
+          return
+      }
 
-//     // 0 at launch, 1 at landing
-//     const airProgress = (this.app.level.currentTime - this.airStartTime) / (this.landingTime - this.airStartTime)
-//     // parabola: 0 at start, peaks at 0.5, back to 0 at 1
-//     this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * airProgress * (1 - airProgress)
-//     // const skewed = Math.pow(airProgress, 2.2)
-//     // this.jumpOffset = this.MAX_JUMP_HEIGHT * 4 * skewed * (1 - skewed)
-// }
+      const totalAirTime = this.landingTime - this.airStartTime
+      const elapsed = this.app.level.currentTime - this.airStartTime
+      const t = elapsed / totalAirTime  // 0 to 1
 
-updateJumpArc = () => {
-    if (!this.isInAir) return
+      const RISE_PORTION = 0.35  // rise takes 35% of air time, fall takes 65%
 
-    if (this.app.level.currentTime >= this.landingTime) {
-         this.jumpOffset = 0
-        this.isInAir = false
-        this.landingTime = null
-        this.airStartTime = null
-        this.app.level.handlePlayerLand()
-        return
-    }
-
-    const totalAirTime = this.landingTime - this.airStartTime
-    const elapsed = this.app.level.currentTime - this.airStartTime
-    const t = elapsed / totalAirTime  // 0 to 1
-
-    const RISE_PORTION = 0.35  // rise takes 35% of air time, fall takes 65%
-
-    if (t < RISE_PORTION) {
-        // rising — ease out (fast start, slow finish into the float)
-        const riseT = t / RISE_PORTION
-        this.jumpOffset = this.MAX_JUMP_HEIGHT * (1 - Math.pow(1 - riseT, 2))
-    } else {
-        // falling — ease in hard (slow start, fast snap down)
-        const fallT = (t - RISE_PORTION) / (1 - RISE_PORTION)
-        this.jumpOffset = this.MAX_JUMP_HEIGHT * (1 - Math.pow(fallT, 3))
-    }
-}
+      if (t < RISE_PORTION) {
+          // rising — ease out (fast start, slow finish into the float)
+          const riseT = t / RISE_PORTION
+          this.jumpOffset = this.jumpHeight * (1 - Math.pow(1 - riseT, 2))
+      } else {
+          // falling — ease in hard (slow start, fast snap down)
+          const fallT = (t - RISE_PORTION) / (1 - RISE_PORTION)
+          this.jumpOffset = this.jumpHeight * (1 - Math.pow(fallT, 3))
+      }
+  }
 
   setSubLane = (index) => {
     this.subLane = index
@@ -250,8 +219,6 @@ updateJumpArc = () => {
   updateMovement = (deltaTime) => {
     const lerpFactor = 1 - Math.pow(0.001, deltaTime)
     this.laneOffset += (this.targetLaneOffset - this.laneOffset) * lerpFactor
-
-    // this.mesh.rotation.z = (this.targetLaneOffset - this.laneOffset) * 10
   }
 
   updatePosition = () => {

@@ -56,9 +56,6 @@ export default class Level{
     //this property used for transition from countdown -> playing
     this.isActivated = false
 
-    //these properties for ramp hit stuff
-    this.playerIsInAir = false
-    this.landingTime = null
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -334,7 +331,7 @@ export default class Level{
     if(!this.player.isCrouching) {
           console.log("not crouched dog")
       return {
-      ramp: null, timeDiff: Infinity, currentTime: null
+      ramp: null, timeDiff: Infinity, currentTime: this.currentTime
       }
     }
     
@@ -353,17 +350,10 @@ export default class Level{
           return { ramp: ramp, timeDiff: absTime, currentTime: this.currentTime }
         }  
         return acc
-      }, { ramp: null, timeDiff: Infinity, currentTime: null }
+      }, { ramp: null, timeDiff: Infinity, currentTime: this.currentTime }
     )
 
     return closestRampInTime
-  }
-
-  handleRampHit = (ramp) => {
-      this.playerIsInAir = true
-      this.landingTime = ramp.time + ramp.duration * this.secondsPerBeat
-      // pass these to player so it can drive make jump arc
-      this.player.startJumpArc(ramp.time, this.landingTime)
   }
 
   handlePlayerTrick = (keyString) => {
@@ -373,7 +363,6 @@ export default class Level{
   }
 
   handlePlayerLand = () => {
-    this.playerIsInAir = false
     //this is placeholder for later!!! atm just need to return currentTime
     return this.currentTime
   }
@@ -515,7 +504,8 @@ export default class Level{
     })
 
 
-        //remove already hit notes from note arrays
+    //remove already hit notes from note arrays if this flag is true
+    //set by level -> note nodes mini event system
     if(this.dirtyNotesExist){
       console.log("FILTER ARRAYS FOR DIRTY NOTES")
       this.ramps = this.ramps.filter(ramp => ramp.hit !== true)

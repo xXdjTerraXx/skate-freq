@@ -61,14 +61,18 @@ export default class HitManager{
         this.app.scoreManager.updateHealth(hitScore)
         
         if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.TAPNOTE){
-            noteNode.hit = true
-            noteNode.mesh.visible = false
-            noteNode.killSelf()
+            noteNode.handleOnHit()
         }
         else if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAMP){
-            this.app.level.handleRampHit(noteNode)
             noteNode.handleOnHit()
-        }   
+            if(hitScore !== 'MISS'){
+                const launchTime = noteNode.time
+                const secondsPerBeat = this.app.level.secondsPerBeat
+                const landingTime = noteNode.time + noteNode.duration * secondsPerBeat
+                const rampJumpHeight = levelConfig.PLAYER_MAX_JUMP_HEIGHT
+                this.app.player.launch(launchTime, landingTime, rampJumpHeight)
+            }
+        } 
     }
 
     registerTrickHit = (trick, currentTime) => {
@@ -87,7 +91,6 @@ export default class HitManager{
         if(landingTime === null)return     //just in case
 
         const timeUntilHit = (landingTime - currentTime)
-        console.log('SHEEEEEIIIIITT',timeUntilHit, levelConfig.NOTE_TIMING.RESYNCED)
         if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.RESYNCED) {
             this.spawnHitEffect("RESYNCED", "ui")
         } 

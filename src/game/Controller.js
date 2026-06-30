@@ -30,12 +30,12 @@ export default class Controller{
             }
             //crouch
             if(e.code === this.spacebar){
-                this.crouch()
+                this.handleCrouch()
             }
             //player subLane movement/tricks
             if(e.code === this.aKey){
                 //is the player on a ramp?
-                if(this.level.playerIsInAir){
+                if(this.player.isInAir){
                 //if so handle an air trick
                     this.handlePlayerTrick('A')
                 }
@@ -45,7 +45,7 @@ export default class Controller{
                 }
             }
             if(e.code === this.sKey){
-                if(this.level.playerIsInAir){
+                if(this.player.isInAir){
                     this.handlePlayerTrick('S')
                 }
                 else{
@@ -53,7 +53,7 @@ export default class Controller{
                 }
             }
             if(e.code === this.dKey){
-                if(this.level.playerIsInAir){
+                if(this.player.isInAir){
                     this.handlePlayerTrick('D')
                 }
                 else{
@@ -63,7 +63,7 @@ export default class Controller{
             if(e.code === this.wKey){
                 //this check needs to happen even a little after player acutally lands
                 const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED_CHECK_GRACE_PERIOD
-                if (Math.abs(this.level.currentTime - this.level.landingTime) < LANDING_WINDOW) {
+                if (Math.abs(this.level.currentTime - this.player.landingTime) < LANDING_WINDOW) {
                     this.handlePlayerLand()
                 }
             }
@@ -72,7 +72,7 @@ export default class Controller{
         window.addEventListener('keyup', (e) => {
              //jump
             if(e.code === this.spacebar){
-                this.jump()
+                this.handleJump()
             }
         })
     }
@@ -89,19 +89,22 @@ export default class Controller{
         this.player.playAnimation('powerslide')
     }
 
-    crouch = () => {
-        console.log("CROUCH PRESS")
+    handleCrouch = () => {
         this.player.handleCrouch()
     }
 
-    jump = () => {
-        console.log("SPACE BAR UP")
-
+    handleJump = () => {
         const { ramp, currentTime } = this.level.checkRampHit()
-        console.log("DEBUGGIN SOME SHIT",ramp, currentTime)
-        this.player.handleJump()
-        if(this.app.level.isActivated) this.hitManager.registerHit(ramp, currentTime)
-        this.player.pulse()
+        const secondsPerBeat = this.level.secondsPerBeat
+        //handle case for a free jump aka no ramp or rail nearby
+        if(!ramp){
+            this.player.launch(currentTime, currentTime + secondsPerBeat)
+        }
+        //handle case for ramp or rail
+        else{
+            if(this.app.level.isActivated) this.hitManager.registerHit(ramp, currentTime)
+        }
+         this.player.pulse()
     }
 
     handlePlayerTrick = (keyString) => {
@@ -110,9 +113,10 @@ export default class Controller{
     }
 
     handlePlayerLand = () => {
+        console.log("HANDLE PLAYER LAND")
         this.player.setSubLane(1)
         const currentTime = this.level.currentTime
-        const landingTime = this.level.landingTime
+        const landingTime = this.player.landingTime
         this.hitManager.registerLandingHit(currentTime, landingTime)
     }
 
