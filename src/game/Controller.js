@@ -16,6 +16,8 @@ export default class Controller{
         this.dKey = 'KeyD'
         this.wKey = 'KeyW'
         this.spacebar = 'Space'
+
+        this.heldKeys = new Set()
     }
 
     init = () => {
@@ -61,11 +63,8 @@ export default class Controller{
                 }
             }
             if(e.code === this.wKey){
-                //this check needs to happen even a little after player acutally lands
-                const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED_CHECK_GRACE_PERIOD
-                if (Math.abs(this.level.currentTime - this.player.landingTime) < LANDING_WINDOW) {
-                    this.handlePlayerLand()
-                }
+                if(!this.heldKeys.has(this.wKey)) this.handlePlayerLand()
+                this.heldKeys.add(this.wKey)
             }
         })
 
@@ -73,6 +72,11 @@ export default class Controller{
              //jump
             if(e.code === this.spacebar){
                 this.handleJump()
+            }
+            //w key up
+            if(e.code === this.wKey){
+                this.heldKeys.delete(this.wKey)
+                if(this.player.isGrinding) this.handleGrindRelease()
             }
         })
     }
@@ -100,24 +104,85 @@ export default class Controller{
         if(!ramp){
             this.player.launch(currentTime, currentTime + secondsPerBeat)
         }
-        //handle case for ramp or rail
+        //handle case for ramp
         else{
-            if(this.app.level.isActivated) this.hitManager.registerHit(ramp, currentTime)
+            if(this.app.level.isActivated) {
+                const hitScore = this.hitManager.registerHit(ramp, currentTime)
+                //update score manager
+                this.app.scoreManager.updateScore(hitScore)
+                this.app.scoreManager.updateHealth(hitScore)
+                const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE
+                this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+                const launchTime = ramp.time
+                const secondsPerBeat = this.app.level.secondsPerBeat
+                const landingTime = ramp.time + ramp.duration * secondsPerBeat
+                const rampJumpHeight = levelConfig.PLAYER_MAX_JUMP_HEIGHT
+                this.player.launch(launchTime, landingTime, rampJumpHeight)
+            }
         }
          this.player.pulse()
     }
 
     handlePlayerTrick = (keyString) => {
         const { trick, currentTime } = this.level.handlePlayerTrick(keyString)
-        if(this.app.level.isActivated) this.hitManager.registerTrickHit(trick, currentTime)
+        if(this.app.level.isActivated) {
+            const hitScore = this.hitManager.registerTrickHit(trick, currentTime)
+            console.log('THE DEBUG OF A LFIETIME: ', hitScore)
+            const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.TRICK
+            this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+            this.app.scoreManager.updateScore(hitScore)
+
+            //player pulse effect
+            this.player.pulse()
+        }
     }
 
     handlePlayerLand = () => {
-        console.log("HANDLE PLAYER LAND")
         this.player.setSubLane(1)
-        const currentTime = this.level.currentTime
+
+        const { rail, currentTime, timeDiff } = this.level.checkRailHit()
         const landingTime = this.player.landingTime
-        this.hitManager.registerLandingHit(currentTime, landingTime)
+        //if there is a rail:
+        if(rail) {
+            const hitScore = this.hitManager.registerHit(rail, currentTime)
+            if(hitScore !== levelConfig.JUDGEMENT_ENUMS.MISS){
+                //grind is the entry point for grinds, similar to launch for jumps
+                const grindStartTime = currentTime
+                const grindEndTime = grindStartTime + rail.duration
+                const grindDuration = rail.duration
+                this.player.grind(grindStartTime, grindEndTime, grindDuration)
+            }
+            this.app.scoreManager.updateGrind(hitScore)
+            this.app.scoreManager.updateHealth(hitScore)
+            const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE
+            this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+        }
+        //if no rail check for resync landing (combo continue/breka)
+        else{
+            const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED
+            if (Math.abs(this.level.currentTime - this.player.landingTime) < LANDING_WINDOW){
+                const hitScore = this.hitManager.registerLandingHit(currentTime, landingTime)
+                const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.LAND
+                this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+                //TO DO: this will be where the entry point method in player
+                //for trick continuation animation and stuff wil go
+                //like:  handlePlayerManual() or smthn
+            }
+            
+        }
+    }
+
+    handleGrindHold = () => {
+        this.player.updateGrind(this.heldKeys.has(this.wKey))
+        //this hitScore should be HOLD if player holding key, BAIL if not
+        // const { hitScore, rail } = this.hitManager.updateGrind(this.level.currentTime)
+        // this.app.scoreManager.updateGrind(hitScore)
+    }
+
+    handleGrindRelease = () => {
+        this.player.updateGrind(this.heldKeys.has(this.wKey)) //should this be here? o_O
+        const { hitScore, rail } = this.hitManager.registerGrindRelease(this.level.currentTime)
+        this.app.scoreManager.updateGrind(hitScore)
     }
 
     handlePlayerSubLaneSwitch = (index) => {
@@ -127,23 +192,24 @@ export default class Controller{
         this.player.setSubLane(index)
         //check for a tapNote hit inside of Level
         const { tapNote, currentTime } = this.level.checkTapNoteHit(index)
-        if(this.app.level.isActivated) this.hitManager.registerHit(tapNote, currentTime)
+        if(this.app.level.isActivated) {
+            const hitScore = this.hitManager.registerHit(tapNote, currentTime)
+            //update score manager
+            this.app.scoreManager.updateScore(hitScore)
+            this.app.scoreManager.updateHealth(hitScore)
+            //is player on a surge panel, handle hits there too
+            if(this.app.surgeManager.surging === true){
+                this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
+            }
+            const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE
+            this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+        }
         //player pulse effect
         this.player.pulse()
     }
 
     run = (deltaTime) => {
-        // if(this.moveKeys.left === true){
-        //     this.player.direction = -1
-        //     this.player.isMoving = true
-        // }
-        // else if(this.moveKeys.right === true){
-        //     this.player.direction = 1
-        //     this.player.isMoving = true
-        // }
-        // else {
-        //     this.player.direction = 0
-        //     this.player.isMoving = false
-        // }
+        if(this.player.isGrinding) this.handleGrindHold()
+        // if(this.heldKeys.has(this.wKey)) this.hitManager.updateGrind()
     }
 }

@@ -1,8 +1,9 @@
 import * as THREE from 'three'
-import { levelConfig } from '../config'
+import { levelConfig } from '../../config'
 
-export default class Ramp {
-  constructor(app, 
+export default class Rail {
+  constructor(
+    app, 
     hitlineZPosition, 
     lane, duration, beat,
     time, 
@@ -12,7 +13,7 @@ export default class Ramp {
     secondsPerBeat, 
     eventEmitter
   ) {
-    this.noteNodeType = levelConfig.NOTE_NODE_TYPE.RAMP
+    this.noteNodeType = levelConfig.NOTE_NODE_TYPE.RAIL
     
     this.app = app
 
@@ -32,28 +33,28 @@ export default class Ramp {
     this.z = this.hitlineZPosition-(this.levelSpeed * currentTime)      
 
     this.secondsPerBeat = secondsPerBeat
-
+    this.RAIL_LENGTH = this.duration * this.secondsPerBeat * this.levelSpeed
     // simple placeholder geometry (will replace later)
-    const geometry = new THREE.BoxGeometry(0.15, 0.4, 1.2)
+    const geometry = new THREE.BoxGeometry(0.1, 0.1, this.RAIL_LENGTH)
     const material = new THREE.MeshBasicMaterial({ 
-      color: 0xff00ff, transparent: true, opacity: 0.25 
+      color: levelConfig.NOTE_COLORS.RAIL, transparent: true, opacity: 0.25 
     })
     material.opacity = .5
     this.mesh = new THREE.Mesh(geometry, material)
-    this.mesh.name = 'ramp'
+    this.mesh.name = 'rail'
     this.mesh.renderOrder = levelConfig.RENDER_ORDER.WORLD_OPAQUE
 
     //this prevents players double hitting ramps and used for disposal
     this.hit = false
 
     //this set in init
-    this.rampContainer = null
+    this.railContainer = null
 
     this.eventEmitter = eventEmitter
   }
 
-  init(rampContainer) {
-    this.rampContainer = rampContainer
+  init(railContainer) {
+    this.railContainer = railContainer
     //ok some weird notes here....subtracting 1 from this.lane is the 
     //only way i found currently to fix offset problem im 
     //having between player's lane index and the ramp's. subtracting levelZRotationOffset
@@ -65,18 +66,13 @@ export default class Ramp {
       const x = Math.cos(angle) * radius
       const y = Math.sin(angle) * radius
 
-      this.mesh.position.set(x, y, this.z)
+      //z offset so rail starts right at time
+      this.mesh.position.set(x, y, this.z - this.RAIL_LENGTH/2)
 
       // rotate to face center (important for tunnel)
       this.mesh.rotation.z = angle
       
-      this.mesh.material.color.setHSL(
-        this.lane / levelConfig.LANE_COUNT,
-        1,
-        0.5
-      )
-      
-      rampContainer.add(this.mesh)
+      railContainer.add(this.mesh)
   }
 
   handleOnHit = () => {
@@ -87,7 +83,7 @@ export default class Ramp {
       this.mesh.visible = false
       if(this.geometry)this.geometry.dispose()
       if(this.material)this.material.dispose()
-      if(this.mesh)this.rampContainer.remove(this.mesh)
+      if(this.mesh)this.railContainer.remove(this.mesh)
       
       this.eventEmitter.emit("noteKilled")      
   }
@@ -98,14 +94,14 @@ export default class Ramp {
     const timeUntilHit = this.time - currentTime
     const dist = Math.abs(timeUntilHit)
     // fade in as it approaches
-    this.mesh.material.opacity = Math.max(0, Math.min(0.6, 1.2 - dist))
+    // this.mesh.material.opacity = Math.max(0, Math.min(0.6, 1.2 - dist))
 
     // scale slightly near hit
-    const scale = 1 + Math.max(0, 0.5 - dist) * 1.5
-    this.mesh.scale.set(scale, scale, scale)
+    // const scale = 1 + Math.max(0, 0.5 - dist) * 1.5
+    // this.mesh.scale.set(scale, scale, scale)
     //update ramp z position
     this.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
-    this.mesh.position.z = this.z
+    this.mesh.position.z = this.z - this.RAIL_LENGTH/2
 
     //handle disposal
     if(this.hit){

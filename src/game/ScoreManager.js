@@ -14,23 +14,30 @@ export default class ScoreManager{
             A: 0,
             S: 0,
             D: 0,
-            LANDS: 0
+            LANDS: 0,
+            BAIL: 0
         }
         this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.uplink = levelConfig.PLAYER_STARTING_UPLINK
         this.surge = 0 // 0 - 4
         this.overclock = false
+        this.currentGrindScore = null
+        this.currentGrindMultiplier = null
     }
 
-    updateScore =  (hitScore) => {
+    updateScore =  (judgement) => {
         //get point value and increase currentScore
-        const pointValue = levelConfig.NOTE_NODE_SCORE_DICT[hitScore]
+        let pointValue = levelConfig.JUDGEMENT_SCORE_DICT[judgement]
+
+        //grinds are scored a little differently :3
+        // if(this.grindMultiplier) pointValue = pointValue / 5 * this.grindMultiplier
+        
         this.currentScore += pointValue
         
         //handle combo breaks on MISS.if combo is broken, the value ofcurrentScore 
         // is multiplied by currentCombo and that product is added to currentScore
         //before currentCombo is reset to 0. 
-        if(hitScore == 'MISS'){
+        if(judgement == levelConfig.JUDGEMENT_ENUMS.MISS || judgement == levelConfig.JUDGEMENT_ENUMS.BAIL){
             this.currentScore += this.currentScore * this.currentCombo
             this.currentCombo = 0
         }
@@ -40,16 +47,15 @@ export default class ScoreManager{
             this.maxCombo = this.currentCombo
         }
         //update hitCounts dict
-        this.hitCounts[hitScore]++
+        this.hitCounts[judgement]++
 
         //aaanad finally...update UI
         this.app.ui.gameplayHUD.updateScore(this.currentScore, this.currentCombo)
     }
 
-
-    updateHealth = (hitRating) => {
-        const changeInHealth = levelConfig.HIT_RATING_VALUES[hitRating].health
-        const changeInUplink = levelConfig.HIT_RATING_VALUES[hitRating].uplink
+    updateHealth = (judgement) => {
+        const changeInHealth = levelConfig.HIT_RATING_VALUES[judgement].health
+        const changeInUplink = levelConfig.HIT_RATING_VALUES[judgement].uplink
 
         //update health here
         this.health += changeInHealth
@@ -89,6 +95,44 @@ export default class ScoreManager{
         // console.log("OVERCLOCK COMMENCING!!!!")
     }
 
+    updateGrind = (judgement) => {
+        if(this.currentGrindScore === judgement) return
+        //if release too early
+        if(judgement === levelConfig.JUDGEMENT_ENUMS.BAIL){
+            this.updateScore(judgement)
+            this.currentGrindScore = null
+            this.currentGrindMultiplier = null
+            //update ui with null values to clear active grind ui
+            this.app.ui.gameplayHUD.updateActiveGrind(
+                this.currentGrindScore, this.currentGrindMultiplier
+            )
+        }
+        //if grind successful full release
+        else if(judgement === levelConfig.JUDGEMENT_ENUMS.RELEASE){
+            this.updateScore(judgement)
+        }
+        //initial grind start
+        else {
+            if(!this.currentGrindScore){
+                this.currentGrindScore = judgement
+                this.currentGrindMultiplier = 1
+                //update ui here
+                this.app.ui.gameplayHUD.updateActiveGrind(
+                    this.currentGrindScore, this.currentGrindMultiplier
+                )
+            }
+        }
+    }
+
+    //this method gets called in level in its onBeatSixteenth call
+    updateGrindMultiplier = () => {
+        if(this.currentGrindScore)this.currentGrindMultiplier++
+        //TODO: update ui here
+        this.app.ui.gameplayHUD.updateActiveGrind(
+            this.currentGrindScore, this.currentGrindMultiplier
+        )
+    }
+
     resetAll = () => {
         this.currentScore = 0
         this.currentCombo = 0
@@ -100,9 +144,12 @@ export default class ScoreManager{
         this.hitCounts.S = 0,
         this.hitCounts.D = 0
         this.hitCounts.LANDS = 0
+        this.hitCounts.BAIL = 0
         this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.surge = 0 
         this.overclock = false
+        this.currentGrindScore = null
+        this.currentGrindMultiplier = null
     }
 
     //returns finals score (score WITH bonus multiplier)

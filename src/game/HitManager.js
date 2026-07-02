@@ -9,7 +9,8 @@ export default class HitManager{
     constructor(app){
         this.app = app
 
-        this.activeHits = []
+        //gets set by registerHit, updated in updateGrind, and removed in registerGrindRelease
+        this.currentRail = null
     }
 
     init = (uiHitFxContainer, worldHitFxContainer) => {
@@ -24,55 +25,54 @@ export default class HitManager{
         //if player presses when no note
         if (!noteNode) {
             hitScore = 'MISS'
-            //update score and health
-            this.app.scoreManager.updateScore(hitScore)
-            this.app.scoreManager.updateHealth(hitScore)
-            //spawn hit effect text
-            this.spawnHitEffect(hitScore, "ui")
-            //break surge panel streak if player is on one
-            if(this.app.surgeManager.surging){
-                this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
-            }
-            return
+            // //update score and health
+            // this.app.scoreManager.updateScore(hitScore)
+            // this.app.scoreManager.updateHealth(hitScore)
+            // //spawn hit effect text
+            // this.app.ui.gameplayHUD.spawnHitEffect(hitScore, levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE)
+            // //break surge panel streak if player is on one
+            // if(this.app.surgeManager.surging){
+            //     this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
+            // }
+            return hitScore
         }
 
         //prevent double hitting
-        if (noteNode.hit) return
+        if (noteNode.hit) {
+            hitScore = levelConfig.JUDGEMENT_ENUMS.NULL
+            return hitScore
+        }
+
+        //if this hit was a rail, store the rail to handle hold and release
+        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== levelConfig.JUDGEMENT_ENUMS.MISS){
+            this.currentRail = noteNode
+        }
+
+        //if there is already a current rail that means it's a hold note
+        if(this.curentRail){
+            hitScore = levelConfig.JUDGEMENT_ENUMS.HOLD
+            return hitScore
+        }
         
-        //hit offset here just in case ever need it
-        const HIT_OFFSET = 0
-        const timeUntilHit = (noteNode.time - currentTime) - HIT_OFFSET
+        const timeUntilHit = (noteNode.time - currentTime)
         
         if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
-            hitScore = 'PERFECT'
+            hitScore = levelConfig.JUDGEMENT_ENUMS.PERFECT
         } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
-            hitScore = 'GOOD'
+            hitScore = levelConfig.JUDGEMENT_ENUMS.GOOD
         } else {
-            hitScore = 'MISS'
+            hitScore = levelConfig.JUDGEMENT_ENUMS.MISS
         }
         //if player is surging, handle a surge section note
-        if(this.app.surgeManager.surging === true){
-            this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
-        }
+        // if(this.app.surgeManager.surging === true){
+        //     this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
+        // }
         //spawn a hit effect
-        this.spawnHitEffect(hitScore, "ui")
-        //update player score and health in the score manager
-        this.app.scoreManager.updateScore(hitScore)
-        this.app.scoreManager.updateHealth(hitScore)
-        
-        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.TAPNOTE){
-            noteNode.handleOnHit()
-        }
-        else if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAMP){
-            noteNode.handleOnHit()
-            if(hitScore !== 'MISS'){
-                const launchTime = noteNode.time
-                const secondsPerBeat = this.app.level.secondsPerBeat
-                const landingTime = noteNode.time + noteNode.duration * secondsPerBeat
-                const rampJumpHeight = levelConfig.PLAYER_MAX_JUMP_HEIGHT
-                this.app.player.launch(launchTime, landingTime, rampJumpHeight)
-            }
-        } 
+        // this.spawnHitEffect(hitScore, "ui")
+
+        noteNode.handleOnHit()
+
+        return hitScore
     }
 
     registerTrickHit = (trick, currentTime) => {
@@ -83,32 +83,59 @@ export default class HitManager{
         //trick currently is just a string: either "A", "S", or "D"
 
         hitScore = trick
-        this.spawnHitEffect(hitScore, "ui")
-        this.app.scoreManager.updateScore(hitScore)
+
+        return hitScore
     }
 
     registerLandingHit = (currentTime, landingTime) => {
-        if(landingTime === null)return     //just in case
+        let hitScore
+
+        //just in case
+        if(landingTime === null){
+            hitScore = levelConfig.JUDGEMENT_ENUMS.NULL
+            return hitScore
+        }     
 
         const timeUntilHit = (landingTime - currentTime)
         if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.RESYNCED) {
-            this.spawnHitEffect("RESYNCED", "ui")
+            hitScore = levelConfig.JUDGEMENT_ENUMS.RESYNCED
         } 
-        else{
-            this.spawnHitEffect("SYNC_BROKEN", "ui")
-        }
+        else hitScore = levelConfig.JUDGEMENT_ENUMS.SYNC_BROKEN
+
+        return hitScore
     }
 
-    //hit rating is 'PERFECT', 'GOOD', or 'MISS'
-    spawnHitEffect = (hitRating, type) => {
-        if(type === 'world'){
-            const newHitEffect = new WorldHitEffect(hitRating,this.worldHitFxContainer)
-            this.activeHits.push(newHitEffect)
+    updateGrind = (currentTime) => {
+        //grind hold score gets updated here
+        let hitScore 
+        if(this.currentRail){
+            hitScore = levelConfig.JUDGEMENT_ENUMS.HOLD
         }
-        else if(type === 'ui'){
-            const newHitEffect = new UiHitEffect(hitRating,this.app.ui.gameplayHUD.hitEffectsContainer, this.app)
-            // const newHitEffect = new UiHitEffect(hitRating,this.app.scene,texture)
-            this.activeHits.push(newHitEffect)
+        return { hitScore, rail: this.currentRail }
+    }
+
+    registerGrindRelease = (releaseTime) => {
+        const RELEASE = levelConfig.JUDGEMENT_ENUMS.RELEASE
+
+        let hitScore
+        //****THERE IS A PROBLEM HERE WITH RELEASE TIME VS RAIL TIME CHECK****
+        if(this.currentRail){
+            //check if release was after rail end time
+            const railFullTime = this.currentRail.time + this.currentRail.duration
+            const absTime = releaseTime - railFullTime
+            //first check for release before rail end
+            if(releaseTime < railFullTime){
+                hitScore = levelConfig.JUDGEMENT_ENUMS.BAIL
+            }
+            else if(absTime < levelConfig.NOTE_TIMING[RELEASE]){
+                hitScore = levelConfig.JUDGEMENT_ENUMS.HOLD
+            }
+            else {
+                hitScore = levelConfig.JUDGEMENT_ENUMS.BAIL
+            } 
+            const rail = this.currentRail
+            this.currentRail = null
+            return { hitScore, rail }
         }
     }
 
@@ -118,102 +145,11 @@ export default class HitManager{
     }
 
     update = (deltaTime) => {
-        if(this.activeHits.length > 0){
-            // 1) update everything
-            this.activeHits.forEach(activeHit => activeHit.update(deltaTime))
-            // 2) remove dead ones
-            this.activeHits = this.activeHits.filter(hit => !hit.isDead)
-        }
-    }
-}
-
-class HitEffect{
-    constructor(hitRating, container, app){
-        this.hitRating = hitRating
-        this.container = container
-        this.app = app
-
-        this.isDead = false
+    
     }
 
-    removeSelf = () => {
-        //delete geometry and material
-        if (this.geometry) this.geometry.dispose()
-        if (this.material) this.material.dispose()
-        //remove from scene heirarchy
-        this.container.remove(this.mesh)
-    }
-}
-//these are 'in the world' so to speak
-class WorldHitEffect extends HitEffect{
-    constructor(hitRating, container, texture){
-        super(hitRating, container, texture)
-    }
-
-    update = () => {
-
-    }
-}
-
-//these are the text good, perfect, or miss that live in a fixed space 
-//as part of the ui
-class UiHitEffect extends HitEffect{
-    constructor(hitRating, container, app){
-        super(hitRating, container, app)
-        this.currentScale = 1
-        this.terminalScale = 1.2
-        this.scaleIncrementSpeed = .001
-        this.app = app 
-        
-        const translatedHitRatings = {
-            'PERFECT': 'LOCKED!',
-            'GOOD': 'CLEAN',
-            'MISS': 'DROPPED',
-            'A': 'MUTE GRAB',
-            'S': 'ROYALE GRAB',
-            'D': 'BACKFLIP',
-            'RESYNCED': 'RESYNCED',
-            'SYNC_BROKEN': 'SYNC BROKEN'
-        }
-
-        // this.mesh = new THREE.Sprite(this.material)
-        this.mesh = createTextNode({
-            text:`${translatedHitRatings[hitRating]}`,
-            fontSize: 100,
-            color: levelConfig.UI_HIT_EFFECT_COLOR_DICT.fill[hitRating],
-            font: levelConfig.UI_FONTS_DICT.judgements,
-            x: 0, y: 0, z: 0,
-        })
-        this.mesh.outlineWidth = 7     
-        this.mesh.outlineColor = levelConfig.UI_HIT_EFFECT_COLOR_DICT.outline[hitRating]
-        this.mesh.outlineOpacity = 5.0   
-        this.mesh.name = 'ui hit effect'
-        this.mesh.scale.set(this.currentScale)
-        // this.mesh.renderOrder = levelConfig.RENDER_ORDER.UI
-        container.add(this.mesh)
-    }
-
-    update = (deltaTime) => {
-        //check if curentRadius === terminalRadius
-        if(this.currentScale >= this.terminalScale){
-            //mark for deletion from HitManager's activeHits array
-            this.isDead = true
-            this.mesh.dispose()
-
-            this.container.remove(this.mesh)
-        }
-        
-        else{
-            //move up some
-            // this.mesh.position.y += 0.1 * deltaTime
-            //increase the scale and set it
-            const lerpFactor = 1 - Math.pow(.001, deltaTime)
-            this.currentScale = Math.max(0, this.currentScale + .12 * lerpFactor)
-            // this.currentScale += lerpFactor * .5
-            this.mesh.scale.set(this.currentScale* .45, this.currentScale * .45, 1)
-            //then **air horns** scaling functiooonnnnnn
-            //aka reduce opacity as scale increases 
-            // this.mesh.material.opacity = 1 - (this.currentScale / this.terminalScale * .5) 
-        }
+    reset = () => {
+        this.currentRail = null
+        this.activeHits = []
     }
 }

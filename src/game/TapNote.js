@@ -28,8 +28,8 @@ export default class TapNote{
         //SHAPE AND STUFF
         this.geometry = new THREE.BoxGeometry(0.15, 0.15, 0.05)
                 this.material = new THREE.MeshStandardMaterial({
-            color: levelConfig.TAP_NOTE_COLORS[this.subLane],
-            emissive: new THREE.Color(levelConfig.TAP_NOTE_COLORS[this.subLane]),
+            color: levelConfig.NOTE_COLORS.TAP_NOTE[this.subLane],
+            emissive: new THREE.Color(levelConfig.NOTE_COLORS.TAP_NOTE[this.subLane]),
             emissiveIntensity: 1.5,
             transparent: true,
             opacity: 0.9,

@@ -5,6 +5,7 @@ import Ramp from './Ramp'
 import TapNote from './TapNote'
 import FloorPanel from './FloorPanel'
 import EventEmitter from './EventEmitter'
+import Rail from './note_nodes/Rail'
 
 //the whole scene tree for the game looks like this:
 //           [app scene]
@@ -42,12 +43,16 @@ export default class Level{
     this.currentTime = 0.00
     this.lastBeat = 3
     this.currentBeat = 0
+    //sixteenths start at null bc they depend on currentBeat
+    this.lastBeatSixteenth = null
+    this.currentBeatSixteenth = null
     this.currentBar = 0
 
    //establish some arrays to hold things
     this.gateRings = []
     this.tapNotes = []
     this.ramps = []
+    this.rails = []
     this.floorPanels = []
 
     //this flag is for cleaning up note arrays after a note has been hit
@@ -93,6 +98,9 @@ export default class Level{
     //NOTES CONTAINER
     this.tapNotesContainer = new THREE.Group()
     this.tapNotesContainer.name = 'tap notes container'
+    //RAILS CONTAINER 
+    this.railContainer = new THREE.Group()
+    this.railContainer.name = 'rail container'
     //WORLD HIT FX CONTAINER
     this.worldHitFxContainer = new THREE.Group()
     this.worldHitFxContainer.name = 'world hit fx container'
@@ -153,6 +161,7 @@ export default class Level{
     this.mainLevelContainer.add(this.floorPanelsContainer)
     this.mainLevelContainer.add(this.tapNotesContainer)
     this.mainLevelContainer.add(this.rampContainer)
+    this.mainLevelContainer.add(this.railContainer)
     this.mainLevelContainer.add(this.ringContainer)
 
     //init event emitter here
@@ -215,7 +224,7 @@ export default class Level{
         this.gateRings.push(ring)
     }
      
-    //init tapNotes
+    //init TAPNOTES
     this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
           const countdownOffset = 4 * this.secondsPerBeat
           const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
@@ -235,16 +244,16 @@ export default class Level{
           this.tapNotes.push(tapNote)
         })
 
-    //init ramps
-    this.levelMap.patterns.ramps.forEach(mapNode => {
+    //init RAMPS
+    this.levelMap.patterns.ramps.forEach(ramp => {
       const countdownOffset = 4 * this.secondsPerBeat
-      const timeInSeconds = (mapNode.beat - 1) * this.secondsPerBeat + countdownOffset
-      const ramp = new Ramp(
+      const timeInSeconds = (ramp.beat - 1) * this.secondsPerBeat + countdownOffset
+      const newRamp = new Ramp(
         this.app, 
         this.hitlineZPosition,
-        mapNode.lane, 
-        mapNode.duration,
-        mapNode.beat,
+        ramp.lane, 
+        ramp.duration,
+        ramp.beat,
         timeInSeconds, 
         this.zRotationOffset, 
         this.levelSpeed, 
@@ -252,8 +261,29 @@ export default class Level{
         this.secondsPerBeat,
         this.eventEmitter
       ) 
-      ramp.init(this.rampContainer)
-      this.ramps.push(ramp)
+      newRamp.init(this.rampContainer)
+      this.ramps.push(newRamp)
+    })
+
+    //init RAILS
+    this.levelMap.patterns.rails.forEach(rail => {
+      const countdownOffset = 4 * this.secondsPerBeat
+      const timeInSeconds = (rail.beat - 1) * this.secondsPerBeat + countdownOffset
+      const newRail = new Rail(
+        this.app, 
+        this.hitlineZPosition,
+        rail.lane, 
+        rail.duration,
+        rail.beat,
+        timeInSeconds, 
+        this.zRotationOffset, 
+        this.levelSpeed, 
+        this.currentTime,
+        this.secondsPerBeat,
+        this.eventEmitter
+      ) 
+      newRail.init(this.railContainer)
+      this.rails.push(newRail)
     })
 
     //rotate whole level so lane 1 is at 6oclock
@@ -294,6 +324,7 @@ export default class Level{
       this.floorPanelsContainer.rotation.z = this.rotation + this.zRotationOffset
       this.tapNotesContainer.rotation.z = this.rotation + this.zRotationOffset
       this.rampContainer.rotation.z = this.rotation + this.zRotationOffset
+      this.railContainer.rotation.z = this.rotation + this.zRotationOffset
       this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
   }
 
@@ -336,7 +367,6 @@ export default class Level{
     }
     
     const playerLane = this.playerCurrentLane
-
     const rampsInPlayerLane = this.ramps.filter(ramp => ramp.lane === playerLane)
     console.log("FUUUUUUUUCKKASKDASDASDASDA", rampsInPlayerLane)
     // walk through ramps and return closest ramp in front of player
@@ -356,15 +386,31 @@ export default class Level{
     return closestRampInTime
   }
 
-  handlePlayerTrick = (keyString) => {
-    console.log(`WHOAH!!!! U DID  ATRICK BY HITTING THE ${keyString} KEY`)
-    const trick = keyString
-    return { trick, currentTime: this.currentTime}
+  checkRailHit = () => {
+    //filter lane matching rails
+    const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
+
+    const closestRailInTime = railsInPlayerLane.reduce(
+      (acc, rail) => {
+        const timeUntilHit = rail.time - this.currentTime
+        const absTime = Math.abs(timeUntilHit)
+        if (rail.hit) return acc
+        if (timeUntilHit > this.secondsPerBeat) return acc
+        //>_> uncomment this if seeing phantom rail hits <_<
+        // if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
+        if(absTime < acc.timeDiff){
+          return { rail: rail, timeDiff: absTime, currentTime: this.currentTime }
+        }  
+        return acc
+      }, { rail: null, timeDiff: Infinity, currentTime: this.currentTime }
+    )
+
+    return closestRailInTime
   }
 
-  handlePlayerLand = () => {
-    //this is placeholder for later!!! atm just need to return currentTime
-    return this.currentTime
+  handlePlayerTrick = (keyString) => {
+    const trick = keyString
+    return { trick, currentTime: this.currentTime}
   }
 
   handleStartOverclock = (currentSurgeObject) => {
@@ -398,6 +444,8 @@ export default class Level{
     this.currentTime = 0.00
     this.lastBeat = 3
     this.currentBeat = 0
+    this.lastBeatSixteenth = null
+    this.currentBeatSixteenth = null
     this.currentBar = 0
     //reset rotation
     this.rotation = 0
@@ -450,20 +498,30 @@ export default class Level{
       this.app.ui.gameplayHUD.uplinkMeter.onBeat()
   }
 
+  onBeatSixteenthNote = () => {
+    if(this.player.isGrinding) this.app.scoreManager.updateGrindMultiplier()
+  }
+
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
     this.currentTime = this.app.audioManager.getCurrentTime()
     
+    //ON BEAT STUFF
     //store last beat value
     this.lastBeat = this.currentBeat
     //convert time to beats and update currentBeat
     this.currentBeat = this.currentTime / this.secondsPerBeat
     this.currentBar = Math.floor(this.currentBeat / this.beatsPerBar)
-
     //check fo ra new beat
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
       this.onBeat()
+    }
+    //check for a new sixteenth note beat
+    this.lastBeatSixteenth = this.currentBeatSixteenth
+    this.currentBeatSixteenth = this.currentBeat * 4
+    if(Math.floor(this.lastBeatSixteenth) !== Math.floor(this.currentBeatSixteenth)){
+      this.onBeatSixteenthNote()
     }
 
     // move tunnels toward camera
@@ -510,6 +568,7 @@ export default class Level{
       console.log("FILTER ARRAYS FOR DIRTY NOTES")
       this.ramps = this.ramps.filter(ramp => ramp.hit !== true)
       this.tapNotes = this.tapNotes.filter(note => note.hit !== true)
+      this.rails = this.rails.filter(rail => rail.hit !== true)
       this.dirtyNotesExist = false
     }
 
@@ -530,8 +589,7 @@ export default class Level{
       note.update(deltaTime, this.currentTime)
       //check for notes the player has missed and have passed the hitLine
       if (!note.hit && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
-        // note.hit = true
-        this.app.hitManager.registerHit(note, this.currentTime)
+        if(note.lane === this.playerCurrentLane)this.app.hitManager.registerHit(note, this.currentTime)
       }
       ////////////////////////////////////////////
     })
@@ -540,8 +598,16 @@ export default class Level{
     this.ramps.forEach(ramp => {
       ramp.update(deltaTime, this.currentTime)
       if (!ramp.hit && this.currentTime > ramp.time + levelConfig.NOTE_TIMING.GOOD) {
-        // note.hit = true
-        this.app.hitManager.registerHit(ramp, this.currentTime)
+        if(ramp.lane === this.playerCurrentLane)this.app.hitManager.registerHit(ramp, this.currentTime)
+      }
+    })
+
+
+    //update rails
+    this.rails.forEach(rail => {
+      rail.update(deltaTime, this.currentTime)
+      if (!rail.hit && this.currentTime > rail.time + levelConfig.NOTE_TIMING.GOOD) {
+        if(rail.lane === this.playerCurrentLane)this.app.hitManager.registerHit(rail, this.currentTime)
       }
     })
 

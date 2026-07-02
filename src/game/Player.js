@@ -98,6 +98,12 @@ export default class Player {
     //jump offset is distance from ground  
     this.jumpOffset = 0
 
+    //GRIND STUFF
+    this.isGrinding = false
+    this.grindStartTime = null
+    this.grindDuration = null
+    this.grindDuration = null
+
     //player movement within a lane
     this.isMoving = false
     //direction set by controller
@@ -176,8 +182,6 @@ export default class Player {
           this.isInAir = false
           // this.landingTime = null
           // this.airStartTime = null
-          this.app.level.handlePlayerLand()
-          console.log("ICH BIN WEIDER HIER")
           return
       }
 
@@ -196,6 +200,22 @@ export default class Player {
           const fallT = (t - RISE_PORTION) / (1 - RISE_PORTION)
           this.jumpOffset = this.jumpHeight * (1 - Math.pow(fallT, 3))
       }
+  }
+
+  grind = (grindStartTime, grindEndTime, grindDuration) => {
+    if(!this.isGrinding)this.isGrinding = true
+    this.grindStartTime = grindStartTime
+    this.grindEndTime = grindEndTime
+    this.grindDuration = grindDuration
+  }
+
+  updateGrind = (wKeyIsHeld) => {
+    if(wKeyIsHeld === false) {
+      this.isGrinding = false
+      this.grindStartTime = null
+      this.grindDuration = null
+      this.grindDuration = null
+    }
   }
 
   setSubLane = (index) => {
@@ -261,6 +281,7 @@ export default class Player {
   }
 
   update = (deltaTime) => {
+    if(this.isGrinding)console.log('BROOOOOOOOO UR GRINDING BROOO')
     // this.updateJumpPhysics()
     this.updateJumpArc()
 

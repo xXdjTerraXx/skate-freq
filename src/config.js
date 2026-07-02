@@ -28,7 +28,26 @@ export const levelConfig = {
     //enom for note node types
     NOTE_NODE_TYPE: {
         TAPNOTE: 'TAPNOTE',
-        RAMP: 'RAMP'
+        RAMP: 'RAMP',
+        RAIL: 'RAIL'
+    },
+    JUDGEMENT_ENUMS: {
+        PERFECT: 'PERFECT',
+        GOOD: 'GOOD',
+        MISS: 'MISS',
+        RESYNCED: 'RESYNCED',
+        SYNC_BROKEN: 'SYNC_BROKEN',
+        HOLD: 'HOLD',
+        BAIL: 'BAIL',
+        RELEASE: 'RELEASE',
+        //null is just for utility, preventing double taps,e tc
+        NULL: 'NULL'
+    },
+    HIT_EFFECT_CATEGORY_ENUMS: {
+        NOTE: 'NOTE',
+        GRIND: 'GRIND',
+        LAND: 'LAND',
+        TRICK:'TRICK'
     },
     //how much a miss good or perfect affect player health
     HIT_RATING_VALUES:{
@@ -36,27 +55,33 @@ export const levelConfig = {
         GOOD: {health: 2, uplink: 10},
         MISS: {health: -3, uplink: -70}
     },
-    UI_HIT_EFFECT_COLOR_DICT:{
-        fill:{
-            PERFECT: 0x1485fb,//<--cyan from UI_COLOR_PALETTE
-            GOOD: 0x14fb16,  //<--green 
-            MISS: 0xFF2244,  //<---red from 
-            RESYNCED: 0xedffec,
-            SYNC_BROKEN: 0xFF2244
-        },
-        outline:{
-            PERFECT: 0xF0F0FF,//<--white from UI_COLOR_PALETTE
-            GOOD: 0xFfFfFF,  //<--white from UI_COLOR_PALETTE
-            MISS: 0xF0F0FF,  //<---white from UI_COLOR_PALETTE
-            RESYNCED: 0xf7ff29,
-            SYNC_BROKEN: 0xF0F0FF
-        } 
+    //timing windows for all note node judgements - ramps, rails, tapNotes
+    NOTE_TIMING: {
+        GOOD: 0.3,
+        PERFECT: 0.15,
+        //resynced is landing from ramp
+        //this grace period is how long before and after landing to check for w press
+        RESYNCED_CHECK_GRACE_PERIOD: 0.25,
+        RESYNCED: 0.15,
+        //grind completion
+        RELEASE: 0.15
     },
-    UI_FONTS_DICT: {
-        uiFont1: '/assets/fonts/OCRAEXT.TTF',
-        uiFont2: '/assets/fonts/whitrabt.ttf',
-        judgements: '/assets/fonts/judgements_font.otf'
+    //how much each note judgement affects score
+    JUDGEMENT_SCORE_DICT: {
+        PERFECT: 100,
+        GOOD: 50,
+        MISS: 0,
+        A: 50,
+        S: 50,
+        D: 50,
+        //currently resynced (landing from a ramp) doesnt reward points jst continues combo
+        //but i need this reference here for score manager updateScore to work w resyncs
+        RESYNCED: 0,
+        SYNC_BROKEN: 0,
+        //+10 point per [some increment] while holding
+        HOLD: 10
     },
+    
     UI_COLOR_PALETTE: {
         black: '#050510',
         cyan: '#00FFEE',
@@ -67,36 +92,53 @@ export const levelConfig = {
         red: '#FF2244',
         highlight: '#F0F0FF',
     },
+    UI_HIT_EFFECT_COLOR_DICT:{
+        fill:{
+            PERFECT: 0x1485fb,//<--cyan from UI_COLOR_PALETTE
+            GOOD: 0x14fb16,  //<--green 
+            MISS: 0xFF2244,  //<---red from 
+            RESYNCED: 0xedffec,
+            SYNC_BROKEN: 0xFF2244,
+            HOLD: 0x000000,
+            BAIL: 0X000000,
+            RELEASE: 0x000000,
+            A: 0x000000,
+            S: 0x000000,
+            D: 0x000000,
+        },
+        outline:{
+            PERFECT: 0xF0F0FF,//<--white from UI_COLOR_PALETTE
+            GOOD: 0xFfFfFF,  //<--white from UI_COLOR_PALETTE
+            MISS: 0xF0F0FF,  //<---white from UI_COLOR_PALETTE
+            RESYNCED: 0xf7ff29,
+            SYNC_BROKEN: 0xF0F0FF,
+            HOLD: 0x000000,
+            BAIL: 0X000000,
+            RELEASE: 0x000000,
+            A: 0x000000,
+            S: 0x000000,
+            D: 0x000000,
+        } 
+    },
+    UI_FONTS_DICT: {
+        uiFont1: '/assets/fonts/OCRAEXT.TTF',
+        uiFont2: '/assets/fonts/whitrabt.ttf',
+        judgements: '/assets/fonts/judgements_font.otf'
+    },
     //general ui settings:
     UI_SETTINGS: {
         width: 1600,
         height: 900,
     },
-    TAP_NOTE_COLORS: {
-        0: '#FFD700',
-        1: '#00FF88',
-        2: '#FF2244'
-    },
-    //timing windows for all note node judgements - ramps, rails, tapNotes
-    NOTE_TIMING: {
-        GOOD: 0.3,
-        PERFECT: 0.15,
-        //resynced is landing from ramp
-        //this grace period is how long before and after landing to check for w press
-        RESYNCED_CHECK_GRACE_PERIOD: 0.25,
-        RESYNCED: 0.15
-    },
-    NOTE_NODE_SCORE_DICT: {
-        PERFECT: 100,
-        GOOD: 50,
-        MISS: 0,
-        A: 50,
-        S: 50,
-        D: 50,
-        //currently resynced (landing from a ramp) doesnt reward points jst continues combo
-        //but i need this reference here for score manager updateScore to work w resyncs
-        RESYNCED: 0,
-        SYNC_BROKEN: 0
+    NOTE_COLORS: {
+        TAP_NOTE:{
+            0: '#FFD700',
+            1: '#00FF88',
+            2: '#FF2244'
+        },
+        RAIL: 0xffffff,
+        RAMP: 0xffffff
+        
     },
     OVERCLOCK_VISUALS_SETTINGS:{
         WhooshEmitter: {
@@ -175,8 +217,20 @@ export const levelConfig = {
                 peakHat: 0xffffff
             },
         },
-        hitEffects: {
+        activeGrindDisplay:{
+            position:{x: 0, y: -150, z: 0},
+        },
+        noteHitEffects: {
             position: {x: -400, y: 0, z: 0}
+        },
+        grindHitEffects: {
+            position: {x: 400, y: 0, z: 0}
+        },
+        landHitEffects: {
+            position: {x: 300, y: -200, z: 0}
+        },
+        trickHitEffects: {
+            position: {x: -200, y: 400, z: 0}
         },
         scoreContainer: {
             fontSize: 50,
