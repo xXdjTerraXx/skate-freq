@@ -7,6 +7,7 @@ export default class Rail {
     hitlineZPosition, 
     lane, duration, beat,
     time, 
+    durationInSeconds,
     levelZRotationOffset, 
     levelSpeed, 
     currentTime, 
@@ -27,7 +28,8 @@ export default class Rail {
     
     this.measurementOfOneSide = (Math.PI * 2) / levelConfig.LANE_COUNT
     // when it should be hit in time   
-    this.time = time     
+    this.time = time  
+    this.durationInSeconds = durationInSeconds   
     // start far away from player
     this.levelSpeed = levelSpeed
     this.z = this.hitlineZPosition-(this.levelSpeed * currentTime)      
@@ -51,6 +53,7 @@ export default class Rail {
     this.railContainer = null
 
     this.eventEmitter = eventEmitter
+
   }
 
   init(railContainer) {

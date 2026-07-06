@@ -97,6 +97,14 @@ export default class Controller{
         this.player.handleCrouch()
     }
 
+    //IMPORTANT NOTE FOR FUTURE ME:
+    //the pattern for each of these note node press handlers is this:
+    //  - Level.checkRampHit() is called, returns the time of note press and note
+    //  - Player class is called to update status (isInAir, isGrinding) and animation
+    //  - HitManager also uses note/timing info to score and return a judgement
+    //  - judgement gets passed to ScoreManager for ui update
+    //  - scoreManager calls UI methods for UI update 
+
     handleJump = () => {
         const { ramp, currentTime } = this.level.checkRampHit()
         const secondsPerBeat = this.level.secondsPerBeat
@@ -110,9 +118,7 @@ export default class Controller{
                 const hitScore = this.hitManager.registerHit(ramp, currentTime)
                 //update score manager
                 this.app.scoreManager.updateScore(hitScore)
-                this.app.scoreManager.updateHealth(hitScore)
-                const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE
-                this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+                
                 const launchTime = ramp.time
                 const secondsPerBeat = this.app.level.secondsPerBeat
                 const landingTime = ramp.time + ramp.duration * secondsPerBeat
@@ -152,21 +158,18 @@ export default class Controller{
                 const grindDuration = rail.duration
                 this.player.grind(grindStartTime, grindEndTime, grindDuration)
             }
+            console.log("YOU CAN FEEL IT IN YO MIND: ", hitScore)
             this.app.scoreManager.updateGrind(hitScore)
-            this.app.scoreManager.updateHealth(hitScore)
-            const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE
-            this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
         }
         //if no rail check for resync landing (combo continue/breka)
         else{
             const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED
             if (Math.abs(this.level.currentTime - this.player.landingTime) < LANDING_WINDOW){
                 const hitScore = this.hitManager.registerLandingHit(currentTime, landingTime)
-                const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.LAND
-                this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
+                this.app.scoreManager.updateScore(hitScore)
                 //TO DO: this will be where the entry point method in player
                 //for trick continuation animation and stuff wil go
-                //like:  handlePlayerManual() or smthn
+                //like:  player.resync() or smthn
             }
             
         }
@@ -174,9 +177,6 @@ export default class Controller{
 
     handleGrindHold = () => {
         this.player.updateGrind(this.heldKeys.has(this.wKey))
-        //this hitScore should be HOLD if player holding key, BAIL if not
-        // const { hitScore, rail } = this.hitManager.updateGrind(this.level.currentTime)
-        // this.app.scoreManager.updateGrind(hitScore)
     }
 
     handleGrindRelease = () => {
@@ -196,13 +196,11 @@ export default class Controller{
             const hitScore = this.hitManager.registerHit(tapNote, currentTime)
             //update score manager
             this.app.scoreManager.updateScore(hitScore)
-            this.app.scoreManager.updateHealth(hitScore)
+            
             //is player on a surge panel, handle hits there too
             if(this.app.surgeManager.surging === true){
-                this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
+                this.app.surgeManager.handleNoteHit(hitScore, tapNote.beat)
             }
-            const hitEffectCategory = levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE
-            this.app.ui.gameplayHUD.spawnHitEffect(hitScore, hitEffectCategory)
         }
         //player pulse effect
         this.player.pulse()
@@ -210,6 +208,5 @@ export default class Controller{
 
     run = (deltaTime) => {
         if(this.player.isGrinding) this.handleGrindHold()
-        // if(this.heldKeys.has(this.wKey)) this.hitManager.updateGrind()
     }
 }

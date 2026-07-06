@@ -4,6 +4,7 @@ import { levelConfig } from '../../config'
 import SurgeMeter from './components/SurgeMeter'
 import UplinkMeter from './components/UplinkMeter'
 import ActiveGrindDisplay from './components/ActiveGrindDisplay'
+import ENUMS from '../../enums'
 
 
 export default class GameplayHUD{
@@ -128,7 +129,7 @@ export default class GameplayHUD{
         
 ////////////////////////////////////////////////////////////////////////
 ///////////////////////~~*~~*  ACTIVE GRIND DISPLAY  *~~*~~////////////////////////////
-        this.activeGrindDisplay = new ActiveGrindDisplay(this.mainContainer)
+        this.activeGrindDisplay = new ActiveGrindDisplay(this.mainContainer, this.spawnHitEffect)
         this.activeGrindDisplay.init()
         this.activeGrindDisplay.mainContainer.position.set(
             levelConfig.UI_COMPONENT_SETTINGS.activeGrindDisplay.position.x,
@@ -168,7 +169,7 @@ export default class GameplayHUD{
         )
 
         //add any components with an update method to components array
-        this.components = [this.surgeMeter, this.uplinkMeter]
+        this.components = [this.surgeMeter, this.uplinkMeter, this.activeGrindDisplay]
     }
 
     init = () => {
@@ -203,20 +204,29 @@ export default class GameplayHUD{
         this.uplinkMeter.updateUplink(newUplinkValue)
     }
 
-    updateActiveGrind = () => {
+    startActiveGrind = (grindScore, initialJudgement) => {
+        this.activeGrindDisplay.startActiveGrind(grindScore, initialJudgement)
+    }
+
+    updateActiveGrind = (grindScore, grindJudgement) => {
         //TO DO: call ActiveGrindDisplay component here to display the
         //initial active grind score and the grind hold multiplier
+        this.activeGrindDisplay.updateActiveGrind(grindScore, grindJudgement)
+    }
+
+    endActiveGrind = (grindJudgement) => {
+        this.activeGrindDisplay.endActiveGrind(grindJudgement)
     }
 
     spawnHitEffect = (judgement, type) => {
         //set parent container based on category
-        const {NOTE, GRIND, LAND, TRICK } = levelConfig.HIT_EFFECT_CATEGORY_ENUMS
+        const {NOTE, GRIND, LAND, TRICK } = ENUMS.HIT_EFFECT_CATEGORY
+
         let parentContainer
         type === NOTE ? parentContainer = this.noteHitEffectsContainer
-        : type === GRIND ? parentContainer = this.grindHitEffectsContainer 
+        : type === GRIND ? parentContainer = this.activeGrindDisplay.grindReleaseEffectContainer 
         : type === LAND ? parentContainer = this.landHitEffectsContainer
         : type === TRICK ? parentContainer = this.trickHitEffectSContainer
-        
         : null
         if (parentContainer === null) return
         const newHitEffect = new UiHitEffect(this.app, judgement, parentContainer)
@@ -312,6 +322,7 @@ class UiHitEffect {
         this.mesh.scale.set(this.currentScale)
         // this.mesh.renderOrder = levelConfig.RENDER_ORDER.UI
         this.parentContainer.add(this.mesh)
+
     }
 
     update = (deltaTime) => {

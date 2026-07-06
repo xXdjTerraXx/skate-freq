@@ -157,7 +157,8 @@ export const audioAssetManifest = {
             //             { lane: 2, beat: 92, duration: 1.5 },
             //             { lane: 3, beat: 108, duration: 1 },
             //             { lane: 3, beat: 124, duration: 1.5 },
-            //         ]
+            //         ],
+            //         rails: [],
             //     },
 
             //     // =====================
@@ -176,7 +177,7 @@ export const audioAssetManifest = {
             //         ]
             // }
 
-  
+            
             noteMap: {
             //RAILS TESTING NOTE MAP
                 patternLengthBeats: 72,
@@ -200,7 +201,7 @@ export const audioAssetManifest = {
                     ]
                 },
                 overclockSections: []
-}
+            }
         },
         testSong2: {
             path: '/assets/audio/song_library/test_song_2.wav',

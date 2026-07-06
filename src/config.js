@@ -1,4 +1,13 @@
+import ENUMS from "./enums"
 import { GAME_STATES } from "./gameStates"
+
+export const FONT_SIZE = {
+    XS: 14,   // fine print — combo counters, small labels, debug overlays
+    SM: 20,   // secondary HUD text — sublabels, tooltips
+    MD: 28,   // default UI text — HUD stats, menu items
+    LG: 42,   // emphasis — hit judgement popups (LOCKED/CLEAN/DROPPED), section headers
+    XL: 64,   // hero text — big score reveals, RESULTS screen title, LOSSLESS stamp
+}
 
 export const levelConfig = {
     INITIAL_GAME_STATE: GAME_STATES.TITLE,
@@ -49,11 +58,34 @@ export const levelConfig = {
         LAND: 'LAND',
         TRICK:'TRICK'
     },
+    //for mapping judgements with their hit effect category
+    JUDGEMENT_CATEGORY_MAP: {
+        //NOTE
+        [ENUMS.JUDGEMENT.PERFECT]: ENUMS.HIT_EFFECT_CATEGORY.NOTE,
+        [ENUMS.JUDGEMENT.GOOD]: ENUMS.HIT_EFFECT_CATEGORY.NOTE,
+        [ENUMS.JUDGEMENT.MISS]: ENUMS.HIT_EFFECT_CATEGORY.NOTE,
+        //GRIND
+        [ENUMS.JUDGEMENT.HOLD]: ENUMS.HIT_EFFECT_CATEGORY.GRIND,
+        [ENUMS.JUDGEMENT.BAIL]: ENUMS.HIT_EFFECT_CATEGORY.GRIND,
+        [ENUMS.JUDGEMENT.RELEASE]: ENUMS.HIT_EFFECT_CATEGORY.GRIND,
+        //LAND
+        [ENUMS.JUDGEMENT.RESYNCED]: ENUMS.HIT_EFFECT_CATEGORY.LAND,
+        [ENUMS.JUDGEMENT.SYNC_BROKEN]: ENUMS.HIT_EFFECT_CATEGORY.LAND,
+        //TRICK
+        [ENUMS.JUDGEMENT.A]: ENUMS.HIT_EFFECT_CATEGORY.TRICK,
+        [ENUMS.JUDGEMENT.S]: ENUMS.HIT_EFFECT_CATEGORY.TRICK,
+        [ENUMS.JUDGEMENT.D]: ENUMS.HIT_EFFECT_CATEGORY.TRICK,
+    },
     //how much a miss good or perfect affect player health
     HIT_RATING_VALUES:{
         PERFECT: {health: 3, uplink: 30},
         GOOD: {health: 2, uplink: 10},
-        MISS: {health: -3, uplink: -70}
+        MISS: {health: -3, uplink: -70},
+        BAIL: {health: -3, uplink: -30},
+        HOLD: {health: -3, uplink: 2},
+        RESYNC: {uplink: 0},
+        SYNC_BROKEN: {uplink: 0},
+        RELEASE: {uplink: 20}
     },
     //timing windows for all note node judgements - ramps, rails, tapNotes
     NOTE_TIMING: {
@@ -78,8 +110,10 @@ export const levelConfig = {
         //but i need this reference here for score manager updateScore to work w resyncs
         RESYNCED: 0,
         SYNC_BROKEN: 0,
-        //+10 point per [some increment] while holding
-        HOLD: 10
+        
+        BAIL: 0,
+        HOLD: 0,
+        RELEASE: 0
     },
     
     UI_COLOR_PALETTE: {
@@ -100,8 +134,8 @@ export const levelConfig = {
             RESYNCED: 0xedffec,
             SYNC_BROKEN: 0xFF2244,
             HOLD: 0x000000,
-            BAIL: 0X000000,
-            RELEASE: 0x000000,
+            BAIL: 0Xffffff,
+            RELEASE: 0xffffff,
             A: 0x000000,
             S: 0x000000,
             D: 0x000000,
@@ -219,6 +253,8 @@ export const levelConfig = {
         },
         activeGrindDisplay:{
             position:{x: 0, y: -150, z: 0},
+            fontColor: 0x000000,
+            fontSize: FONT_SIZE.MD
         },
         noteHitEffects: {
             position: {x: -400, y: 0, z: 0}

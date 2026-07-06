@@ -248,13 +248,15 @@ export default class Level{
     this.levelMap.patterns.ramps.forEach(ramp => {
       const countdownOffset = 4 * this.secondsPerBeat
       const timeInSeconds = (ramp.beat - 1) * this.secondsPerBeat + countdownOffset
+      const durationInSeconds = rail.duration * this.secondsPerBeat
       const newRamp = new Ramp(
         this.app, 
         this.hitlineZPosition,
         ramp.lane, 
         ramp.duration,
         ramp.beat,
-        timeInSeconds, 
+        timeInSeconds,
+        durationInSeconds,
         this.zRotationOffset, 
         this.levelSpeed, 
         this.currentTime,
@@ -269,6 +271,7 @@ export default class Level{
     this.levelMap.patterns.rails.forEach(rail => {
       const countdownOffset = 4 * this.secondsPerBeat
       const timeInSeconds = (rail.beat - 1) * this.secondsPerBeat + countdownOffset
+      const durationInSeconds = rail.duration * this.secondsPerBeat
       const newRail = new Rail(
         this.app, 
         this.hitlineZPosition,
@@ -276,11 +279,12 @@ export default class Level{
         rail.duration,
         rail.beat,
         timeInSeconds, 
+        durationInSeconds,
         this.zRotationOffset, 
         this.levelSpeed, 
         this.currentTime,
         this.secondsPerBeat,
-        this.eventEmitter
+        this.eventEmitter,
       ) 
       newRail.init(this.railContainer)
       this.rails.push(newRail)
@@ -360,7 +364,6 @@ export default class Level{
 
     //return a miss if the player is NOT courching already
     if(!this.player.isCrouching) {
-          console.log("not crouched dog")
       return {
       ramp: null, timeDiff: Infinity, currentTime: this.currentTime
       }
@@ -368,7 +371,6 @@ export default class Level{
     
     const playerLane = this.playerCurrentLane
     const rampsInPlayerLane = this.ramps.filter(ramp => ramp.lane === playerLane)
-    console.log("FUUUUUUUUCKKASKDASDASDASDA", rampsInPlayerLane)
     // walk through ramps and return closest ramp in front of player
     const closestRampInTime = rampsInPlayerLane.reduce(
       (acc, ramp) => {
@@ -499,7 +501,7 @@ export default class Level{
   }
 
   onBeatSixteenthNote = () => {
-    if(this.player.isGrinding) this.app.scoreManager.updateGrindMultiplier()
+    this.app.scoreManager.onBeatSixteenth()
   }
 
   update = (deltaTime) => {
@@ -565,7 +567,6 @@ export default class Level{
     //remove already hit notes from note arrays if this flag is true
     //set by level -> note nodes mini event system
     if(this.dirtyNotesExist){
-      console.log("FILTER ARRAYS FOR DIRTY NOTES")
       this.ramps = this.ramps.filter(ramp => ramp.hit !== true)
       this.tapNotes = this.tapNotes.filter(note => note.hit !== true)
       this.rails = this.rails.filter(rail => rail.hit !== true)
@@ -589,7 +590,10 @@ export default class Level{
       note.update(deltaTime, this.currentTime)
       //check for notes the player has missed and have passed the hitLine
       if (!note.hit && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
-        if(note.lane === this.playerCurrentLane)this.app.hitManager.registerHit(note, this.currentTime)
+        if(note.lane === this.playerCurrentLane){
+          const hitScore = this.app.hitManager.registerHit(note, this.currentTime)
+          this.app.scoreManager.updateScore(hitScore)
+        }
       }
       ////////////////////////////////////////////
     })
@@ -598,7 +602,10 @@ export default class Level{
     this.ramps.forEach(ramp => {
       ramp.update(deltaTime, this.currentTime)
       if (!ramp.hit && this.currentTime > ramp.time + levelConfig.NOTE_TIMING.GOOD) {
-        if(ramp.lane === this.playerCurrentLane)this.app.hitManager.registerHit(ramp, this.currentTime)
+        if(ramp.lane === this.playerCurrentLane){
+          const hitScore = this.app.hitManager.registerHit(ramp, this.currentTime)
+          this.app.scoreManager.updateScore(hitScore)
+        }
       }
     })
 
@@ -607,7 +614,10 @@ export default class Level{
     this.rails.forEach(rail => {
       rail.update(deltaTime, this.currentTime)
       if (!rail.hit && this.currentTime > rail.time + levelConfig.NOTE_TIMING.GOOD) {
-        if(rail.lane === this.playerCurrentLane)this.app.hitManager.registerHit(rail, this.currentTime)
+        if(rail.lane === this.playerCurrentLane){
+          const hitScore = this.app.hitManager.registerHit(rail, this.currentTime)
+          this.app.scoreManager.updateScore(hitScore)
+        }
       }
     })
 

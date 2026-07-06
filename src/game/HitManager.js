@@ -43,13 +43,9 @@ export default class HitManager{
             return hitScore
         }
 
-        //if this hit was a rail, store the rail to handle hold and release
-        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== levelConfig.JUDGEMENT_ENUMS.MISS){
-            this.currentRail = noteNode
-        }
 
         //if there is already a current rail that means it's a hold note
-        if(this.curentRail){
+        if(this.currentRail){
             hitScore = levelConfig.JUDGEMENT_ENUMS.HOLD
             return hitScore
         }
@@ -63,12 +59,11 @@ export default class HitManager{
         } else {
             hitScore = levelConfig.JUDGEMENT_ENUMS.MISS
         }
-        //if player is surging, handle a surge section note
-        // if(this.app.surgeManager.surging === true){
-        //     this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
-        // }
-        //spawn a hit effect
-        // this.spawnHitEffect(hitScore, "ui")
+         
+        //if this hit was a rail, store the rail to handle hold and release
+        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== levelConfig.JUDGEMENT_ENUMS.MISS){
+            this.currentRail = noteNode
+        }
 
         noteNode.handleOnHit()
 
@@ -115,28 +110,23 @@ export default class HitManager{
     }
 
     registerGrindRelease = (releaseTime) => {
-        const RELEASE = levelConfig.JUDGEMENT_ENUMS.RELEASE
+        const { RELEASE, BAIL } = levelConfig.JUDGEMENT_ENUMS
 
         let hitScore
-        //****THERE IS A PROBLEM HERE WITH RELEASE TIME VS RAIL TIME CHECK****
+        
         if(this.currentRail){
             //check if release was after rail end time
-            const railFullTime = this.currentRail.time + this.currentRail.duration
-            const absTime = releaseTime - railFullTime
-            //first check for release before rail end
-            if(releaseTime < railFullTime){
-                hitScore = levelConfig.JUDGEMENT_ENUMS.BAIL
+            const railEndTime = this.currentRail.time + this.currentRail.durationInSeconds
+            const absTime = Math.abs(releaseTime - railEndTime)
+            if(absTime < levelConfig.NOTE_TIMING[RELEASE]){
+                hitScore = RELEASE  // on time within grace window
+            } else {
+                hitScore = BAIL  // too late
             }
-            else if(absTime < levelConfig.NOTE_TIMING[RELEASE]){
-                hitScore = levelConfig.JUDGEMENT_ENUMS.HOLD
-            }
-            else {
-                hitScore = levelConfig.JUDGEMENT_ENUMS.BAIL
-            } 
             const rail = this.currentRail
             this.currentRail = null
             return { hitScore, rail }
-        }
+        }   
     }
 
     //called from surge manager every frame player is on a surge panel

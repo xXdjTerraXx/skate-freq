@@ -1,4 +1,5 @@
 import { levelConfig } from "../config"
+import ENUMS from "../enums"
 
 export default class ScoreManager{
     constructor(app){
@@ -15,26 +16,47 @@ export default class ScoreManager{
             S: 0,
             D: 0,
             LANDS: 0,
-            BAIL: 0
+            BAIL: 0,
+            RELEASE: 0,
+            HOLD: 0
         }
-        this.health = levelConfig.PLAYER_STARTING_HEALTH
         this.uplink = levelConfig.PLAYER_STARTING_UPLINK
         this.surge = 0 // 0 - 4
         this.overclock = false
-        this.currentGrindScore = null
+        this.currentGrindJudgement = null
         this.currentGrindMultiplier = null
+        this.currentGrindScore = 0
     }
 
     updateScore =  (judgement) => {
-        //get point value and increase currentScore
-        let pointValue = levelConfig.JUDGEMENT_SCORE_DICT[judgement]
+        //update hitCounts dict
+        this.hitCounts[judgement]++
 
-        //grinds are scored a little differently :3
-        // if(this.grindMultiplier) pointValue = pointValue / 5 * this.grindMultiplier
+        const hitEffectCategory = levelConfig.JUDGEMENT_CATEGORY_MAP[judgement]
+
+        //SCORE
+        //get point value and increase currentScore
+        let pointValue
+
+        //if there is an active grind hold, update current grind
+        if(this.currentGrindJudgement){
+            if(judgement === ENUMS.JUDGEMENT.BAIL) this.currentGrindScore = 0
+            //add score for whole grind to currentScore if this is a release
+            else{
+                pointValue = levelConfig.JUDGEMENT_SCORE_DICT[this.currentGrindJudgement]
+                this.currentGrindScore = this.currentGrindMultiplier * pointValue
+                if(judgement === ENUMS.JUDGEMENT.HOLD)return
+                if(judgement === ENUMS.JUDGEMENT.RELEASE) this.currentScore += this.currentGrindScore
+            }
+        }
+        //else for non-grinds just add judgement point value to currentScore
+        else{
+            pointValue = levelConfig.JUDGEMENT_SCORE_DICT[judgement]
+            this.currentScore += pointValue
+        }
         
-        this.currentScore += pointValue
-        
-        //handle combo breaks on MISS.if combo is broken, the value ofcurrentScore 
+        //COMBO STUFF
+        //handle combo breaks on MISS or BAIL.if combo is broken, the value ofcurrentScore 
         // is multiplied by currentCombo and that product is added to currentScore
         //before currentCombo is reset to 0. 
         if(judgement == levelConfig.JUDGEMENT_ENUMS.MISS || judgement == levelConfig.JUDGEMENT_ENUMS.BAIL){
@@ -46,22 +68,20 @@ export default class ScoreManager{
         if(this.currentCombo > this.maxCombo){
             this.maxCombo = this.currentCombo
         }
-        //update hitCounts dict
-        this.hitCounts[judgement]++
 
+        //UPLINK
+        //and update uplink (health bar)
+        this.updateUplink(judgement)
+
+        //UI
         //aaanad finally...update UI
+        //holds dont need a hit effect spawned
+        if(hitEffectCategory !== ENUMS.HIT_EFFECT_CATEGORY.GRIND)this.app.ui.gameplayHUD.spawnHitEffect(judgement, hitEffectCategory)
         this.app.ui.gameplayHUD.updateScore(this.currentScore, this.currentCombo)
     }
 
-    updateHealth = (judgement) => {
-        const changeInHealth = levelConfig.HIT_RATING_VALUES[judgement].health
+    updateUplink = (judgement) => {
         const changeInUplink = levelConfig.HIT_RATING_VALUES[judgement].uplink
-
-        //update health here
-        this.health += changeInHealth
-        if(this.health>levelConfig.PLAYER_STARTING_HEALTH){
-            this.health = levelConfig.PLAYER_STARTING_HEALTH
-        }
         
         //update uplink here
         this.uplink += changeInUplink
@@ -70,7 +90,6 @@ export default class ScoreManager{
         }
 
         //aaanad finally...update UI
-        this.app.ui.gameplayHUD.updateHealth(this.health)
         this.app.ui.gameplayHUD.updateUplink(this.uplink)
     }
 
@@ -96,41 +115,55 @@ export default class ScoreManager{
     }
 
     updateGrind = (judgement) => {
-        if(this.currentGrindScore === judgement) return
+        const { RELEASE, BAIL } = levelConfig.JUDGEMENT_ENUMS
+
+        if(this.currentGrindJudgement === judgement) return
         //if release too early
-        if(judgement === levelConfig.JUDGEMENT_ENUMS.BAIL){
+        if(judgement === BAIL){
             this.updateScore(judgement)
-            this.currentGrindScore = null
+            
+            console.log('GRIND RELEASE DEBUG', judgement)
+            this.app.ui.gameplayHUD.endActiveGrind(judgement)
+            this.currentGrindJudgement = null
             this.currentGrindMultiplier = null
-            //update ui with null values to clear active grind ui
-            this.app.ui.gameplayHUD.updateActiveGrind(
-                this.currentGrindScore, this.currentGrindMultiplier
-            )
+            this.currentGrindScore = 0
         }
         //if grind successful full release
-        else if(judgement === levelConfig.JUDGEMENT_ENUMS.RELEASE){
+        else if(judgement === RELEASE){
             this.updateScore(judgement)
+            this.app.ui.gameplayHUD.endActiveGrind(judgement)
+            //reset currentGrind info
+            this.currentGrindJudgement = null
+            this.currentGrindMultiplier = null
+            this.currentGrindScore = 0
         }
-        //initial grind start
+        //if initial grind start, set currentGrindJudgement and call updateActiveGrind
+        //so that ui can spawn 
         else {
-            if(!this.currentGrindScore){
-                this.currentGrindScore = judgement
+            if(!this.currentGrindJudgement){
+                this.currentGrindJudgement = judgement
                 this.currentGrindMultiplier = 1
-                //update ui here
-                this.app.ui.gameplayHUD.updateActiveGrind(
-                    this.currentGrindScore, this.currentGrindMultiplier
-                )
+                //update score calculates the new grind score with abot values
+                this.updateScore(judgement)
+                //then update ui w new grind score here
+                this.app.ui.gameplayHUD.startActiveGrind(this.currentGrindScore, judgement)
             }
         }
     }
 
-    //this method gets called in level in its onBeatSixteenth call
     updateGrindMultiplier = () => {
-        if(this.currentGrindScore)this.currentGrindMultiplier++
-        //TODO: update ui here
-        this.app.ui.gameplayHUD.updateActiveGrind(
-            this.currentGrindScore, this.currentGrindMultiplier
-        )
+        this.currentGrindMultiplier++
+    }
+
+    //this method gets called in level in its onBeatSixteenth call
+    onBeatSixteenth = () => {
+        if(this.currentGrindJudgement){
+            this.updateGrindMultiplier()
+            const judgement = ENUMS.JUDGEMENT.HOLD
+            //calculate and updates the new grind score
+            this.updateScore(judgement)
+            this.app.ui.gameplayHUD.updateActiveGrind(this.currentGrindScore, judgement)
+        }
     }
 
     resetAll = () => {
@@ -145,11 +178,13 @@ export default class ScoreManager{
         this.hitCounts.D = 0
         this.hitCounts.LANDS = 0
         this.hitCounts.BAIL = 0
-        this.health = levelConfig.PLAYER_STARTING_HEALTH
+        this.hitCounts.RELEASE = 0
+        this.hitCounts.HOLD = 0
         this.surge = 0 
         this.overclock = false
-        this.currentGrindScore = null
+        this.currentGrindJudgement = null
         this.currentGrindMultiplier = null
+        this.currentGrindScore = 0
     }
 
     //returns finals score (score WITH bonus multiplier)
