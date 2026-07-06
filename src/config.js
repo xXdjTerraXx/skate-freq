@@ -9,6 +9,17 @@ export const FONT_SIZE = {
     XL: 64,   // hero text — big score reveals, RESULTS screen title, LOSSLESS stamp
 }
 
+export const COLOR_PALETTE = {
+        black: '#050510',
+        cyan: '#00FFEE',
+        orange: '#FF5500',
+        purple: '#9900FF',
+        gold: '#FFD700',
+        green: '#00FF88',
+        red: '#FF2244',
+        highlight: '#F0F0FF',
+}
+
 export const levelConfig = {
     INITIAL_GAME_STATE: GAME_STATES.TITLE,
     TUNNEL_LENGTH: 100,
@@ -28,7 +39,7 @@ export const levelConfig = {
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
     PLAYER_STARTING_HEALTH: 3000,
-    PLAYER_STARTING_UPLINK: 700,
+    PLAYER_STARTING_UPLINK: 1,
     PLAYER_MAX_UPLINK: 1000,
     SURGE_LIMIT: 3,  //how much surge u need to overclock
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
@@ -254,7 +265,7 @@ export const levelConfig = {
         activeGrindDisplay:{
             position:{x: 0, y: -150, z: 0},
             fontColor: 0x000000,
-            fontSize: FONT_SIZE.MD
+            fontSize: FONT_SIZE.LG
         },
         noteHitEffects: {
             position: {x: -400, y: 0, z: 0}

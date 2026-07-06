@@ -129,7 +129,7 @@ export default class GameplayHUD{
         
 ////////////////////////////////////////////////////////////////////////
 ///////////////////////~~*~~*  ACTIVE GRIND DISPLAY  *~~*~~////////////////////////////
-        this.activeGrindDisplay = new ActiveGrindDisplay(this.mainContainer, this.spawnHitEffect)
+        this.activeGrindDisplay = new ActiveGrindDisplay(this.mainContainer, this.spawnHitEffect, this.scoreContainer.position)
         this.activeGrindDisplay.init()
         this.activeGrindDisplay.mainContainer.position.set(
             levelConfig.UI_COMPONENT_SETTINGS.activeGrindDisplay.position.x,

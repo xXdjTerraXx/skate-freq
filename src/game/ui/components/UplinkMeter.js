@@ -13,7 +13,6 @@ export default class UplinkMeter{
         this.currentUplink = levelConfig.PLAYER_STARTING_UPLINK
         this.maxUplink = levelConfig.PLAYER_MAX_UPLINK
         
-        
         this.targetUplink = this.currentUplink
 
         this.colorHealthy = new THREE.Color(levelConfig.UI_COMPONENT_SETTINGS.uplinkMeter.meterColors["healthy"])
@@ -115,7 +114,6 @@ export default class UplinkMeter{
         const uplinkRatio = this.currentUplink/this.maxUplink
         this.mainMeterMesh.scale.x = uplinkRatio
         this.peakMeterStartingPosition = this.mainMeterMesh.position.x + this.meterWidth * uplinkRatio
-        this.peakMesh.position.x = this.peakMeterStartingPosition
 
     }
 }

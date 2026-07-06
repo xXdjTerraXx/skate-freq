@@ -15,4 +15,8 @@ export default class AtmosphereHUD{
     init = () => {
         
     }
+
+    reset = () => {
+        
+    }
 }
