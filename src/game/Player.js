@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { levelConfig } from '../config'
 import PlayerRing from './PlayerRing';
+import AnimationManager from './PlayerAnimationManager';
+import ENUMS from '../enums';
 
 export default class Player {
   constructor(app, level) {
@@ -37,21 +39,25 @@ export default class Player {
     // set up the animation mixer
     this.mixer = new THREE.AnimationMixer(this.characterModel)
     // store the animations by name so you can access them easily
-    this.animations = {}
+    this.animationsDict = {}
     this.gltf.animations.forEach((clip) => {
       console.log('DEBUG DEBUGanimation clip name:', clip.name)
-        this.animations[clip.name] = this.mixer.clipAction(clip)
+        this.animationsDict[clip.name] = this.mixer.clipAction(clip)
     })
-    //set idle so that it plays through and holds
-    this.animations['crouch'].setLoop(THREE.LoopOnce)
-    this.animations['crouch'].clampWhenFinished = true
-    //set default current animation
-    this.currentAnimation = this.animations['idle']
-    //set last animation same as current initially
-    this.lastAnimation = this.currentAnimation
-    // play idle by default
-    this.animations['idle'].play()
+
+    ///////////~*~*~*~*~*~OLD ANIMATION CODE~*~*~*~*~*~///////////
+    // //set idle so that it plays through and holds
+    // this.animationsDict['crouch'].setLoop(THREE.LoopOnce)
+    // this.animationsDict['crouch'].clampWhenFinished = true
+    // //set default current animation
+    // this.currentAnimation = this.animationsDict['idle']
+    // //set last animation same as current initially
+    // this.lastAnimation = this.currentAnimation
+    // // play idle by default
+    // this.animationsDict['idle'].play()
     // attach the character model to the sphere
+    //////////////////////////////////////////////////////////////
+
     // so it follows all the spheres movement automatically
     this.mesh.add(this.characterModel)
     //put mesh in layer 1 - NO BLOOM
@@ -139,6 +145,7 @@ export default class Player {
     this.mainPlayerContainer.add(this.mesh)
     this.level.mainLevelContainer.add(this.mainPlayerContainer)
     // this.app.scene.add(this.mainPlayerContainer)
+    this.animationManager = new AnimationManager(this.mixer, this.animationsDict)
   }
 
   pulse = () => {
@@ -148,8 +155,9 @@ export default class Player {
 
   handleCrouch = () => {
     if(!this.isCrouching){
-      this.playAnimation('crouch')
       this.isCrouching = true
+      if(this.isGrinding)this.playAnimation(ENUMS.ANIMATIONS.GRIND_CROUCH)
+      else this.playAnimation(ENUMS.ANIMATIONS.CROUCH)
     }  
   }
 
@@ -167,11 +175,12 @@ export default class Player {
 
   launch = (launchTime, landingTime, jumpHeight = this.DEFAULT_JUMP_HEIGHT) => {
     this.isCrouching = false
-    this.playAnimation('jump')
     this.isInAir = true
     this.airStartTime = launchTime
     this.landingTime = landingTime
     this.jumpHeight = jumpHeight
+    if(this.isGrinding) this.playAnimation(ENUMS.ANIMATIONS.GRIND_JUMP)
+    else this.playAnimation(ENUMS.ANIMATIONS.JUMP)
   }
 
   updateJumpArc = () => {
@@ -180,8 +189,10 @@ export default class Player {
       if (this.app.level.currentTime >= this.landingTime) {
           this.jumpOffset = 0
           this.isInAir = false
-          // this.landingTime = null
-          // this.airStartTime = null
+          console.log("PLAYER JUST LANDED", this.isInAir)
+          if (!this.isGrinding) {
+            this.playAnimation(ENUMS.ANIMATIONS.IDLE)
+          }
           return
       }
 
@@ -207,6 +218,8 @@ export default class Player {
     this.grindStartTime = grindStartTime
     this.grindEndTime = grindEndTime
     this.grindDuration = grindDuration
+    console.log('PLAYING GRIND ANIMATION FROM GRIND')
+    this.playAnimation(ENUMS.ANIMATIONS.GRIND_ENTER, {returnTo: ENUMS.ANIMATIONS.GRIND_HOLD})
   }
 
   updateGrind = (wKeyIsHeld) => {
@@ -214,26 +227,32 @@ export default class Player {
       this.isGrinding = false
       this.grindStartTime = null
       this.grindDuration = null
-      this.grindDuration = null
+      this.playAnimation(ENUMS.ANIMATIONS.IDLE)
+    }
+    else if(this.animationManager.currentAnimation !== this.animationsDict[ENUMS.ANIMATIONS.GRIND]){
+      this.playAnimation(ENUMS.ANIMATIONS.GRIND_HOLD)
     }
   }
 
+  resync = () => {
+    //TO DO
+    //MANUAL ANIMATION
+    this.playAnimation(ENUMS.ANIMATIONS.IDLE)
+  }
+
   setSubLane = (index) => {
+    this.isInAir = false
+    this.jumpOffset = 0
+
     this.subLane = index
     this.targetLaneOffset = this.subLaneOffsets[index]
 
-    //play a pumping animation - left for left lane, right for right
-    // if (index === 0) this.playAnimation('pump_LL')
-    // else if (index === 2) this.playAnimation('pump_RR')
-    // // center alternates, handle this next
-    // else {
-    //   if(this.lastAnimation === this.animations['pump_RR']) this.playAnimation('pump_LL')
-    //   else this.playAnimation('pump_RR')
-    // } 
-
-    //TESTING THIS: play alternate pumping every key press
-    if(this.lastAnimation === this.animations['pump_RR']) this.playAnimation('pump_LL')
-      else this.playAnimation('pump_RR')
+    //TO DO: MOVE THIS TO ANIMATION MANAGER
+    //play alternate pumping every key press
+    if(this.animationManager.lastAnimation === this.animationsDict[ENUMS.ANIMATIONS.PUMPR]) {
+      this.playAnimation(ENUMS.ANIMATIONS.PUMPL, {returnTo: ENUMS.ANIMATIONS.PUMPR}, {cossfadeDuration: 0.01})
+    }
+      else this.playAnimation(ENUMS.ANIMATIONS.PUMPR, {returnTo: ENUMS.ANIMATIONS.PUMPL}, {cossfadeDuration: 0.01})
   }
 
   updateMovement = (deltaTime) => {
@@ -249,7 +268,16 @@ export default class Player {
 
     const x = Math.cos(finalAngle) * effectiveRadius
     const y = Math.sin(finalAngle) * effectiveRadius
-    this.mesh.position.set(x, y, this.initialZPosition)
+    this.mesh.position.set(x, y, this.initialZPosition + .2)
+  }
+
+  slamDown = () => {
+    //final angle is angle but with laneOffset for movement
+    if (!this.isInAir) return
+    this.isInAir = false
+    this.jumpOffset = 0
+    //slam one shot later???
+    this.playAnimation(ENUMS.ANIMATIONS.IDLE) 
   }
 
   onBeat = (beatInBar) => {
@@ -257,27 +285,31 @@ export default class Player {
     this.playerRing.pulse(beatInBar)
   }
 
-  playAnimation = (name, crossfadeDuration = 0.1) => {
-    //store upcoming animation
-    const next = this.animations[name]
-    if (!next ) return
-    //and save the current one as the last one
-    this.lastAnimation = this.currentAnimation
+  // playAnimation = (name, crossfadeDuration = 0.1) => {
+  //   //store upcoming animation
+  //   const next = this.animations[name]
+  //   if (!next ) return
+  //   //and save the current one as the last one
+  //   this.lastAnimation = this.currentAnimation
     
-    if (this.currentAnimation) {
-        this.currentAnimation.crossFadeTo(next, crossfadeDuration, true)
-    }
+  //   if (this.currentAnimation) {
+  //       this.currentAnimation.crossFadeTo(next, crossfadeDuration, true)
+  //   }
     
-    next.reset().play()
-    this.currentAnimation = next
+  //   next.reset().play()
+  //   this.currentAnimation = next
 
-    // only set return-to-idle timeout for pump animations
-    // if (name !== 'idle') {
-    //     clearTimeout(this.pumpTimeout)
-    //     this.pumpTimeout = setTimeout(() => {
-    //         if(!this.isCrouching && !this.isInAir)this.playAnimation('idle')
-    //     }, 500)
-    // }
+  //   // only set return-to-idle timeout for pump animations
+  //   // if (name !== 'idle') {
+  //   //     clearTimeout(this.pumpTimeout)
+  //   //     this.pumpTimeout = setTimeout(() => {
+  //   //         if(!this.isCrouching && !this.isInAir)this.playAnimation('idle')
+  //   //     }, 500)
+  //   // }
+  // }
+
+  playAnimation = (name, options = {}) => {
+    this.animationManager.transitionTo(name, options)
   }
 
   update = (deltaTime) => {
@@ -288,7 +320,7 @@ export default class Player {
     this.updateMovement(deltaTime)
 
     //animations
-    if (this.mixer) this.mixer.update(deltaTime)
+    if (this.animationManager) this.animationManager.update(deltaTime)
 
     this.updatePosition()
 

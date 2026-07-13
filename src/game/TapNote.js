@@ -49,6 +49,7 @@ export default class TapNote{
         ]
 
         this.eventEmitter = eventEmitter
+        this.readyForRemoval = false
     } 
 
     init = (tapNotesContainer) => {
@@ -80,9 +81,14 @@ export default class TapNote{
         if(this.geometry)this.geometry.dispose()
         if(this.material)this.material.dispose()
         if(this.mesh)this.mesh.parent.remove(this.mesh)
-        
+        this.readyForRemoval = true
         //emit event
         this.eventEmitter.emit("noteKilled") 
+    }
+
+    markMissed = () => {
+        this.hit = true
+        this.killSelf()
     }
 
     update(deltaTime, currentTime) {

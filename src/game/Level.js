@@ -6,6 +6,7 @@ import TapNote from './TapNote'
 import FloorPanel from './FloorPanel'
 import EventEmitter from './EventEmitter'
 import Rail from './note_nodes/Rail'
+import ENUMS from '../enums'
 
 //the whole scene tree for the game looks like this:
 //           [app scene]
@@ -248,7 +249,7 @@ export default class Level{
     this.levelMap.patterns.ramps.forEach(ramp => {
       const countdownOffset = 4 * this.secondsPerBeat
       const timeInSeconds = (ramp.beat - 1) * this.secondsPerBeat + countdownOffset
-      const durationInSeconds = rail.duration * this.secondsPerBeat
+      const durationInSeconds = ramp.duration * this.secondsPerBeat
       const newRamp = new Ramp(
         this.app, 
         this.hitlineZPosition,
@@ -332,6 +333,32 @@ export default class Level{
       this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
   }
 
+  //simply returns bool about if tapnote is incoming
+  hasHittableTapNote = () => {
+    const playerLane = this.playerCurrentLane
+
+    const tapNotesInPlayerLane = this.tapNotes.filter(note => {
+      return note.lane === playerLane
+    })
+
+    const closestTapNoteInTime = tapNotesInPlayerLane.reduce(
+      (acc, note) => {
+        const timeUntilHit = (note.time - this.currentTime)
+        const absTime = Math.abs(timeUntilHit)
+        if (note.hit) return acc
+        if (note.subLane !== this.player.subLane) return acc
+        if (timeUntilHit > 0.5) return acc
+        if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
+        if (absTime < acc.timeDiff) {
+          return {tapNote: note, timeDiff: absTime}
+        }
+        return acc
+      }, {tapNote: null, timeDiff: Infinity}
+    )
+
+    return closestTapNoteInTime.tapNote !== null
+}
+
   //checks for a tapNoteHit. called in controller on key press
   //returns an object: { note, timeDiff, currentTime }
   checkTapNoteHit = (subLane) => {
@@ -388,27 +415,47 @@ export default class Level{
     return closestRampInTime
   }
 
+  // checkRailHit = () => {
+  //   //filter lane matching rails
+  //   const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
+
+  //   const closestRailInTime = railsInPlayerLane.reduce(
+  //     (acc, rail) => {
+        // const timeUntilHit = rail.time - this.currentTime
+        // const absTime = Math.abs(timeUntilHit)
+  //       if (rail.hit) return acc
+  //       // if (timeUntilHit > this.secondsPerBeat) return acc//////////////
+  //       if(absTime < acc.timeDiff){
+  //         return { rail: rail, timeDiff: absTime, currentTime: this.currentTime }
+  //       }  
+  //       return acc
+  //     }, { rail: null, timeDiff: Infinity, currentTime: this.currentTime }
+  //   )
+
+  //   return closestRailInTime
+  // }
+
   checkRailHit = () => {
     //filter lane matching rails
     const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
 
-    const closestRailInTime = railsInPlayerLane.reduce(
+    const closestOngoingRail = railsInPlayerLane.reduce(
       (acc, rail) => {
+        const timeSinceStart = this.currentTime - rail.time
+        const railEndTime = rail.time + rail.duration * this.secondsPerBeat
         const timeUntilHit = rail.time - this.currentTime
         const absTime = Math.abs(timeUntilHit)
         if (rail.hit) return acc
-        if (timeUntilHit > this.secondsPerBeat) return acc
-        //>_> uncomment this if seeing phantom rail hits <_<
-        // if (timeUntilHit < -levelConfig.NOTE_TIMING.GOOD) return acc
-        if(absTime < acc.timeDiff){
-          return { rail: rail, timeDiff: absTime, currentTime: this.currentTime }
+        if(this.currentTime > railEndTime) return acc
+        if(this.currentTime > rail.time && this.currentTime < railEndTime){
+          return { rail: rail, currentTime: this.currentTime, timeSinceStart }
         }  
         return acc
-      }, { rail: null, timeDiff: Infinity, currentTime: this.currentTime }
+      }, { rail: null, currentTime: this.currentTime, timeSinceStart: null }
     )
 
-    return closestRailInTime
-  }
+    return closestOngoingRail
+  }  
 
   handlePlayerTrick = (keyString) => {
     const trick = keyString
@@ -479,8 +526,8 @@ export default class Level{
     // clear floor panels
     while (this.floorPanelsContainer.children.length > 0) {
         const child = this.floorPanelsContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
+        if(child.geometry)child.geometry.dispose()
+        if(child.material)child.material.dispose()
         this.floorPanelsContainer.remove(child)
     }
   }
@@ -567,45 +614,36 @@ export default class Level{
     //remove already hit notes from note arrays if this flag is true
     //set by level -> note nodes mini event system
     if(this.dirtyNotesExist){
-      this.ramps = this.ramps.filter(ramp => ramp.hit !== true)
-      this.tapNotes = this.tapNotes.filter(note => note.hit !== true)
-      this.rails = this.rails.filter(rail => rail.hit !== true)
+      this.ramps = this.ramps.filter(ramp => ramp.readyForRemoval !== true)
+      this.tapNotes = this.tapNotes.filter(note => note.readyForRemoval !== true)
+      this.rails = this.rails.filter(rail => rail.readyForRemoval !== true)
       this.dirtyNotesExist = false
     }
 
 
     this.tapNotes.forEach(note => {
-      //////////////////////////////////////////
-      // DEBUG - checking timing with a click
-      // const wasBeforeHitline = note.mesh.position.z < this.hitlineZPosition
-      // note.update(deltaTime, this.currentTime)
-      // const isAfterHitline = note.mesh.position.z >= this.hitlineZPositio
-      // if (wasBeforeHitline && isAfterHitline) {
-      //     this.app.audioManager.playClick(true, -0.016) // true = downbeat sound so it's distinct
-      // }
-      /////////////////////////////////////////////
-
-      ////////////////////////////////////////////
-      // DEBUG - NO click
       note.update(deltaTime, this.currentTime)
-      //check for notes the player has missed and have passed the hitLine
-      if (!note.hit && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
+      //tapnotes need to also check if the player isInAir
+      if (!note.hit && !this.player.isInAir && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
         if(note.lane === this.playerCurrentLane){
-          const hitScore = this.app.hitManager.registerHit(note, this.currentTime)
+          // const hitScore = this.app.hitManager.registerHit(note, this.currentTime)
+          const hitScore = ENUMS.JUDGEMENT.MISS
           this.app.scoreManager.updateScore(hitScore)
         }
+        note.markMissed() 
       }
-      ////////////////////////////////////////////
     })
 
     //update ramps
     this.ramps.forEach(ramp => {
       ramp.update(deltaTime, this.currentTime)
-      if (!ramp.hit && this.currentTime > ramp.time + levelConfig.NOTE_TIMING.GOOD) {
+      if (!ramp.hit && !this.player.isInAir && this.currentTime > ramp.time + levelConfig.NOTE_TIMING.GOOD) {
         if(ramp.lane === this.playerCurrentLane){
-          const hitScore = this.app.hitManager.registerHit(ramp, this.currentTime)
+          // const hitScore = this.app.hitManager.registerHit(ramp, this.currentTime)
+          const hitScore = ENUMS.JUDGEMENT.MISS
           this.app.scoreManager.updateScore(hitScore)
         }
+        ramp.markMissed()
       }
     })
 
@@ -613,15 +651,15 @@ export default class Level{
     //update rails
     this.rails.forEach(rail => {
       rail.update(deltaTime, this.currentTime)
-      if (!rail.hit && this.currentTime > rail.time + levelConfig.NOTE_TIMING.GOOD) {
+      if (!rail.hit && this.currentTime > rail.time + rail.duration + levelConfig.NOTE_TIMING.GOOD) {
         if(rail.lane === this.playerCurrentLane){
-          const hitScore = this.app.hitManager.registerHit(rail, this.currentTime)
+          // const hitScore = this.app.hitManager.registerHit(rail, this.currentTime)
+          const hitScore = ENUMS.JUDGEMENT.MISS
           this.app.scoreManager.updateScore(hitScore)
         }
+        rail.markMissed()
       }
     })
-
   }
-
 
 }

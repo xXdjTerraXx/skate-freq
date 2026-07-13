@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { levelConfig } from '../config'
 import { createTextNode } from '../utils'
+import ENUMS from '../enums'
 
 //decides which type of hit effect to spawn and which container to put
 //it in. each hit effect is responsible for its own movement and deletion
@@ -19,49 +20,43 @@ export default class HitManager{
     }
 
     registerHit = (noteNode, currentTime) => {
-
+        const { NULL, HOLD, PERFECT, GOOD, MISS } = ENUMS.JUDGEMENT
         let hitScore 
 
         //if player presses when no note
         if (!noteNode) {
-            hitScore = 'MISS'
-            // //update score and health
-            // this.app.scoreManager.updateScore(hitScore)
-            // this.app.scoreManager.updateHealth(hitScore)
-            // //spawn hit effect text
-            // this.app.ui.gameplayHUD.spawnHitEffect(hitScore, levelConfig.HIT_EFFECT_CATEGORY_ENUMS.NOTE)
-            // //break surge panel streak if player is on one
-            // if(this.app.surgeManager.surging){
-            //     this.app.surgeManager.handleNoteHit(hitScore, noteNode.beat)
-            // }
+            hitScore = NULL
             return hitScore
         }
 
         //prevent double hitting
         if (noteNode.hit) {
-            hitScore = levelConfig.JUDGEMENT_ENUMS.NULL
+            hitScore = NULL
             return hitScore
         }
 
 
         //if there is already a current rail that means it's a hold note
         if(this.currentRail){
-            hitScore = levelConfig.JUDGEMENT_ENUMS.HOLD
+            hitScore = HOLD
             return hitScore
         }
         
         const timeUntilHit = (noteNode.time - currentTime)
         
         if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
-            hitScore = levelConfig.JUDGEMENT_ENUMS.PERFECT
+            hitScore = PERFECT
         } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
-            hitScore = levelConfig.JUDGEMENT_ENUMS.GOOD
+            hitScore = GOOD
         } else {
-            hitScore = levelConfig.JUDGEMENT_ENUMS.MISS
+           if(noteNode.noteNodeType === ENUMS.NOTE_NODE_TYPE.RAIL) {
+                hitScore = HOLD
+            }
+            else hitScore = MISS
         }
          
         //if this hit was a rail, store the rail to handle hold and release
-        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== levelConfig.JUDGEMENT_ENUMS.MISS){
+        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== MISS){
             this.currentRail = noteNode
         }
 
@@ -110,7 +105,7 @@ export default class HitManager{
     }
 
     registerGrindRelease = (releaseTime) => {
-        const { RELEASE, BAIL } = levelConfig.JUDGEMENT_ENUMS
+        const { RELEASE, NEURO } = ENUMS.JUDGEMENT
 
         let hitScore
         
@@ -118,15 +113,20 @@ export default class HitManager{
             //check if release was after rail end time
             const railEndTime = this.currentRail.time + this.currentRail.durationInSeconds
             const absTime = Math.abs(releaseTime - railEndTime)
-            if(absTime < levelConfig.NOTE_TIMING[RELEASE]){
-                hitScore = RELEASE  // on time within grace window
+            if(absTime < levelConfig.NOTE_TIMING[NEURO]){
+                 // on time within window
+                hitScore = NEURO 
             } else {
-                hitScore = BAIL  // too late
+                hitScore = RELEASE  
             }
             const rail = this.currentRail
             this.currentRail = null
+            console.log("DUB MIXES ARE GOOD", hitScore, levelConfig.NOTE_TIMING[NEURO])
             return { hitScore, rail }
-        }   
+        }  
+        else {
+            console.error("currentRail is null or false or some shit in hit manager registerGrindRelease")
+        } 
     }
 
     //called from surge manager every frame player is on a surge panel

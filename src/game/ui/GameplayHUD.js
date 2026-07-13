@@ -61,7 +61,6 @@ export default class GameplayHUD{
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////~~*~~*  TRICK HITS  *~~*~~///////////////////////////////////////
 
-        //where info about the active grind appears
         this.trickHitEffectsContainer = new THREE.Group()
         this.trickHitEffectsContainer.name = 'trick effects container'
         this.trickHitEffectsContainer.position.set(
@@ -221,14 +220,15 @@ export default class GameplayHUD{
     spawnHitEffect = (judgement, type) => {
         //set parent container based on category
         const {NOTE, GRIND, LAND, TRICK } = ENUMS.HIT_EFFECT_CATEGORY
-
+        console.log("dark sidDEEEDDD", judgement, type)
         let parentContainer
         type === NOTE ? parentContainer = this.noteHitEffectsContainer
         : type === GRIND ? parentContainer = this.activeGrindDisplay.grindReleaseEffectContainer 
         : type === LAND ? parentContainer = this.landHitEffectsContainer
-        : type === TRICK ? parentContainer = this.trickHitEffectSContainer
+        : type === TRICK ? parentContainer = this.trickHitEffectsContainer
         : null
         if (parentContainer === null) return
+
         const newHitEffect = new UiHitEffect(this.app, judgement, parentContainer)
         // const newHitEffect = new UiHitEffect(hitRating,this.app.scene,texture)
         this.activeHits.push(newHitEffect)

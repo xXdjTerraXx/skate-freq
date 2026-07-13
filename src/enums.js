@@ -13,6 +13,7 @@ const ENUMS = {
         HOLD: 'HOLD',
         BAIL: 'BAIL',
         RELEASE: 'RELEASE',
+        NEURO: 'NEURO',
         A: 'A',
         S: 'S',
         D: 'D',
@@ -25,6 +26,24 @@ const ENUMS = {
         LAND: 'LAND',
         TRICK:'TRICK'
     },
+    ANIMATIONS: {
+        GRIND_ENTER: 'basic_grind_enter',
+        GRIND_HOLD: 'basic_grind_hold',
+        GRIND_CROUCH: 'grind_crouch',
+        GRIND_JUMP: 'grind_jump',
+        GRABS:{
+            A: 'grab_1',
+            S: 'grab_2',
+            D: 'grab_3'
+        },
+        
+        PUMPL: 'pump_LL',
+        PUMPR: 'pump_RR',
+        IDLE: 'idle',
+        JUMP: 'jump',
+        CROUCH: 'crouch',
+        POWERSLIDE: 'powerslide'
+    }
 }
 
 export default ENUMS

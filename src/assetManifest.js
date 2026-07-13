@@ -17,7 +17,7 @@ export const graphics2DAssetManifest = {
 
 export const graphics3DAssetManifest = {
     character: {
-        djTerra: '/assets/models/characters/terra_model.glb'
+        djTerra: '/assets/models/characters/terra_model3.glb'
     },
     environment: {}
 }
@@ -28,18 +28,18 @@ export const audioAssetManifest = {
     songs: {
         testSong: {
             path: '/assets/audio/song_library/the_end_of_biters_prefuse_73.wav',
-            bpm: 120,  
+            bpm: 96,  
             title: 'The End of Biters',
             artist: 'Prefuse 73',
             // noteMap: {
             //     patternLengthBeats: 132,
-            //     patterns: {
-            //         tapNotes: [
-            //             { lane: 0, subLane: 1, beat: 5 },
-            //             { lane: 0, subLane: 1, beat: 6 },
-            //             { lane: 0, subLane: 1, beat: 7 },
-            //             { lane: 0, subLane: 1, beat: 8 },
-            //             { lane: 0, subLane: 0, beat: 9 },
+                // patterns: {
+                //     tapNotes: [
+                //         { lane: 0, subLane: 1, beat: 5 },
+                //         { lane: 0, subLane: 1, beat: 6 },
+                //         { lane: 0, subLane: 1, beat: 7 },
+                //         { lane: 0, subLane: 1, beat: 8 },
+                //         { lane: 0, subLane: 0, beat: 9 },
             //             { lane: 0, subLane: 2, beat: 15 },
             //             { lane: 0, subLane: 1, beat: 16 },
             //             { lane: 0, subLane: 1, beat: 17 },
@@ -148,11 +148,11 @@ export const audioAssetManifest = {
             //             { lane: 3, subLane: 2, beat: 131.5 },
             //             { lane: 3, subLane: 1, beat: 132 },
             //         ],
-            //         ramps: [
-            //             { lane: 0, beat: 12, duration: 1 },
-            //             { lane: 0, beat: 28, duration: 1.5 },
-            //             { lane: 1, beat: 44, duration: 1 },
-            //             { lane: 1, beat: 60, duration: 1.5 },
+                    // ramps: [
+                    //     { lane: 0, beat: 12, duration: 1 },
+                    //     { lane: 0, beat: 28, duration: 1.5 },
+                    //     { lane: 1, beat: 44, duration: 1 },
+                    //     { lane: 1, beat: 60, duration: 1.5 },
             //             { lane: 2, beat: 76, duration: 1 },
             //             { lane: 2, beat: 92, duration: 1.5 },
             //             { lane: 3, beat: 108, duration: 1 },
@@ -165,11 +165,11 @@ export const audioAssetManifest = {
             //     // OVERCLOCK SECTIONS — shifted +4
             //     // beats 1-4 are SIGNAL WARMUP, OC sections start at beat 5
             //     // =====================
-            //     overclockSections: [
-            //         { lane: 0, startBeat: 5,   endBeat: 7  },  // DEBUG
-            //         { lane: 1, startBeat: 37,  endBeat: 39  },  // DEBUG
-            //         { lane: 2, startBeat: 69,  endBeat: 100 },  // DEBUG
-            //         { lane: 3, startBeat: 101, endBeat: 132 },  // DEBUG
+                // overclockSections: [
+                //     { lane: 0, startBeat: 5,   endBeat: 7  },  // DEBUG
+                //     { lane: 1, startBeat: 37,  endBeat: 39  },  // DEBUG
+                //     { lane: 2, startBeat: 69,  endBeat: 100 },  // DEBUG
+                //     { lane: 3, startBeat: 101, endBeat: 132 },  // DEBUG
             //         // { lane: 0, startBeat: 5,   endBeat: 36  },  // bars 2-9
             //         // { lane: 1, startBeat: 37,  endBeat: 68  },  // bars 10-17
             //         // { lane: 2, startBeat: 69,  endBeat: 100 },  // bars 18-25
@@ -179,28 +179,145 @@ export const audioAssetManifest = {
 
             
             noteMap: {
-            //RAILS TESTING NOTE MAP
-                patternLengthBeats: 72,
-                patterns: {
-                    tapNotes: [],
-                    ramps: [],
-                    rails: [
-                        // Lane 0
-                        { lane: 0, beat: 5,  duration: 4 },
-                        { lane: 0, beat: 17, duration: 2 },
-                        { lane: 0, beat: 29, duration: 4 },
-                        { lane: 0, beat: 45, duration: 2 },
-                        { lane: 0, beat: 57, duration: 4 },
+    // FULL NOTE TYPE TESTING MAP — all 4 lanes active simultaneously
+    // Lane 0 = bass (rail-heavy, sustained)
+    // Lane 1 = drums (tap-heavy, quick hits)
+    // Lane 2 = rhythm (rails + taps, medium)
+    // Lane 3 = melody/vocals (longer rails, ramps, phrasing)
+    patternLengthBeats: 72,
+    patterns: {
+        tapNotes: [
+            // Lane 0 (bass) fills
+            { lane: 0, subLane: 1, beat: 7 },
+            { lane: 0, subLane: 1, beat: 8 },
+            { lane: 0, subLane: 0, beat: 12 },
+            { lane: 0, subLane: 2, beat: 13 },
+            { lane: 0, subLane: 1, beat: 25 },
+            { lane: 0, subLane: 1, beat: 26 },
+            { lane: 0, subLane: 0, beat: 30 },
+            { lane: 0, subLane: 2, beat: 31 },
+            { lane: 0, subLane: 1, beat: 43 },
+            { lane: 0, subLane: 1, beat: 44 },
+            { lane: 0, subLane: 0, beat: 48 },
+            { lane: 0, subLane: 2, beat: 49 },
+            { lane: 0, subLane: 1, beat: 61 },
+            { lane: 0, subLane: 1, beat: 62 },
+            { lane: 0, subLane: 0, beat: 66 },
+            { lane: 0, subLane: 2, beat: 67 },
 
-                        // Lane 1
-                        { lane: 1, beat: 9,  duration: 2 },
-                        { lane: 1, beat: 21, duration: 4 },
-                        { lane: 1, beat: 37, duration: 2 },
-                        { lane: 1, beat: 49, duration: 4 },
-                        { lane: 1, beat: 65, duration: 2 },
-                    ]
-                },
-                overclockSections: []
+            // Lane 1 (drums) bursts
+            { lane: 1, subLane: 0, beat: 4 },
+            { lane: 1, subLane: 1, beat: 5 },
+            { lane: 1, subLane: 2, beat: 6 },
+            { lane: 1, subLane: 1, beat: 7 },
+            { lane: 1, subLane: 0, beat: 13 },
+            { lane: 1, subLane: 1, beat: 14 },
+            { lane: 1, subLane: 2, beat: 15 },
+            { lane: 1, subLane: 1, beat: 16 },
+            { lane: 1, subLane: 0, beat: 20 },
+            { lane: 1, subLane: 1, beat: 21 },
+            { lane: 1, subLane: 2, beat: 22 },
+            { lane: 1, subLane: 1, beat: 23 },
+            { lane: 1, subLane: 0, beat: 29 },
+            { lane: 1, subLane: 1, beat: 30 },
+            { lane: 1, subLane: 2, beat: 31 },
+            { lane: 1, subLane: 1, beat: 32 },
+            { lane: 1, subLane: 0, beat: 36 },
+            { lane: 1, subLane: 1, beat: 37 },
+            { lane: 1, subLane: 2, beat: 38 },
+            { lane: 1, subLane: 1, beat: 39 },
+            { lane: 1, subLane: 0, beat: 45 },
+            { lane: 1, subLane: 1, beat: 46 },
+            { lane: 1, subLane: 2, beat: 47 },
+            { lane: 1, subLane: 1, beat: 48 },
+            { lane: 1, subLane: 0, beat: 52 },
+            { lane: 1, subLane: 1, beat: 53 },
+            { lane: 1, subLane: 2, beat: 54 },
+            { lane: 1, subLane: 1, beat: 55 },
+            { lane: 1, subLane: 0, beat: 61 },
+            { lane: 1, subLane: 1, beat: 62 },
+            { lane: 1, subLane: 2, beat: 63 },
+            { lane: 1, subLane: 1, beat: 64 },
+            { lane: 1, subLane: 0, beat: 68 },
+            { lane: 1, subLane: 1, beat: 69 },
+            { lane: 1, subLane: 2, beat: 70 },
+            { lane: 1, subLane: 1, beat: 71 },
+
+            // Lane 2 (rhythm) fills
+            { lane: 2, subLane: 1, beat: 10 },
+            { lane: 2, subLane: 1, beat: 11 },
+            { lane: 2, subLane: 0, beat: 15 },
+            { lane: 2, subLane: 2, beat: 16 },
+            { lane: 2, subLane: 1, beat: 30 },
+            { lane: 2, subLane: 1, beat: 31 },
+            { lane: 2, subLane: 0, beat: 35 },
+            { lane: 2, subLane: 2, beat: 36 },
+            { lane: 2, subLane: 1, beat: 50 },
+            { lane: 2, subLane: 1, beat: 51 },
+            { lane: 2, subLane: 0, beat: 55 },
+            { lane: 2, subLane: 2, beat: 56 },
+            { lane: 2, subLane: 1, beat: 70 },
+            { lane: 2, subLane: 1, beat: 71 },
+
+            // Lane 3 (melody/vocals) phrasing
+            { lane: 3, subLane: 1, beat: 8 },
+            { lane: 3, subLane: 1, beat: 9 },
+            { lane: 3, subLane: 0, beat: 16 },
+            { lane: 3, subLane: 2, beat: 17 },
+            { lane: 3, subLane: 1, beat: 22 },
+            { lane: 3, subLane: 1, beat: 23 },
+            { lane: 3, subLane: 1, beat: 32 },
+            { lane: 3, subLane: 1, beat: 33 },
+            { lane: 3, subLane: 0, beat: 40 },
+            { lane: 3, subLane: 2, beat: 41 },
+            { lane: 3, subLane: 1, beat: 46 },
+            { lane: 3, subLane: 1, beat: 47 },
+            { lane: 3, subLane: 1, beat: 56 },
+            { lane: 3, subLane: 1, beat: 57 },
+            { lane: 3, subLane: 0, beat: 64 },
+            { lane: 3, subLane: 2, beat: 65 },
+            { lane: 3, subLane: 1, beat: 70 },
+            { lane: 3, subLane: 1, beat: 71 },
+        ],
+        ramps: [
+            // { lane: 0, beat: 10, duration: 1.5 },
+            // { lane: 0, beat: 28, duration: 2 },
+            // { lane: 0, beat: 46, duration: 1 },
+            // { lane: 0, beat: 64, duration: 1 },
+
+            // { lane: 1, beat: 10, duration: 1 },
+            // { lane: 1, beat: 26, duration: 1 },
+            // { lane: 1, beat: 42, duration: 1 },
+            // { lane: 1, beat: 58, duration: 1 },
+
+            // { lane: 2, beat: 13, duration: 1 },
+            // { lane: 2, beat: 33, duration: 1 },
+            // { lane: 2, beat: 53, duration: 1 },
+
+            // { lane: 3, beat: 19, duration: 1.5 },
+            // { lane: 3, beat: 43, duration: 1.5 },
+            // { lane: 3, beat: 67, duration: 1.5 },
+        ],
+        rails: [
+            { lane: 0, beat: 2,  duration: 4 },
+            { lane: 0, beat: 20, duration: 4 },
+            { lane: 0, beat: 38, duration: 4 },
+            { lane: 0, beat: 56, duration: 4 },
+
+            { lane: 2, beat: 6,  duration: 3 },
+            { lane: 2, beat: 26, duration: 3 },
+            { lane: 2, beat: 46, duration: 3 },
+            { lane: 2, beat: 66, duration: 3 },
+
+            { lane: 3, beat: 11, duration: 4 },
+            { lane: 3, beat: 35, duration: 4 },
+            { lane: 3, beat: 59, duration: 4 },
+        ]
+    },
+    overclockSections: [
+        { lane: 1, startBeat: 68, endBeat: 72 },
+        { lane: 3, startBeat: 68, endBeat: 71 },
+    ]
             }
         },
         testSong2: {
@@ -209,366 +326,146 @@ export const audioAssetManifest = {
             title: 'Test Song 2',
             artist: 'xXdjTerraXx',
             noteMap: {
-                patternLengthBeats: 132,
-                patterns: {
-                    // tapNotes: [
-                    //     // =====================
-                    //     // BARS 2-9 (beats 5-36)
-                    //     // LANE 0 — intro, simple quarter notes to get player oriented
-                    //     // (beats 1-4 are SIGNAL WARMUP — no notes)
-                    //     // =====================
-                    //     { lane: 0, subLane: 1, beat: 5 },
-                    //     { lane: 0, subLane: 1, beat: 6 },
-                    //     { lane: 0, subLane: 1, beat: 7 },
-                    //     { lane: 0, subLane: 1, beat: 8 },
+    // FULL NOTE TYPE TESTING MAP — all 4 lanes active simultaneously
+    // Lane 0 = bass (rail-heavy, sustained)
+    // Lane 1 = drums (tap-heavy, quick hits)
+    // Lane 2 = rhythm (rails + taps, medium)
+    // Lane 3 = melody/vocals (longer rails, ramps, phrasing)
+    patternLengthBeats: 72,
+    patterns: {
+        tapNotes: [
+            // Lane 0 (bass) fills
+            { lane: 0, subLane: 1, beat: 7 },
+            { lane: 0, subLane: 1, beat: 8 },
+            { lane: 0, subLane: 0, beat: 12 },
+            { lane: 0, subLane: 2, beat: 13 },
+            { lane: 0, subLane: 1, beat: 25 },
+            { lane: 0, subLane: 1, beat: 26 },
+            { lane: 0, subLane: 0, beat: 30 },
+            { lane: 0, subLane: 2, beat: 31 },
+            { lane: 0, subLane: 1, beat: 43 },
+            { lane: 0, subLane: 1, beat: 44 },
+            { lane: 0, subLane: 0, beat: 48 },
+            { lane: 0, subLane: 2, beat: 49 },
+            { lane: 0, subLane: 1, beat: 61 },
+            { lane: 0, subLane: 1, beat: 62 },
+            { lane: 0, subLane: 0, beat: 66 },
+            { lane: 0, subLane: 2, beat: 67 },
 
-                    //     { lane: 0, subLane: 0, beat: 9 },
-                    //     { lane: 0, subLane: 2, beat: 10 },
-                    //     { lane: 0, subLane: 0, beat: 11 },
-                    //     { lane: 0, subLane: 2, beat: 12 },
+            // Lane 1 (drums) bursts
+            { lane: 1, subLane: 0, beat: 4 },
+            { lane: 1, subLane: 1, beat: 5 },
+            { lane: 1, subLane: 2, beat: 6 },
+            { lane: 1, subLane: 1, beat: 7 },
+            { lane: 1, subLane: 0, beat: 13 },
+            { lane: 1, subLane: 1, beat: 14 },
+            { lane: 1, subLane: 2, beat: 15 },
+            { lane: 1, subLane: 1, beat: 16 },
+            { lane: 1, subLane: 0, beat: 20 },
+            { lane: 1, subLane: 1, beat: 21 },
+            { lane: 1, subLane: 2, beat: 22 },
+            { lane: 1, subLane: 1, beat: 23 },
+            { lane: 1, subLane: 0, beat: 29 },
+            { lane: 1, subLane: 1, beat: 30 },
+            { lane: 1, subLane: 2, beat: 31 },
+            { lane: 1, subLane: 1, beat: 32 },
+            { lane: 1, subLane: 0, beat: 36 },
+            { lane: 1, subLane: 1, beat: 37 },
+            { lane: 1, subLane: 2, beat: 38 },
+            { lane: 1, subLane: 1, beat: 39 },
+            { lane: 1, subLane: 0, beat: 45 },
+            { lane: 1, subLane: 1, beat: 46 },
+            { lane: 1, subLane: 2, beat: 47 },
+            { lane: 1, subLane: 1, beat: 48 },
+            { lane: 1, subLane: 0, beat: 52 },
+            { lane: 1, subLane: 1, beat: 53 },
+            { lane: 1, subLane: 2, beat: 54 },
+            { lane: 1, subLane: 1, beat: 55 },
+            { lane: 1, subLane: 0, beat: 61 },
+            { lane: 1, subLane: 1, beat: 62 },
+            { lane: 1, subLane: 2, beat: 63 },
+            { lane: 1, subLane: 1, beat: 64 },
+            { lane: 1, subLane: 0, beat: 68 },
+            { lane: 1, subLane: 1, beat: 69 },
+            { lane: 1, subLane: 2, beat: 70 },
+            { lane: 1, subLane: 1, beat: 71 },
 
-                    //     { lane: 0, subLane: 1, beat: 13 },
-                    //     { lane: 0, subLane: 0, beat: 14 },
-                    //     { lane: 0, subLane: 2, beat: 15 },
-                    //     { lane: 0, subLane: 1, beat: 16 },
+            // Lane 2 (rhythm) fills
+            { lane: 2, subLane: 1, beat: 10 },
+            { lane: 2, subLane: 1, beat: 11 },
+            { lane: 2, subLane: 0, beat: 15 },
+            { lane: 2, subLane: 2, beat: 16 },
+            { lane: 2, subLane: 1, beat: 30 },
+            { lane: 2, subLane: 1, beat: 31 },
+            { lane: 2, subLane: 0, beat: 35 },
+            { lane: 2, subLane: 2, beat: 36 },
+            { lane: 2, subLane: 1, beat: 50 },
+            { lane: 2, subLane: 1, beat: 51 },
+            { lane: 2, subLane: 0, beat: 55 },
+            { lane: 2, subLane: 2, beat: 56 },
+            { lane: 2, subLane: 1, beat: 70 },
+            { lane: 2, subLane: 1, beat: 71 },
 
-                    //     { lane: 0, subLane: 1, beat: 17 },
-                    //     { lane: 0, subLane: 1, beat: 18 },
-                    //     { lane: 0, subLane: 0, beat: 19 },
-                    //     { lane: 0, subLane: 2, beat: 20 },
+            // Lane 3 (melody/vocals) phrasing
+            { lane: 3, subLane: 1, beat: 8 },
+            { lane: 3, subLane: 1, beat: 9 },
+            { lane: 3, subLane: 0, beat: 16 },
+            { lane: 3, subLane: 2, beat: 17 },
+            { lane: 3, subLane: 1, beat: 22 },
+            { lane: 3, subLane: 1, beat: 23 },
+            { lane: 3, subLane: 1, beat: 32 },
+            { lane: 3, subLane: 1, beat: 33 },
+            { lane: 3, subLane: 0, beat: 40 },
+            { lane: 3, subLane: 2, beat: 41 },
+            { lane: 3, subLane: 1, beat: 46 },
+            { lane: 3, subLane: 1, beat: 47 },
+            { lane: 3, subLane: 1, beat: 56 },
+            { lane: 3, subLane: 1, beat: 57 },
+            { lane: 3, subLane: 0, beat: 64 },
+            { lane: 3, subLane: 2, beat: 65 },
+            { lane: 3, subLane: 1, beat: 70 },
+            { lane: 3, subLane: 1, beat: 71 },
+        ],
+        ramps: [
+            { lane: 0, beat: 10, duration: 1.5 },
+            { lane: 0, beat: 28, duration: 2 },
+            { lane: 0, beat: 46, duration: 1 },
+            { lane: 0, beat: 64, duration: 1 },
 
-                    //     { lane: 0, subLane: 1, beat: 21 },
-                    //     { lane: 0, subLane: 0, beat: 22 },
-                    //     { lane: 0, subLane: 1, beat: 23 },
-                    //     { lane: 0, subLane: 2, beat: 24 },
+            { lane: 1, beat: 10, duration: 1 },
+            { lane: 1, beat: 26, duration: 1 },
+            { lane: 1, beat: 42, duration: 1 },
+            { lane: 1, beat: 58, duration: 1 },
 
-                    //     { lane: 0, subLane: 0, beat: 25 },
-                    //     { lane: 0, subLane: 1, beat: 25.5 },
-                    //     { lane: 0, subLane: 2, beat: 26 },
-                    //     { lane: 0, subLane: 1, beat: 26.5 },
+            { lane: 2, beat: 13, duration: 1 },
+            { lane: 2, beat: 33, duration: 1 },
+            { lane: 2, beat: 53, duration: 1 },
 
-                    //     { lane: 0, subLane: 1, beat: 27 },
-                    //     { lane: 0, subLane: 0, beat: 28 },
-                    //     { lane: 0, subLane: 1, beat: 29 },
-                    //     { lane: 0, subLane: 2, beat: 30 },
+            { lane: 3, beat: 19, duration: 1.5 },
+            { lane: 3, beat: 43, duration: 1.5 },
+            { lane: 3, beat: 67, duration: 1.5 },
+        ],
+        rails: [
+            { lane: 0, beat: 2,  duration: 4 },
+            { lane: 0, beat: 20, duration: 4 },
+            { lane: 0, beat: 38, duration: 4 },
+            { lane: 0, beat: 56, duration: 4 },
 
-                    //     { lane: 0, subLane: 0, beat: 31 },
-                    //     { lane: 0, subLane: 1, beat: 32 },
-                    //     { lane: 0, subLane: 2, beat: 33 },
-                    //     { lane: 0, subLane: 1, beat: 34 },
-                    //     { lane: 0, subLane: 0, beat: 35 },
-                    //     { lane: 0, subLane: 1, beat: 36 },
+            { lane: 2, beat: 6,  duration: 3 },
+            { lane: 2, beat: 26, duration: 3 },
+            { lane: 2, beat: 46, duration: 3 },
+            { lane: 2, beat: 66, duration: 3 },
 
-                    //     // =====================
-                    //     // BARS 10-17 (beats 37-68)
-                    //     // LANE 1 — player should hop here after completing lane 0 OC section
-                    //     // getting busier, eighth notes introduced more
-                    //     // =====================
-                    //     { lane: 1, subLane: 1, beat: 37 },
-                    //     { lane: 1, subLane: 0, beat: 38 },
-                    //     { lane: 1, subLane: 1, beat: 39 },
-                    //     { lane: 1, subLane: 2, beat: 40 },
-
-                    //     { lane: 1, subLane: 1, beat: 41 },
-                    //     { lane: 1, subLane: 1, beat: 41.5 },
-                    //     { lane: 1, subLane: 0, beat: 42 },
-                    //     { lane: 1, subLane: 0, beat: 42.5 },
-
-                    //     { lane: 1, subLane: 2, beat: 43 },
-                    //     { lane: 1, subLane: 1, beat: 43.5 },
-                    //     { lane: 1, subLane: 0, beat: 44 },
-                    //     { lane: 1, subLane: 1, beat: 44.5 },
-
-                    //     { lane: 1, subLane: 1, beat: 45 },
-                    //     { lane: 1, subLane: 2, beat: 46 },
-                    //     { lane: 1, subLane: 1, beat: 47 },
-                    //     { lane: 1, subLane: 0, beat: 48 },
-
-                    //     { lane: 1, subLane: 0, beat: 49 },
-                    //     { lane: 1, subLane: 1, beat: 49.5 },
-                    //     { lane: 1, subLane: 2, beat: 50 },
-                    //     { lane: 1, subLane: 1, beat: 50.5 },
-                    //     { lane: 1, subLane: 0, beat: 51 },
-                    //     { lane: 1, subLane: 1, beat: 52 },
-
-                    //     { lane: 1, subLane: 1, beat: 53 },
-                    //     { lane: 1, subLane: 0, beat: 54 },
-                    //     { lane: 1, subLane: 2, beat: 55 },
-                    //     { lane: 1, subLane: 1, beat: 56 },
-
-                    //     { lane: 1, subLane: 2, beat: 57 },
-                    //     { lane: 1, subLane: 2, beat: 57.5 },
-                    //     { lane: 1, subLane: 1, beat: 58 },
-                    //     { lane: 1, subLane: 1, beat: 58.5 },
-                    //     { lane: 1, subLane: 0, beat: 59 },
-                    //     { lane: 1, subLane: 0, beat: 59.5 },
-
-                    //     { lane: 1, subLane: 1, beat: 60 },
-                    //     { lane: 1, subLane: 0, beat: 61 },
-                    //     { lane: 1, subLane: 1, beat: 62 },
-                    //     { lane: 1, subLane: 2, beat: 63 },
-                    //     { lane: 1, subLane: 1, beat: 64 },
-                    //     { lane: 1, subLane: 0, beat: 65 },
-                    //     { lane: 1, subLane: 2, beat: 66 },
-                    //     { lane: 1, subLane: 1, beat: 67 },
-                    //     { lane: 1, subLane: 0, beat: 68 },
-
-                    //     // =====================
-                    //     // BARS 18-25 (beats 69-100)
-                    //     // LANE 2 — things getting spicy, more eighth notes, wider sublane movement
-                    //     // =====================
-                    //     { lane: 2, subLane: 0, beat: 69 },
-                    //     { lane: 2, subLane: 1, beat: 69.5 },
-                    //     { lane: 2, subLane: 2, beat: 70 },
-                    //     { lane: 2, subLane: 1, beat: 70.5 },
-
-                    //     { lane: 2, subLane: 0, beat: 71 },
-                    //     { lane: 2, subLane: 2, beat: 72 },
-                    //     { lane: 2, subLane: 0, beat: 73 },
-                    //     { lane: 2, subLane: 2, beat: 74 },
-
-                    //     { lane: 2, subLane: 1, beat: 75 },
-                    //     { lane: 2, subLane: 1, beat: 75.5 },
-                    //     { lane: 2, subLane: 0, beat: 76 },
-                    //     { lane: 2, subLane: 0, beat: 76.5 },
-                    //     { lane: 2, subLane: 2, beat: 77 },
-                    //     { lane: 2, subLane: 2, beat: 77.5 },
-
-                    //     { lane: 2, subLane: 1, beat: 78 },
-                    //     { lane: 2, subLane: 0, beat: 79 },
-                    //     { lane: 2, subLane: 2, beat: 80 },
-                    //     { lane: 2, subLane: 1, beat: 81 },
-
-                    //     { lane: 2, subLane: 0, beat: 82 },
-                    //     { lane: 2, subLane: 1, beat: 82.5 },
-                    //     { lane: 2, subLane: 2, beat: 83 },
-                    //     { lane: 2, subLane: 1, beat: 83.5 },
-                    //     { lane: 2, subLane: 0, beat: 84 },
-
-                    //     { lane: 2, subLane: 2, beat: 85 },
-                    //     { lane: 2, subLane: 1, beat: 85.5 },
-                    //     { lane: 2, subLane: 0, beat: 86 },
-                    //     { lane: 2, subLane: 1, beat: 86.5 },
-                    //     { lane: 2, subLane: 2, beat: 87 },
-
-                    //     { lane: 2, subLane: 0, beat: 88 },
-                    //     { lane: 2, subLane: 2, beat: 89 },
-                    //     { lane: 2, subLane: 0, beat: 90 },
-                    //     { lane: 2, subLane: 2, beat: 91 },
-                    //     { lane: 2, subLane: 1, beat: 92 },
-
-                    //     { lane: 2, subLane: 0, beat: 93 },
-                    //     { lane: 2, subLane: 1, beat: 93.5 },
-                    //     { lane: 2, subLane: 2, beat: 94 },
-                    //     { lane: 2, subLane: 1, beat: 94.5 },
-                    //     { lane: 2, subLane: 0, beat: 95 },
-                    //     { lane: 2, subLane: 2, beat: 96 },
-                    //     { lane: 2, subLane: 1, beat: 97 },
-                    //     { lane: 2, subLane: 0, beat: 98 },
-                    //     { lane: 2, subLane: 2, beat: 99 },
-                    //     { lane: 2, subLane: 1, beat: 100 },
-
-                    //     // =====================
-                    //     // BARS 26-33 (beats 101-132)
-                    //     // LANE 3 — finale, most intense, lots of eighth notes
-                    //     // player should have full SURGE if they've been chasing OC sections
-                    //     // =====================
-                    //     { lane: 3, subLane: 0, beat: 101 },
-                    //     { lane: 3, subLane: 1, beat: 101.5 },
-                    //     { lane: 3, subLane: 2, beat: 102 },
-                    //     { lane: 3, subLane: 1, beat: 102.5 },
-                    //     { lane: 3, subLane: 0, beat: 103 },
-                    //     { lane: 3, subLane: 2, beat: 104 },
-
-                    //     { lane: 3, subLane: 1, beat: 105 },
-                    //     { lane: 3, subLane: 0, beat: 105.5 },
-                    //     { lane: 3, subLane: 2, beat: 106 },
-                    //     { lane: 3, subLane: 0, beat: 106.5 },
-                    //     { lane: 3, subLane: 1, beat: 107 },
-                    //     { lane: 3, subLane: 2, beat: 107.5 },
-                    //     { lane: 3, subLane: 1, beat: 108 },
-
-                    //     { lane: 3, subLane: 0, beat: 109 },
-                    //     { lane: 3, subLane: 2, beat: 110 },
-                    //     { lane: 3, subLane: 0, beat: 111 },
-                    //     { lane: 3, subLane: 2, beat: 112 },
-
-                    //     { lane: 3, subLane: 1, beat: 113 },
-                    //     { lane: 3, subLane: 1, beat: 113.5 },
-                    //     { lane: 3, subLane: 0, beat: 114 },
-                    //     { lane: 3, subLane: 0, beat: 114.5 },
-                    //     { lane: 3, subLane: 2, beat: 115 },
-                    //     { lane: 3, subLane: 2, beat: 115.5 },
-                    //     { lane: 3, subLane: 1, beat: 116 },
-
-                    //     { lane: 3, subLane: 0, beat: 117 },
-                    //     { lane: 3, subLane: 1, beat: 117.5 },
-                    //     { lane: 3, subLane: 2, beat: 118 },
-                    //     { lane: 3, subLane: 1, beat: 118.5 },
-                    //     { lane: 3, subLane: 0, beat: 119 },
-                    //     { lane: 3, subLane: 2, beat: 120 },
-
-                    //     { lane: 3, subLane: 1, beat: 121 },
-                    //     { lane: 3, subLane: 0, beat: 121.5 },
-                    //     { lane: 3, subLane: 1, beat: 122 },
-                    //     { lane: 3, subLane: 2, beat: 122.5 },
-                    //     { lane: 3, subLane: 1, beat: 123 },
-                    //     { lane: 3, subLane: 0, beat: 123.5 },
-                    //     { lane: 3, subLane: 2, beat: 124 },
-
-                    //     { lane: 3, subLane: 0, beat: 125 },
-                    //     { lane: 3, subLane: 2, beat: 126 },
-                    //     { lane: 3, subLane: 0, beat: 127 },
-                    //     { lane: 3, subLane: 2, beat: 128 },
-                    //     { lane: 3, subLane: 1, beat: 129 },
-                    //     { lane: 3, subLane: 0, beat: 129.5 },
-                    //     { lane: 3, subLane: 2, beat: 130 },
-                    //     { lane: 3, subLane: 1, beat: 130.5 },
-                    //     { lane: 3, subLane: 0, beat: 131 },
-                    //     { lane: 3, subLane: 2, beat: 131.5 },
-                    //     { lane: 3, subLane: 1, beat: 132 },
-                    // ],
-                    tapNotes: [
-                        { lane: 0, subLane: 1, beat: 5 },
-                        { lane: 0, subLane: 1, beat: 6 },
-                        { lane: 0, subLane: 1, beat: 7 },
-                        { lane: 0, subLane: 1, beat: 8 },
-                        { lane: 0, subLane: 0, beat: 9 },
-                        { lane: 0, subLane: 2, beat: 15 },
-                        { lane: 0, subLane: 1, beat: 16 },
-                        { lane: 0, subLane: 1, beat: 17 },
-                        { lane: 0, subLane: 1, beat: 18 },
-                        { lane: 0, subLane: 0, beat: 19 },
-                        { lane: 0, subLane: 2, beat: 20 },
-                        { lane: 0, subLane: 1, beat: 21 },
-                        { lane: 0, subLane: 0, beat: 22 },
-                        { lane: 0, subLane: 1, beat: 23 },
-                        { lane: 0, subLane: 2, beat: 24 },
-                        { lane: 0, subLane: 0, beat: 25 },
-                        { lane: 0, subLane: 1, beat: 25.5 },
-                        { lane: 0, subLane: 0, beat: 31 },
-                        { lane: 0, subLane: 1, beat: 32 },
-                        { lane: 0, subLane: 2, beat: 33 },
-                        { lane: 0, subLane: 1, beat: 34 },
-                        { lane: 0, subLane: 0, beat: 35 },
-                        { lane: 0, subLane: 1, beat: 36 },
-                        { lane: 1, subLane: 1, beat: 37 },
-                        { lane: 1, subLane: 0, beat: 38 },
-                        { lane: 1, subLane: 1, beat: 39 },
-                        { lane: 1, subLane: 2, beat: 40 },
-                        { lane: 1, subLane: 1, beat: 41 },
-                        { lane: 1, subLane: 1, beat: 41.5 },
-                        { lane: 1, subLane: 1, beat: 47 },
-                        { lane: 1, subLane: 0, beat: 48 },
-                        { lane: 1, subLane: 0, beat: 49 },
-                        { lane: 1, subLane: 1, beat: 49.5 },
-                        { lane: 1, subLane: 2, beat: 50 },
-                        { lane: 1, subLane: 1, beat: 50.5 },
-                        { lane: 1, subLane: 0, beat: 51 },
-                        { lane: 1, subLane: 1, beat: 52 },
-                        { lane: 1, subLane: 1, beat: 53 },
-                        { lane: 1, subLane: 0, beat: 54 },
-                        { lane: 1, subLane: 2, beat: 55 },
-                        { lane: 1, subLane: 1, beat: 56 },
-                        { lane: 1, subLane: 2, beat: 57 },
-                        { lane: 1, subLane: 2, beat: 57.5 },
-                        { lane: 1, subLane: 2, beat: 63 },
-                        { lane: 1, subLane: 1, beat: 64 },
-                        { lane: 1, subLane: 0, beat: 65 },
-                        { lane: 1, subLane: 2, beat: 66 },
-                        { lane: 1, subLane: 1, beat: 67 },
-                        { lane: 1, subLane: 0, beat: 68 },
-                        { lane: 2, subLane: 0, beat: 69 },
-                        { lane: 2, subLane: 1, beat: 69.5 },
-                        { lane: 2, subLane: 2, beat: 70 },
-                        { lane: 2, subLane: 1, beat: 70.5 },
-                        { lane: 2, subLane: 0, beat: 71 },
-                        { lane: 2, subLane: 2, beat: 72 },
-                        { lane: 2, subLane: 0, beat: 73 },
-                        { lane: 2, subLane: 0, beat: 79 },
-                        { lane: 2, subLane: 2, beat: 80 },
-                        { lane: 2, subLane: 1, beat: 81 },
-                        { lane: 2, subLane: 0, beat: 82 },
-                        { lane: 2, subLane: 1, beat: 82.5 },
-                        { lane: 2, subLane: 2, beat: 83 },
-                        { lane: 2, subLane: 1, beat: 83.5 },
-                        { lane: 2, subLane: 0, beat: 84 },
-                        { lane: 2, subLane: 2, beat: 85 },
-                        { lane: 2, subLane: 1, beat: 85.5 },
-                        { lane: 2, subLane: 0, beat: 86 },
-                        { lane: 2, subLane: 1, beat: 86.5 },
-                        { lane: 2, subLane: 2, beat: 87 },
-                        { lane: 2, subLane: 0, beat: 88 },
-                        { lane: 2, subLane: 2, beat: 89 },
-                        { lane: 2, subLane: 1, beat: 94.5 },
-                        { lane: 2, subLane: 0, beat: 95 },
-                        { lane: 2, subLane: 2, beat: 96 },
-                        { lane: 2, subLane: 1, beat: 97 },
-                        { lane: 2, subLane: 0, beat: 98 },
-                        { lane: 2, subLane: 2, beat: 99 },
-                        { lane: 2, subLane: 1, beat: 100 },
-                        { lane: 3, subLane: 0, beat: 101 },
-                        { lane: 3, subLane: 1, beat: 101.5 },
-                        { lane: 3, subLane: 2, beat: 102 },
-                        { lane: 3, subLane: 1, beat: 102.5 },
-                        { lane: 3, subLane: 0, beat: 103 },
-                        { lane: 3, subLane: 2, beat: 104 },
-                        { lane: 3, subLane: 1, beat: 105 },
-                        { lane: 3, subLane: 0, beat: 105.5 },
-                        { lane: 3, subLane: 0, beat: 111 },
-                        { lane: 3, subLane: 2, beat: 112 },
-                        { lane: 3, subLane: 1, beat: 113 },
-                        { lane: 3, subLane: 1, beat: 113.5 },
-                        { lane: 3, subLane: 0, beat: 114 },
-                        { lane: 3, subLane: 0, beat: 114.5 },
-                        { lane: 3, subLane: 2, beat: 115 },
-                        { lane: 3, subLane: 2, beat: 115.5 },
-                        { lane: 3, subLane: 1, beat: 116 },
-                        { lane: 3, subLane: 0, beat: 117 },
-                        { lane: 3, subLane: 1, beat: 117.5 },
-                        { lane: 3, subLane: 2, beat: 118 },
-                        { lane: 3, subLane: 1, beat: 118.5 },
-                        { lane: 3, subLane: 0, beat: 119 },
-                        { lane: 3, subLane: 2, beat: 120 },
-                        { lane: 3, subLane: 1, beat: 121 },
-                        { lane: 3, subLane: 0, beat: 121.5 },
-                        { lane: 3, subLane: 0, beat: 127 },
-                        { lane: 3, subLane: 2, beat: 128 },
-                        { lane: 3, subLane: 1, beat: 129 },
-                        { lane: 3, subLane: 0, beat: 129.5 },
-                        { lane: 3, subLane: 2, beat: 130 },
-                        { lane: 3, subLane: 1, beat: 130.5 },
-                        { lane: 3, subLane: 0, beat: 131 },
-                        { lane: 3, subLane: 2, beat: 131.5 },
-                        { lane: 3, subLane: 1, beat: 132 },
-                    ],
-                    ramps: [
-                        { lane: 0, beat: 12, duration: 2 },
-                        { lane: 0, beat: 28, duration: 1.5 },
-                        { lane: 1, beat: 44, duration: 2 },
-                        { lane: 1, beat: 60, duration: 1.5 },
-                        { lane: 2, beat: 76, duration: 2 },
-                        { lane: 2, beat: 92, duration: 1.5 },
-                        { lane: 3, beat: 108, duration: 2 },
-                        { lane: 3, beat: 124, duration: 1.5 },
-                    ]
-                },
-
-                // =====================
-                // OVERCLOCK SECTIONS — shifted +4
-                // beats 1-4 are SIGNAL WARMUP, OC sections start at beat 5
-                // =====================
-                overclockSections: [
-                    { lane: 0, startBeat: 5,   endBeat: 7  },  // DEBUG
-                    { lane: 1, startBeat: 37,  endBeat: 39  },  // DEBUG
-                    { lane: 2, startBeat: 69,  endBeat: 100 },  // DEBUG
-                    { lane: 3, startBeat: 101, endBeat: 132 },  // DEBUG
-                    // { lane: 0, startBeat: 5,   endBeat: 36  },  // bars 2-9
-                    // { lane: 1, startBeat: 37,  endBeat: 68  },  // bars 10-17
-                    // { lane: 2, startBeat: 69,  endBeat: 100 },  // bars 18-25
-                    // { lane: 3, startBeat: 101, endBeat: 132 },  // bars 26-33
-                    ]
-            } 
+            { lane: 3, beat: 11, duration: 4 },
+            { lane: 3, beat: 35, duration: 4 },
+            { lane: 3, beat: 59, duration: 4 },
+        ]
+    },
+    overclockSections: [
+        { lane: 1, startBeat: 68, endBeat: 72 },
+        { lane: 3, startBeat: 68, endBeat: 71 },
+    ]
+            }
         },
         testSong3: {
             path: '/assets/audio/song_library/test_song_3.wav',

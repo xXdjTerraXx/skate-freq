@@ -1,6 +1,7 @@
 import ENUMS from "./enums"
 import { GAME_STATES } from "./gameStates"
 
+
 export const FONT_SIZE = {
     XS: 14,   // fine print — combo counters, small labels, debug overlays
     SM: 20,   // secondary HUD text — sublabels, tooltips
@@ -39,7 +40,7 @@ export const levelConfig = {
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
     PLAYER_STARTING_HEALTH: 3000,
-    PLAYER_STARTING_UPLINK: 1,
+    PLAYER_STARTING_UPLINK: 1000,
     PLAYER_MAX_UPLINK: 1000,
     SURGE_LIMIT: 3,  //how much surge u need to overclock
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
@@ -60,6 +61,7 @@ export const levelConfig = {
         HOLD: 'HOLD',
         BAIL: 'BAIL',
         RELEASE: 'RELEASE',
+        NEURO: 'NEURO',
         //null is just for utility, preventing double taps,e tc
         NULL: 'NULL'
     },
@@ -94,9 +96,14 @@ export const levelConfig = {
         MISS: {health: -3, uplink: -70},
         BAIL: {health: -3, uplink: -30},
         HOLD: {health: -3, uplink: 2},
-        RESYNC: {uplink: 0},
+        RESYNCED: {uplink: 0},
         SYNC_BROKEN: {uplink: 0},
-        RELEASE: {uplink: 20}
+        RELEASE: {uplink: 20},
+        NEURO: {uplink: 20},
+        S: {uplink: 0},
+        A: {uplink: 0},
+        D: {uplink: 0},
+        NULL: {uplink: 0}
     },
     //timing windows for all note node judgements - ramps, rails, tapNotes
     NOTE_TIMING: {
@@ -106,8 +113,8 @@ export const levelConfig = {
         //this grace period is how long before and after landing to check for w press
         RESYNCED_CHECK_GRACE_PERIOD: 0.25,
         RESYNCED: 0.15,
-        //grind completion
-        RELEASE: 0.15
+        //grind completion,
+        [ENUMS.JUDGEMENT.NEURO]: 0.15
     },
     //how much each note judgement affects score
     JUDGEMENT_SCORE_DICT: {
@@ -123,8 +130,9 @@ export const levelConfig = {
         SYNC_BROKEN: 0,
         
         BAIL: 0,
-        HOLD: 0,
-        RELEASE: 0
+        HOLD: 20,
+        RELEASE: 0,
+        NERUO: 100
     },
     
     UI_COLOR_PALETTE: {
@@ -181,7 +189,7 @@ export const levelConfig = {
             1: '#00FF88',
             2: '#FF2244'
         },
-        RAIL: 0xffffff,
+        RAIL: COLOR_PALETTE.gold,
         RAMP: 0xffffff
         
     },
@@ -219,6 +227,19 @@ export const levelConfig = {
             }
         }
     },
+    ONE_SHOT_ANIMATIONS: [
+        ENUMS.ANIMATIONS.CROUCH, 
+        ENUMS.ANIMATIONS.GRABS.A, 
+        ENUMS.ANIMATIONS.GRABS.S, 
+        ENUMS.ANIMATIONS.GRABS.D,
+        ENUMS.ANIMATIONS.PUMPL,
+        ENUMS.ANIMATIONS.PUMPR,
+        ENUMS.ANIMATIONS.JUMP,
+        ENUMS.ANIMATIONS.GRIND_CROUCH,
+        ENUMS.ANIMATIONS.GRIND_JUMP,
+        ENUMS.ANIMATIONS.GRIND_ENTER,
+        ENUMS.ANIMATIONS.POWERSLIDE
+    ],
 
 
 

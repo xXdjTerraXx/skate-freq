@@ -85,11 +85,12 @@ export default class ActiveGrindDisplay{
 
     //this function creates a completion hit
     endActiveGrind = (grindJudgement) => {
+        console.log('#$%@#%^$%^@#$%^$ ENDING ACTIVE GRIND: ', grindJudgement)
         //create a standard hit effect for the release score
         this.spawnHitEffect(grindJudgement, ENUMS.HIT_EFFECT_CATEGORY.GRIND)
         //create a completion hit
-        const scoreTtext = `${this.grindScoreText.text}`
-        const completionHit = new CompletionHitEffect(scoreTtext, grindJudgement, this.mainContainer)
+        const scoreText = `${this.grindScoreText.text}`
+        const completionHit = new CompletionHitEffect(scoreText, grindJudgement, this.mainContainer)
         this.activeCompletionHits.push(completionHit)
         this.clearActiveGrind()
     }
@@ -152,8 +153,8 @@ class CompletionHitEffect {
             layers: 1
         })
         this.textNode.color = this.releaseJudgement === ENUMS.JUDGEMENT.RELEASE
-        ? COLOR_PALETTE.green
-        : COLOR_PALETTE.red
+        ? COLOR_PALETTE.cyan
+        : COLOR_PALETTE.green
 
         this.scorePosition = levelConfig.UI_COMPONENT_SETTINGS.scoreContainer.position
 

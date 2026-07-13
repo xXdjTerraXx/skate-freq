@@ -52,6 +52,7 @@ export default class Ramp {
     this.rampContainer = null
 
     this.eventEmitter = eventEmitter
+    this.readyForRemoval = false
   }
 
   init(rampContainer) {
@@ -90,8 +91,13 @@ export default class Ramp {
       if(this.geometry)this.geometry.dispose()
       if(this.material)this.material.dispose()
       if(this.mesh)this.rampContainer.remove(this.mesh)
-      
+      this.readyForRemoval = true
       this.eventEmitter.emit("noteKilled")      
+  }
+
+  markMissed = () => {
+    this.hit = true
+    this.killSelf()
   }
 
   update(deltaTime, currentTime) {

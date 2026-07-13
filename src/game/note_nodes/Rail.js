@@ -53,7 +53,7 @@ export default class Rail {
     this.railContainer = null
 
     this.eventEmitter = eventEmitter
-
+    this.readyForRemoval = false
   }
 
   init(railContainer) {
@@ -87,9 +87,16 @@ export default class Rail {
       if(this.geometry)this.geometry.dispose()
       if(this.material)this.material.dispose()
       if(this.mesh)this.railContainer.remove(this.mesh)
-      
+      this.readyForRemoval = true
       this.eventEmitter.emit("noteKilled")      
   }
+
+  markMissed = () => {
+    this.hit = true
+    this.isMissed = true
+     // rails get this opacity change bc theyre so long 
+    // this.mesh.material.opacity = 0.2 
+}
 
   update(deltaTime, currentTime) {
     //how much time is left before ramp is at player z, essentially
@@ -108,7 +115,7 @@ export default class Rail {
 
     //handle disposal
     if(this.hit){
-      //call killSelf once player has launched
+      //call killSelf once all of rail has passed hitline
       if(currentTime > this.time + this.duration * this.secondsPerBeat ){
         this.killSelf()
       }
