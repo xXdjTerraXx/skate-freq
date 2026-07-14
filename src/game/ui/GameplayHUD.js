@@ -305,6 +305,7 @@ class UiHitEffect {
             'HOLD': 'HOLD',
             'BAIL': 'BAIL',
             'RELEASE': 'RELEASE',
+            'NEURO': 'NERUO'
         }
 
         // this.mesh = new THREE.Sprite(this.material)

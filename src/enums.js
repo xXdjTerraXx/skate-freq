@@ -9,6 +9,7 @@ const ENUMS = {
         GOOD: 'GOOD',
         MISS: 'MISS',
         RESYNCED: 'RESYNCED',
+        //sync broken is purely internal - player never sees it
         SYNC_BROKEN: 'SYNC_BROKEN',
         HOLD: 'HOLD',
         BAIL: 'BAIL',
@@ -39,10 +40,14 @@ const ENUMS = {
         
         PUMPL: 'pump_LL',
         PUMPR: 'pump_RR',
+        IDLEL: 'idle_pump_l',
+        IDLER: 'idle_pump_r',
         IDLE: 'idle',
         JUMP: 'jump',
         CROUCH: 'crouch',
-        POWERSLIDE: 'powerslide'
+        POWERSLIDE: 'powerslide',
+        MANUAL_ENTER: 'manual_enter',
+        MANUAL_HOLD: 'manual_hold'
     }
 }
 

@@ -155,6 +155,7 @@ export const levelConfig = {
             HOLD: 0x000000,
             BAIL: 0Xffffff,
             RELEASE: 0xffffff,
+            NERUO: 0xfbc52b,
             A: 0x000000,
             S: 0x000000,
             D: 0x000000,
@@ -168,6 +169,7 @@ export const levelConfig = {
             HOLD: 0x000000,
             BAIL: 0X000000,
             RELEASE: 0x000000,
+            NERUO: 0x992bfb,
             A: 0x000000,
             S: 0x000000,
             D: 0x000000,
@@ -234,11 +236,14 @@ export const levelConfig = {
         ENUMS.ANIMATIONS.GRABS.D,
         ENUMS.ANIMATIONS.PUMPL,
         ENUMS.ANIMATIONS.PUMPR,
+        ENUMS.ANIMATIONS.IDLEL,
+        ENUMS.ANIMATIONS.IDLER,
         ENUMS.ANIMATIONS.JUMP,
         ENUMS.ANIMATIONS.GRIND_CROUCH,
         ENUMS.ANIMATIONS.GRIND_JUMP,
         ENUMS.ANIMATIONS.GRIND_ENTER,
-        ENUMS.ANIMATIONS.POWERSLIDE
+        ENUMS.ANIMATIONS.POWERSLIDE,
+        ENUMS.ANIMATIONS.MANUAL_ENTER
     ],
 
 

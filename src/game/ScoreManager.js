@@ -58,10 +58,10 @@ if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE
         }
         
         //COMBO STUFF
-        //handle combo breaks on MISS or BAIL.if combo is broken, the value ofcurrentScore 
+        //handle combo breaks on MISS or SYNC_BROKEN. if combo is broken, the value ofcurrentScore 
         // is multiplied by currentCombo and that product is added to currentScore
         //before currentCombo is reset to 0. 
-        if(judgement == levelConfig.JUDGEMENT_ENUMS.MISS || judgement == levelConfig.JUDGEMENT_ENUMS.BAIL){
+        if(judgement == levelConfig.JUDGEMENT_ENUMS.MISS || judgement == levelConfig.JUDGEMENT_ENUMS.SYNC_BROKEN){
             this.currentScore += this.currentScore * this.currentCombo
             this.currentCombo = 0
         }

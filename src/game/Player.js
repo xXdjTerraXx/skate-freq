@@ -91,6 +91,7 @@ export default class Player {
     this.gravity = levelConfig.WORLD_GRAVITY
     this.friction = levelConfig.WORLD_FRICTION
 
+
     //JUMP/CROUCH STUFF
     //used to prevent multiple jump/crouch press
     this.isCrouching = false
@@ -103,6 +104,10 @@ export default class Player {
     this.jumpVelocity = 0
     //jump offset is distance from ground  
     this.jumpOffset = 0
+
+    //SLAM DOWN
+    this.isSlamming = false
+    this.slamDownRate = .001
 
     //GRIND STUFF
     this.isGrinding = false
@@ -191,7 +196,7 @@ export default class Player {
           this.isInAir = false
           console.log("PLAYER JUST LANDED", this.isInAir)
           if (!this.isGrinding) {
-            this.playAnimation(ENUMS.ANIMATIONS.IDLE)
+            this.playAnimation(ENUMS.ANIMATIONS.IDLEL)
           }
           return
       }
@@ -229,7 +234,7 @@ export default class Player {
       this.grindDuration = null
       this.playAnimation(ENUMS.ANIMATIONS.IDLE)
     }
-    else if(this.animationManager.currentAnimation !== this.animationsDict[ENUMS.ANIMATIONS.GRIND]){
+    else if(this.animationManager.currentAnimation !== this.animationsDict[ENUMS.ANIMATIONS.GRIND_HOLD]){
       this.playAnimation(ENUMS.ANIMATIONS.GRIND_HOLD)
     }
   }
@@ -237,12 +242,12 @@ export default class Player {
   resync = () => {
     //TO DO
     //MANUAL ANIMATION
-    this.playAnimation(ENUMS.ANIMATIONS.IDLE)
+    this.playAnimation(ENUMS.ANIMATIONS.MANUAL_ENTER, {returnTo: ENUMS.ANIMATIONS.MANUAL_HOLD})
   }
 
   setSubLane = (index) => {
-    this.isInAir = false
-    this.jumpOffset = 0
+    // this.isInAir = false
+    // this.jumpOffset = 0
 
     this.subLane = index
     this.targetLaneOffset = this.subLaneOffsets[index]
@@ -250,9 +255,9 @@ export default class Player {
     //TO DO: MOVE THIS TO ANIMATION MANAGER
     //play alternate pumping every key press
     if(this.animationManager.lastAnimation === this.animationsDict[ENUMS.ANIMATIONS.PUMPR]) {
-      this.playAnimation(ENUMS.ANIMATIONS.PUMPL, {returnTo: ENUMS.ANIMATIONS.PUMPR}, {cossfadeDuration: 0.01})
+      this.playAnimation(ENUMS.ANIMATIONS.PUMPL, {returnTo: ENUMS.ANIMATIONS.IDLER}, {cossfadeDuration: 0.01})
     }
-      else this.playAnimation(ENUMS.ANIMATIONS.PUMPR, {returnTo: ENUMS.ANIMATIONS.PUMPL}, {cossfadeDuration: 0.01})
+      else this.playAnimation(ENUMS.ANIMATIONS.PUMPR, {returnTo: ENUMS.ANIMATIONS.IDLEL}, {cossfadeDuration: 0.01})
   }
 
   updateMovement = (deltaTime) => {
@@ -271,42 +276,41 @@ export default class Player {
     this.mesh.position.set(x, y, this.initialZPosition + .2)
   }
 
-  slamDown = () => {
-    //final angle is angle but with laneOffset for movement
+slamDown = () => {
     if (!this.isInAir) return
     this.isInAir = false
-    this.jumpOffset = 0
-    //slam one shot later???
-    this.playAnimation(ENUMS.ANIMATIONS.IDLE) 
-  }
+    this.isSlamming = true
+    this.slamStartTime = this.app.level.currentTime
+    this.slamStartOffset = this.jumpOffset
+    this.slamDuration = 0.05 // seconds — tune this, this is just a starting guess
+    this.landingTime = this.app.level.currentTime
+    this.playAnimation(ENUMS.ANIMATIONS.IDLEL)
+}
+
+updateSlam = () => {
+    const t = Math.min((this.app.level.currentTime - this.slamStartTime) / this.slamDuration, 1)
+    this.jumpOffset = this.slamStartOffset * (1 - Math.pow(t, 3))
+    if (t >= 1) {
+        this.jumpOffset = 0
+        this.isSlamming = false
+    }
+}
 
   onBeat = (beatInBar) => {
     // console.log("BEAT!", beatInBar)
     this.playerRing.pulse(beatInBar)
+    
+    // this.animationManager.autoAlternate()
+  
   }
 
-  // playAnimation = (name, crossfadeDuration = 0.1) => {
-  //   //store upcoming animation
-  //   const next = this.animations[name]
-  //   if (!next ) return
-  //   //and save the current one as the last one
-  //   this.lastAnimation = this.currentAnimation
-    
-  //   if (this.currentAnimation) {
-  //       this.currentAnimation.crossFadeTo(next, crossfadeDuration, true)
-  //   }
-    
-  //   next.reset().play()
-  //   this.currentAnimation = next
+    onBeatEighth = (beatInBar) => {
+      // this.animationManager.autoAlternate()
+    }
 
-  //   // only set return-to-idle timeout for pump animations
-  //   // if (name !== 'idle') {
-  //   //     clearTimeout(this.pumpTimeout)
-  //   //     this.pumpTimeout = setTimeout(() => {
-  //   //         if(!this.isCrouching && !this.isInAir)this.playAnimation('idle')
-  //   //     }, 500)
-  //   // }
-  // }
+    onBeatSixteenth = (beatInBar) => {
+      this.animationManager.autoAlternate()
+    }
 
   playAnimation = (name, options = {}) => {
     this.animationManager.transitionTo(name, options)
@@ -315,7 +319,8 @@ export default class Player {
   update = (deltaTime) => {
     if(this.isGrinding)console.log('BROOOOOOOOO UR GRINDING BROOO')
     // this.updateJumpPhysics()
-    this.updateJumpArc()
+    if(this.isSlamming)this.updateSlam(deltaTime)
+    else this.updateJumpArc()
 
     this.updateMovement(deltaTime)
 
@@ -323,6 +328,7 @@ export default class Player {
     if (this.animationManager) this.animationManager.update(deltaTime)
 
     this.updatePosition()
+
 
     //update player ring
     this.playerRing.update()

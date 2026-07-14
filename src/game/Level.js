@@ -44,7 +44,8 @@ export default class Level{
     this.currentTime = 0.00
     this.lastBeat = 3
     this.currentBeat = 0
-    //sixteenths start at null bc they depend on currentBeat
+    this.lastBeatEighth = null
+    this.currentBeatEighth = null
     this.lastBeatSixteenth = null
     this.currentBeatSixteenth = null
     this.currentBar = 0
@@ -435,19 +436,19 @@ export default class Level{
   //   return closestRailInTime
   // }
 
-  checkRailHit = () => {
+checkRailHit = () => {
     //filter lane matching rails
     const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
+
+    const EARLY_WINDOW = levelConfig.NOTE_TIMING.GOOD
 
     const closestOngoingRail = railsInPlayerLane.reduce(
       (acc, rail) => {
         const timeSinceStart = this.currentTime - rail.time
         const railEndTime = rail.time + rail.duration * this.secondsPerBeat
-        const timeUntilHit = rail.time - this.currentTime
-        const absTime = Math.abs(timeUntilHit)
         if (rail.hit) return acc
         if(this.currentTime > railEndTime) return acc
-        if(this.currentTime > rail.time && this.currentTime < railEndTime){
+        if(this.currentTime > rail.time - EARLY_WINDOW && this.currentTime < railEndTime){
           return { rail: rail, currentTime: this.currentTime, timeSinceStart }
         }  
         return acc
@@ -455,7 +456,7 @@ export default class Level{
     )
 
     return closestOngoingRail
-  }  
+  }
 
   handlePlayerTrick = (keyString) => {
     const trick = keyString
@@ -541,14 +542,19 @@ export default class Level{
   }
 
   onBeat = () => {
-      this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
+      // this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
       this.app.audioManager.playClick()
       this.app.ui.gameplayHUD.surgeMeter.onBeat()
       this.app.ui.gameplayHUD.uplinkMeter.onBeat()
   }
 
+  onBeatEighth = () => {
+    // this.player.onBeatEighth((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
+  }
+
   onBeatSixteenthNote = () => {
     this.app.scoreManager.onBeatSixteenth()
+    this.player.onBeatSixteenth((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
   }
 
   update = (deltaTime) => {
@@ -565,6 +571,11 @@ export default class Level{
     //check fo ra new beat
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
       this.onBeat()
+    }
+    this.lastBeatEighth = this.currentBeatEighth
+    this.currentBeatEighth = this.currentBeat * 2
+    if(Math.floor(this.lastBeatEighth) !== Math.floor(this.currentBeatEighth)){
+      this.onBeatEighth()
     }
     //check for a new sixteenth note beat
     this.lastBeatSixteenth = this.currentBeatSixteenth
@@ -651,7 +662,7 @@ export default class Level{
     //update rails
     this.rails.forEach(rail => {
       rail.update(deltaTime, this.currentTime)
-      if (!rail.hit && this.currentTime > rail.time + rail.duration + levelConfig.NOTE_TIMING.GOOD) {
+      if (!rail.hit && this.currentTime > rail.time + rail.duration * this.secondsPerBeat + levelConfig.NOTE_TIMING.GOOD) {
         if(rail.lane === this.playerCurrentLane){
           // const hitScore = this.app.hitManager.registerHit(rail, this.currentTime)
           const hitScore = ENUMS.JUDGEMENT.MISS

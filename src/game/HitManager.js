@@ -19,51 +19,93 @@ export default class HitManager{
         this.worldHitFxContainer = worldHitFxContainer
     }
 
-    registerHit = (noteNode, currentTime) => {
-        const { NULL, HOLD, PERFECT, GOOD, MISS } = ENUMS.JUDGEMENT
-        let hitScore 
+    // registerHit = (noteNode, currentTime) => {
+    //     const { NULL, HOLD, PERFECT, GOOD, MISS } = ENUMS.JUDGEMENT
+    //     let hitScore 
 
-        //if player presses when no note
-        if (!noteNode) {
-            hitScore = NULL
-            return hitScore
-        }
+    //     //if player presses when no note
+    //     if (!noteNode) {
+    //         hitScore = NULL
+    //         return hitScore
+    //     }
 
-        //prevent double hitting
-        if (noteNode.hit) {
-            hitScore = NULL
-            return hitScore
-        }
+    //     //prevent double hitting
+    //     if (noteNode.hit) {
+    //         hitScore = NULL
+    //         return hitScore
+    //     }
 
 
-        //if there is already a current rail that means it's a hold note
-        if(this.currentRail){
-            hitScore = HOLD
-            return hitScore
-        }
+    //     //if there is already a current rail that means it's a hold note
+    //     if(this.currentRail){
+    //         hitScore = HOLD
+    //         return hitScore
+    //     }
         
-        const timeUntilHit = (noteNode.time - currentTime)
+    //     const timeUntilHit = (noteNode.time - currentTime)
         
-        if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
-            hitScore = PERFECT
-        } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
-            hitScore = GOOD
-        } else {
-           if(noteNode.noteNodeType === ENUMS.NOTE_NODE_TYPE.RAIL) {
-                hitScore = HOLD
-            }
-            else hitScore = MISS
-        }
+    //     if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
+    //         hitScore = PERFECT
+    //     } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
+    //         hitScore = GOOD
+    //     } else {
+    //        if(noteNode.noteNodeType === ENUMS.NOTE_NODE_TYPE.RAIL) {
+    //             hitScore = HOLD
+    //         }
+    //         else hitScore = MISS
+    //     }
          
-        //if this hit was a rail, store the rail to handle hold and release
-        if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== MISS){
-            this.currentRail = noteNode
-        }
+    //     //if this hit was a rail, store the rail to handle hold and release
+    //     if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== MISS){
+    //         this.currentRail = noteNode
+    //     }
 
-        noteNode.handleOnHit()
+    //     noteNode.handleOnHit()
 
+    //     return hitScore
+    // }
+
+    registerHit = (noteNode, currentTime) => {
+    const { NULL, HOLD, PERFECT, GOOD, MISS } = ENUMS.JUDGEMENT
+    let hitScore 
+
+    if (!noteNode) {
+        hitScore = NULL
         return hitScore
     }
+
+    if (noteNode.hit) {
+        hitScore = NULL
+        return hitScore
+    }
+
+    //only short-circuit to HOLD if THIS note is a rail and we're already grinding one
+    if(this.currentRail && noteNode.noteNodeType === ENUMS.NOTE_NODE_TYPE.RAIL){
+        hitScore = HOLD
+        return hitScore
+    }
+    
+    const timeUntilHit = (noteNode.time - currentTime)
+    
+    if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.PERFECT) {
+        hitScore = PERFECT
+    } else if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.GOOD) {
+        hitScore = GOOD
+    } else {
+       if(noteNode.noteNodeType === ENUMS.NOTE_NODE_TYPE.RAIL) {
+            hitScore = HOLD
+        }
+        else hitScore = MISS
+    }
+     
+    if(noteNode.noteNodeType === levelConfig.NOTE_NODE_TYPE.RAIL && hitScore !== MISS){
+        this.currentRail = noteNode
+    }
+
+    noteNode.handleOnHit()
+
+    return hitScore
+}
 
     registerTrickHit = (trick, currentTime) => {
         let hitScore
@@ -80,18 +122,20 @@ export default class HitManager{
     registerLandingHit = (currentTime, landingTime) => {
         let hitScore
 
-        //just in case
-        if(landingTime === null){
-            hitScore = levelConfig.JUDGEMENT_ENUMS.NULL
-            return hitScore
-        }     
+        // //just in case
+        // if(landingTime === null){
+        //     hitScore = levelConfig.JUDGEMENT_ENUMS.NULL
+        //     return hitScore
+        // }     
 
-        const timeUntilHit = (landingTime - currentTime)
-        if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.RESYNCED) {
-            hitScore = levelConfig.JUDGEMENT_ENUMS.RESYNCED
-        } 
-        else hitScore = levelConfig.JUDGEMENT_ENUMS.SYNC_BROKEN
+        // const timeUntilHit = (landingTime - currentTime)
+        // if (Math.abs(timeUntilHit) < levelConfig.NOTE_TIMING.RESYNCED) {
+        //     hitScore = levelConfig.JUDGEMENT_ENUMS.RESYNCED
+        // } 
+        // else hitScore = levelConfig.JUDGEMENT_ENUMS.SYNC_BROKEN
 
+        //CURRENTLY DEBUGGING WITH ONLY RESYNCED - NO TIMING CHECK FOR DEV ATM
+        hitScore = ENUMS.JUDGEMENT.RESYNCED
         return hitScore
     }
 

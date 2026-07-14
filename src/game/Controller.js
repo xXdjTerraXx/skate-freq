@@ -24,6 +24,9 @@ export default class Controller{
         this.heldKeys = new Set()
 
         this.gamepadManager = new GamepadManager(this)
+
+        //this needed for checking player unsuccessful rail lands
+        this.jumpObject = null
     }
 
     init = () => {
@@ -100,7 +103,9 @@ export default class Controller{
             // }
 ////////////////////////////////////////////////////////////////////////////
             if(e.code === this.iKey){
-                if(!this.heldKeys.has(this.iKey)) this.handlePlayerLand()
+                if(!this.heldKeys.has(this.iKey)) if(this.player.isInAir){
+                    this.handlePlayerLand()
+                }
                 this.heldKeys.add(this.iKey)
             }
         })
@@ -145,9 +150,13 @@ export default class Controller{
     handleJump = () => {
         const { ramp, currentTime } = this.level.checkRampHit()
         const secondsPerBeat = this.level.secondsPerBeat
+        
+        
         //handle case for a free jump aka no ramp or rail nearby
         if(!ramp){
-            this.player.launch(currentTime, currentTime + secondsPerBeat)
+            const playerLandingTime = currentTime + secondsPerBeat
+            this.jumpObject = { playerLandingTime }
+            this.player.launch(currentTime, playerLandingTime)
         }
         //handle case for ramp
         else{
@@ -158,9 +167,10 @@ export default class Controller{
                 
                 const launchTime = ramp.time
                 const secondsPerBeat = this.app.level.secondsPerBeat
-                const landingTime = ramp.time + ramp.duration * secondsPerBeat
+                const playerLandingTime = ramp.time + ramp.duration * secondsPerBeat
+                this.jumpObject = { playerLandingTime }
                 const rampJumpHeight = levelConfig.PLAYER_MAX_JUMP_HEIGHT
-                this.player.launch(launchTime, landingTime, rampJumpHeight)
+                this.player.launch(launchTime, playerLandingTime, rampJumpHeight)
             }
         }
          this.player.pulse()
@@ -182,9 +192,32 @@ export default class Controller{
         }
     }
 
+    handlePlayerLandPassive = () => {
+        const { rail, currentTime, timeSinceStart } = this.level.checkRailHit()
+        //landing on a rail with no key press
+        if(rail){
+            const hitScore = ENUMS.JUDGEMENT.MISS
+            this.app.scoreManager.updateScore(hitScore)
+            //update surge too if player is on a surge panel
+            if(this.app.surgeManager.surging === true){
+                this.app.surgeManager.handleNoteHit(hitScore, rail.beat)
+            }
+        }
+        //landing on the ground with no key press
+        else{
+            const hitScore = ENUMS.JUDGEMENT.SYNC_BROKEN
+            this.app.scoreManager.updateScore(hitScore)
+            if(this.app.surgeManager.surging === true){
+                this.app.surgeManager.handleNoteHit(hitScore, null)
+            }
+        }
+        this.jumpObject = null
+    }
+
     handlePlayerLand = () => {
         this.player.setSubLane(1)
         this.player.slamDown()
+        this.jumpObject = null
 
         const { rail, currentTime, timeSinceStart } = this.level.checkRailHit()
         console.log('RAIL DEBUG - rail from checkRailHit: ', rail)
@@ -194,29 +227,32 @@ export default class Controller{
             const hitScore = this.hitManager.registerHit(rail, currentTime)
             console.log("RAIL DEBUG - hitScore from registerHit", hitScore)
             const grindStartTime = currentTime
-            const grindEndTime = grindStartTime + rail.duration //* this.level.secondsPerBeat
+            const grindEndTime = grindStartTime + rail.duration * this.level.secondsPerBeat
             const grindDuration = rail.duration
             this.player.grind(grindStartTime, grindEndTime, grindDuration)           
             this.app.scoreManager.updateGrind(hitScore)
         }
         //if no rail check for resync landing (combo continue/breka)
         else{
-            const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED
-            if (Math.abs(this.level.currentTime - this.player.landingTime) < LANDING_WINDOW){
-                const hitScore = this.hitManager.registerLandingHit(currentTime, landingTime)
-                this.app.scoreManager.updateScore(hitScore)
-                //handle animation changes
-                if(hitScore === ENUMS.JUDGEMENT.RESYNCED){
+            //////////  THIS HERE IF I DECIDE RESYNC NEEDS A TIMING CHECK  //////////
+            // const LANDING_WINDOW = levelConfig.NOTE_TIMING.RESYNCED
+            // if (Math.abs(this.level.currentTime - this.player.landingTime) < LANDING_WINDOW){
+            //     const hitScore = this.hitManager.registerLandingHit(currentTime, landingTime)
+            //     this.app.scoreManager.updateScore(hitScore)
+            //     //handle animation changes
+                // if(hitScore === ENUMS.JUDGEMENT.RESYNCED){
+                //     this.player.resync()
+                // }
+            //     else{
+            //         this.player.playAnimation(ENUMS.ANIMATIONS.IDLE)
+            //     }
+            // }
+            console.log('IM YELLING ', this.player.isInAir,landingTime, currentTime, this.app.level.currentTime)
+            const hitScore = this.hitManager.registerLandingHit(currentTime, landingTime)
+            this.app.scoreManager.updateScore(hitScore)
+            if(hitScore === ENUMS.JUDGEMENT.RESYNCED){
                     this.player.resync()
                 }
-                else{
-                    this.player.playAnimation(ENUMS.ANIMATIONS.IDLE)
-                }
-                //TO DO: this will be where the entry point method in player
-                //for trick continuation animation and stuff wil go
-                //like:  player.resync() or smthn
-            }
-            
         }
     }
 
@@ -261,5 +297,12 @@ export default class Controller{
     run = (deltaTime) => {
         if(this.player.isGrinding) this.handleGrindHold()
         this.gamepadManager.poll()
+
+        //this checks for rails when player jumps and doesnt press land button
+        if(this.jumpObject){
+            if(this.level.currentTime >= this.jumpObject.playerLandingTime){
+                this.handlePlayerLandPassive()
+            }
+        }
     }
 }

@@ -6,9 +6,11 @@ export default class AnimationManager {
   constructor(mixer, animations) {
     this.mixer = mixer
     this.actions = animations
-    this.currentAnimation = animations[ENUMS.ANIMATIONS.IDLE]
+    this.currentAnimation = animations[ENUMS.ANIMATIONS.IDLER]
     this.lastAnimation = this.currentAnimation
     this.pendingReturnTarget = null
+
+    this.legToggle = false
 
     // set up one-shots (loop once + clamp)
     levelConfig.ONE_SHOT_ANIMATIONS.forEach(name => {
@@ -46,6 +48,15 @@ export default class AnimationManager {
     this.currentAnimation = next
     this.pendingReturnTarget = returnTo
   }
+
+  autoAlternate = () => {
+    if(this.currentAnimation === this.actions[ENUMS.ANIMATIONS.IDLEL] ||
+       this.currentAnimation === this.actions[ENUMS.ANIMATIONS.IDLER]){
+        this.legToggle = !this.legToggle
+        const nextAnimationName = this.legToggle ? ENUMS.ANIMATIONS.IDLEL : ENUMS.ANIMATIONS.IDLER
+        this.transitionTo(nextAnimationName)
+    }
+}
 
   update = (deltaTime) => {
     this.mixer.update(deltaTime)
