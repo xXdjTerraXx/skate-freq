@@ -172,6 +172,7 @@ export default class Level{
   }
 
   init = (noteMap) => {
+    console.log('DEBUG: PLAYER STARTING LANE:  ', this.playerCurrentLane)
     //first set this levels map to selected song's note map in audio manager
     this.levelMap = noteMap 
     //sets song-dependant variables like bpm, secondsPerBeat
@@ -303,7 +304,6 @@ export default class Level{
     // this is sort of an offset for the countdown. used to keep every system's beat 1
     // synced
     this.songStartBeat = this.currentBeat
-    console.log("LEVEL ACTIVATED, songStartBeat: ", this.songStartBeat)
   }
 
   setPlayer(player) {
@@ -316,7 +316,6 @@ export default class Level{
 
       //keep track of playerCurrentLane
       this.playerCurrentLane = (this.playerCurrentLane + direction + this.laneCount) % this.laneCount
-      console.log('DEBUG: PLAYER CURRENT LANE: ', this.playerCurrentLane)
   }
 
   //for lane rotation
@@ -416,26 +415,6 @@ export default class Level{
     return closestRampInTime
   }
 
-  // checkRailHit = () => {
-  //   //filter lane matching rails
-  //   const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
-
-  //   const closestRailInTime = railsInPlayerLane.reduce(
-  //     (acc, rail) => {
-        // const timeUntilHit = rail.time - this.currentTime
-        // const absTime = Math.abs(timeUntilHit)
-  //       if (rail.hit) return acc
-  //       // if (timeUntilHit > this.secondsPerBeat) return acc//////////////
-  //       if(absTime < acc.timeDiff){
-  //         return { rail: rail, timeDiff: absTime, currentTime: this.currentTime }
-  //       }  
-  //       return acc
-  //     }, { rail: null, timeDiff: Infinity, currentTime: this.currentTime }
-  //   )
-
-  //   return closestRailInTime
-  // }
-
 checkRailHit = () => {
     //filter lane matching rails
     const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
@@ -484,10 +463,10 @@ checkRailHit = () => {
   //resets all note nodes and gate rings
   //gets called in the "onExit" method of the results state.
   reset = () => {
-    console.log('level complete!')
     //reset the gate rings array
     this.gateRings = []
     this.tapNotes = []
+    this.rails = []
     this.ramps = []
     this.floorPanels = []
     //reset time stuff
@@ -500,6 +479,10 @@ checkRailHit = () => {
     //reset rotation
     this.rotation = 0
     this.rotationAccumulator = 0
+    this.targetRotation = 0
+    this.rotationVelocity = 0
+    this.playerCurrentLane = levelConfig.STARTING_LANE
+    this.playerCurrentSubLane = levelConfig.STARTING_SUB_LANE
     //reset isActivated
     this.isActivated = false
     //aaaand clean up the geometry
@@ -516,6 +499,13 @@ checkRailHit = () => {
         child.geometry.dispose()
         child.material.dispose()
         this.rampContainer.remove(child)
+    }
+    //clear rails
+    while (this.railContainer.children.length > 0) {
+        const child = this.railContainer.children[0]
+        child.geometry.dispose()
+        child.material.dispose()
+        this.railContainer.remove(child)
     }
     // clear gate rings
     while (this.ringContainer.children.length > 0) {

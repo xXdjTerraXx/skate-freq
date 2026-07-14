@@ -41,22 +41,8 @@ export default class Player {
     // store the animations by name so you can access them easily
     this.animationsDict = {}
     this.gltf.animations.forEach((clip) => {
-      console.log('DEBUG DEBUGanimation clip name:', clip.name)
         this.animationsDict[clip.name] = this.mixer.clipAction(clip)
     })
-
-    ///////////~*~*~*~*~*~OLD ANIMATION CODE~*~*~*~*~*~///////////
-    // //set idle so that it plays through and holds
-    // this.animationsDict['crouch'].setLoop(THREE.LoopOnce)
-    // this.animationsDict['crouch'].clampWhenFinished = true
-    // //set default current animation
-    // this.currentAnimation = this.animationsDict['idle']
-    // //set last animation same as current initially
-    // this.lastAnimation = this.currentAnimation
-    // // play idle by default
-    // this.animationsDict['idle'].play()
-    // attach the character model to the sphere
-    //////////////////////////////////////////////////////////////
 
     // so it follows all the spheres movement automatically
     this.mesh.add(this.characterModel)
@@ -113,7 +99,6 @@ export default class Player {
     this.isGrinding = false
     this.grindStartTime = null
     this.grindDuration = null
-    this.grindDuration = null
 
     //player movement within a lane
     this.isMoving = false
@@ -166,18 +151,6 @@ export default class Player {
     }  
   }
 
-  //this function basically just sets isCrouching to false and isInAir to true and
-  //sets the jump velocity so that updatePosition in update will move the player up
-  // handleJump = () => {
-  //   //stop crouching
-  //   this.isCrouching = false
-  //   if(!this.isInAir){
-  //     this.isInAir = true
-  //     this.jumpVelocity = this.TARGET_JUMP_VELOCITY
-  //   }
-  //   this.playAnimation('jump')
-  // }
-
   launch = (launchTime, landingTime, jumpHeight = this.DEFAULT_JUMP_HEIGHT) => {
     this.isCrouching = false
     this.isInAir = true
@@ -194,7 +167,6 @@ export default class Player {
       if (this.app.level.currentTime >= this.landingTime) {
           this.jumpOffset = 0
           this.isInAir = false
-          console.log("PLAYER JUST LANDED", this.isInAir)
           if (!this.isGrinding) {
             this.playAnimation(ENUMS.ANIMATIONS.IDLEL)
           }
@@ -223,7 +195,6 @@ export default class Player {
     this.grindStartTime = grindStartTime
     this.grindEndTime = grindEndTime
     this.grindDuration = grindDuration
-    console.log('PLAYING GRIND ANIMATION FROM GRIND')
     this.playAnimation(ENUMS.ANIMATIONS.GRIND_ENTER, {returnTo: ENUMS.ANIMATIONS.GRIND_HOLD})
   }
 
@@ -297,7 +268,6 @@ updateSlam = () => {
 }
 
   onBeat = (beatInBar) => {
-    // console.log("BEAT!", beatInBar)
     this.playerRing.pulse(beatInBar)
     
     // this.animationManager.autoAlternate()
@@ -317,7 +287,6 @@ updateSlam = () => {
   }
 
   update = (deltaTime) => {
-    if(this.isGrinding)console.log('BROOOOOOOOO UR GRINDING BROOO')
     // this.updateJumpPhysics()
     if(this.isSlamming)this.updateSlam(deltaTime)
     else this.updateJumpArc()

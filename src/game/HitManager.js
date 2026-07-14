@@ -165,7 +165,6 @@ export default class HitManager{
             }
             const rail = this.currentRail
             this.currentRail = null
-            console.log("DUB MIXES ARE GOOD", hitScore, levelConfig.NOTE_TIMING[NEURO])
             return { hitScore, rail }
         }  
         else {

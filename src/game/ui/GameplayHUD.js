@@ -220,7 +220,6 @@ export default class GameplayHUD{
     spawnHitEffect = (judgement, type) => {
         //set parent container based on category
         const {NOTE, GRIND, LAND, TRICK } = ENUMS.HIT_EFFECT_CATEGORY
-        console.log("dark sidDEEEDDD", judgement, type)
         let parentContainer
         type === NOTE ? parentContainer = this.noteHitEffectsContainer
         : type === GRIND ? parentContainer = this.activeGrindDisplay.grindReleaseEffectContainer 

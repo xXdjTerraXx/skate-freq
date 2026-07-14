@@ -34,7 +34,6 @@ export default class ScoreManager{
         this.hitCounts[judgement]++
 
         const hitEffectCategory = levelConfig.JUDGEMENT_CATEGORY_MAP[judgement]
-if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE JUDGEMENT FROM UPDATESCORE: ", judgement)
         //SCORE
         //get point value and increase currentScore
         let pointValue
@@ -100,7 +99,6 @@ if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE
     updateSurge = (currentSurgeObject, noteBeat) => {
         //check if last note in surge sequence
         if(currentSurgeObject.endBeat === noteBeat){
-            console.log("SURGE INCREASED!! SURGE VALUE IS AT ", this.surge)
             this.surge++
             this.app.ui.gameplayHUD.surgeMeter.updateMeter(this.surge)
             this.app.surgeManager.handleSurgeSectionCompleted()
@@ -111,11 +109,6 @@ if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE
                 console.log("OVERCLOCK COMMENCING!!!!")
             }
         }
-
-        /////DEBUG
-        // this.overclock = true
-        // this.app.level.startOverclock(currentSurgeObject)
-        // console.log("OVERCLOCK COMMENCING!!!!")
     }
 
     //called when the grind begins and when the grind is released from Controller
@@ -127,7 +120,6 @@ if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE
         //if release too early
         if(judgement === RELEASE){
             this.updateScore(judgement, true)
-            console.log('GRIND DEBUG - RELEASE judgement from updateGrind on grind release: ', judgement)
 
             this.app.ui.gameplayHUD.endActiveGrind(judgement)
             this.currentGrindJudgement = null
@@ -136,7 +128,6 @@ if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE
         }
         //if grind successful full release
         else if(judgement === NEURO){
-            console.log('GRIND DEBUG - NEURO judgement from updateGrind on grind release: ', judgement)
             this.updateScore(judgement, true)
             this.app.ui.gameplayHUD.endActiveGrind(judgement)
             //reset currentGrind info
@@ -149,7 +140,6 @@ if(hitEffectCategory === ENUMS.HIT_EFFECT_CATEGORY.GRIND)console.log("GRIND TYPE
         else {
             if(!this.currentGrindJudgement){
                 this.currentGrindJudgement = judgement
-                console.log("RAIL DEBUG - initial grind judgement, currentGrindJudgement: ", judgement)
                 this.currentGrindMultiplier = 1
                 //update score calculates the new grind score with abot values
                 this.updateScore(judgement, true)

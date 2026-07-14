@@ -60,7 +60,6 @@ export default class ActiveGrindDisplay{
     }
 
     startActiveGrind = (grindScore, initialJudgement) => {
-        console.log('DEBUG: START ACTIVE GRIND', grindScore, initialJudgement)
         this.grindInProgress = true
         this.initialJudgement = initialJudgement
         this.currentGrindScore = grindScore
@@ -74,7 +73,6 @@ export default class ActiveGrindDisplay{
     }   
 
     updateActiveGrind = (newGrindScore, grindJudgement) => {
-        console.log('ACTIVE GRIND HOLD DEBUG', grindJudgement)
         const { HOLD, BAIL, RELEASE } = ENUMS.JUDGEMENT
         this.grindScoreText.text = `${newGrindScore}`
         this.grindScoreText.sync()
@@ -85,7 +83,6 @@ export default class ActiveGrindDisplay{
 
     //this function creates a completion hit
     endActiveGrind = (grindJudgement) => {
-        console.log('#$%@#%^$%^@#$%^$ ENDING ACTIVE GRIND: ', grindJudgement)
         //create a standard hit effect for the release score
         this.spawnHitEffect(grindJudgement, ENUMS.HIT_EFFECT_CATEGORY.GRIND)
         //create a completion hit

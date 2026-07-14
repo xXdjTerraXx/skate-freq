@@ -61,47 +61,6 @@ export default class Controller{
             if(e.code === this.eKey){
                 if(this.player.isInAir) this.handlePlayerTrick('D')
             }
-///////////////////////POSSIBLE OLD CODE////////////////////////////////////////////////
-            // //player subLane movement AND air tricks
-            // if(e.code === this.jKey){
-            //     //priority is given to tap notes!! so if theres a tap note close
-            //     //even if player is technically still in the air, prioritize tap note
-            //     if(this.level.hasHittableTapNote()) {
-            //         this.handlePlayerSubLaneSwitch(0)
-            //     }
-            //     //is the player on a ramp?
-            //     else if(this.player.isInAir){
-            //     //if so handle an air trick
-            //         this.handlePlayerTrick('A')
-            //     }
-            //     //if not, sublane switch
-            //     else{
-            //         this.handlePlayerSubLaneSwitch(0)
-            //     }
-            // }
-            // if(e.code === this.kKey){
-            //     if(this.level.hasHittableTapNote()) {
-            //         this.handlePlayerSubLaneSwitch(1)
-            //     }
-            //     else if(this.player.isInAir){
-            //         this.handlePlayerTrick('S')
-            //     }
-            //     else{
-            //         this.handlePlayerSubLaneSwitch(1)
-            //     }
-            // }
-            // if(e.code === this.lKey){
-            //     if(this.level.hasHittableTapNote()) {
-            //         this.handlePlayerSubLaneSwitch(2)
-            //     }
-            //     else if(this.player.isInAir){
-            //         this.handlePlayerTrick('D')
-            //     }
-            //     else{
-            //         this.handlePlayerSubLaneSwitch(2)
-            //     }
-            // }
-////////////////////////////////////////////////////////////////////////////
             if(e.code === this.iKey){
                 if(!this.heldKeys.has(this.iKey)) if(this.player.isInAir){
                     this.handlePlayerLand()
@@ -124,13 +83,11 @@ export default class Controller{
     }
 
     rotateLeftPress = () => {
-        console.log("LEFT KEY PRESS")
         this.level.changeLane(1)
         this.player.playAnimation(ENUMS.ANIMATIONS.POWERSLIDE, {returnTo: ENUMS.ANIMATIONS.IDLE})
     }
 
     rotateRightPress = () => {
-        console.log("RIGHT KEY PRESS")
         this.level.changeLane(-1)
         this.player.playAnimation(ENUMS.ANIMATIONS.POWERSLIDE, {returnTo: ENUMS.ANIMATIONS.IDLE})
     }
@@ -220,12 +177,10 @@ export default class Controller{
         this.jumpObject = null
 
         const { rail, currentTime, timeSinceStart } = this.level.checkRailHit()
-        console.log('RAIL DEBUG - rail from checkRailHit: ', rail)
         const landingTime = this.player.landingTime
         //if there is a rail:
         if(rail) {
             const hitScore = this.hitManager.registerHit(rail, currentTime)
-            console.log("RAIL DEBUG - hitScore from registerHit", hitScore)
             const grindStartTime = currentTime
             const grindEndTime = grindStartTime + rail.duration * this.level.secondsPerBeat
             const grindDuration = rail.duration
@@ -247,7 +202,6 @@ export default class Controller{
             //         this.player.playAnimation(ENUMS.ANIMATIONS.IDLE)
             //     }
             // }
-            console.log('IM YELLING ', this.player.isInAir,landingTime, currentTime, this.app.level.currentTime)
             const hitScore = this.hitManager.registerLandingHit(currentTime, landingTime)
             this.app.scoreManager.updateScore(hitScore)
             if(hitScore === ENUMS.JUDGEMENT.RESYNCED){
@@ -263,7 +217,6 @@ export default class Controller{
     handleGrindRelease = () => {
         this.player.updateGrind(this.heldKeys.has(this.iKey)) //should this be here? o_O
         const { hitScore, rail } = this.hitManager.registerGrindRelease(this.level.currentTime)
-        console.log('GRIND DEBUG - handleGrindRelease hitScore and rail: ', hitScore, rail)
         this.app.scoreManager.updateGrind(hitScore)
     }
 
