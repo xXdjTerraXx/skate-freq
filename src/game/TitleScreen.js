@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { createTextNode } from '../utils'
 import { levelConfig } from '../config'
+
 export default class TitleScreen{
     constructor(app){
         this.app = app

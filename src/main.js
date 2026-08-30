@@ -19,6 +19,7 @@ import CountdownScreen from './game/CountdownScreen'
 import PauseScreen from './game/PauseScreen'
 import SurgeManager from './game/SurgeManager'
 import OverclockVisualsManager from './game/OverclockVisualsManager'
+import ModeSelectScreen from './game/ModeSelectScreen'
 
 
 const mainApplication = new Application()
@@ -41,9 +42,11 @@ const titleScreen = new TitleScreen(mainApplication)
 const resultsScreen = new ResultsScreen(mainApplication)
 const gameOverScreen = new GameOverScreen(mainApplication)
 const songSelectScreen = new SongSelectScreen(mainApplication, audioManager.loadedSounds.songs)
+const modeSelectScreen = new ModeSelectScreen(mainApplication)
 const countdownScreen = new CountdownScreen(mainApplication)
 const pauseScreen = new PauseScreen(mainApplication)
-//hit manager here because level needs it
+
+
 const hitManager = new HitManager(mainApplication)
 const overclockVisualsManager = new OverclockVisualsManager(mainApplication)
 const level = new Level(mainApplication, hitManager, overclockVisualsManager)
@@ -65,7 +68,7 @@ const controller = new Controller(mainApplication, level, player, hitManager)
 controller.init()
 
 //this setup function just gives the main app all the rest of the modules it needs
-mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, countdownScreen, pauseScreen)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen)
 
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)

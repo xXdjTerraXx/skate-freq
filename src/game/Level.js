@@ -415,26 +415,26 @@ export default class Level{
     return closestRampInTime
   }
 
-checkRailHit = () => {
-    //filter lane matching rails
-    const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
+  checkRailHit = () => {
+      //filter lane matching rails
+      const railsInPlayerLane = this.rails.filter(rail => rail.lane === this.playerCurrentLane)
 
-    const EARLY_WINDOW = levelConfig.NOTE_TIMING.GOOD
+      const EARLY_WINDOW = levelConfig.NOTE_TIMING.GOOD
 
-    const closestOngoingRail = railsInPlayerLane.reduce(
-      (acc, rail) => {
-        const timeSinceStart = this.currentTime - rail.time
-        const railEndTime = rail.time + rail.duration * this.secondsPerBeat
-        if (rail.hit) return acc
-        if(this.currentTime > railEndTime) return acc
-        if(this.currentTime > rail.time - EARLY_WINDOW && this.currentTime < railEndTime){
-          return { rail: rail, currentTime: this.currentTime, timeSinceStart }
-        }  
-        return acc
-      }, { rail: null, currentTime: this.currentTime, timeSinceStart: null }
-    )
+      const closestOngoingRail = railsInPlayerLane.reduce(
+        (acc, rail) => {
+          const timeSinceStart = this.currentTime - rail.time
+          const railEndTime = rail.time + rail.duration * this.secondsPerBeat
+          if (rail.hit) return acc
+          if(this.currentTime > railEndTime) return acc
+          if(this.currentTime > rail.time - EARLY_WINDOW && this.currentTime < railEndTime){
+            return { rail: rail, currentTime: this.currentTime, timeSinceStart }
+          }  
+          return acc
+        }, { rail: null, currentTime: this.currentTime, timeSinceStart: null }
+      )
 
-    return closestOngoingRail
+      return closestOngoingRail
   }
 
   handlePlayerTrick = (keyString) => {

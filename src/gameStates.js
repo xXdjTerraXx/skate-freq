@@ -7,12 +7,14 @@ import * as THREE from 'three'
 export const GAME_STATES = {
     LOADING: 'LOADING',
     TITLE: 'TITLE',
+    MODE_SELECT: 'MODE_SELECT',
     SONG_SELECT: 'SONG_SELECT',
     COUNTDOWN: 'COUNTDOWN',
     PLAYING: 'PLAYING',
     PAUSED: 'PAUSED',
     RESULTS: 'RESULTS',
     GAME_OVER: 'GAME_OVER',
+    EDITOR: 'EDITOR'
 }
 
 // state classes
@@ -60,7 +62,7 @@ class TitleState {
     titleKeyEvent = (e) => {
         if(e.code === 'KeyF'){
             //start eeeeverything
-            this.app.stateMachine.setState(GAME_STATES.SONG_SELECT)
+            this.app.stateMachine.setState(GAME_STATES.MODE_SELECT)
             //play sfx
             this.app.audioManager.playSfx("confirmSelection")
         }
@@ -72,6 +74,67 @@ class TitleState {
 
     removeKeyEvents = () => {
         window.removeEventListener('keydown', this.titleKeyEvent)
+    }
+}
+
+class ModeSelectState{
+    constructor(app){
+        this.app = app 
+        this.container = new THREE.Group()
+        this.container.name = 'mode select state container'
+        this.container.add(this.app.modeSelectScreen.mainContainer)
+        this.container.visible = false
+        this.app.scene.add(this.container)
+    }
+
+    onEnter = () => {
+        this.app.modeSelectScreen.initUi()
+        this.container.visible = true
+        this.addKeyEvents()
+    }
+
+    modeSelectKeys = (e) => {
+        //song selection up
+        if(e.code === 'KeyW'){
+            this.app.modeSelectScreen.incrementSelection(1)
+            //play sound effect
+            this.app.audioManager.playSfx("changeSongSelection")
+            console.log("rotate selection circle up")
+        }
+        //song selection down
+        if(e.code === 'KeyS'){
+            this.app.modeSelectScreen.incrementSelection(-1)
+            //play sound effect
+            this.app.audioManager.playSfx("changeSongSelection")
+            console.log("rotate selection circle down")
+        }
+        //select song
+        if(e.code === 'KeyF'){
+            //play sfx
+            this.app.audioManager.playSfx("confirmSelection")
+            //change states...(song starts playing there)
+            const selectedMode = this.app.modeSelectScreen.modes[this.app.modeSelectScreen.selectedIndex]
+            this.app.stateMachine.setState(selectedMode.state)
+        }
+    }
+    
+    addKeyEvents = () => {
+        window.addEventListener('keydown', this.modeSelectKeys)
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('keydown', this.modeSelectKeys)
+    }
+
+    update = (deltaTime) => {
+        this.app.modeSelectScreen.update(deltaTime)
+    }
+    
+    onExit = () => {
+        this.app.modeSelectScreen.resetUi()
+        this.container.visible = false
+        this.removeKeyEvents()
+        
     }
 }
 
@@ -415,6 +478,12 @@ class GameOverState {
     }
 }
 
+class EditorState{
+    constructor(app){
+        this.app = app
+    }
+}
+
 
 //=====================================================
 //using a factory func here bc app has to be given to these
@@ -422,10 +491,12 @@ class GameOverState {
 export const createGameStates = (app) => ({
     LOADING: new LoadingState(app),
     TITLE: new TitleState(app),
+    MODE_SELECT: new ModeSelectState(app),
     SONG_SELECT: new SongSelectState(app),
     COUNTDOWN: new CountdownState(app),
     PLAYING: new PlayingState(app),
     PAUSED: new PausedState(app),
     RESULTS: new ResultsState(app),
     GAME_OVER: new GameOverState(app),
+    EDITOR: new EditorState(app)
 })
