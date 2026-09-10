@@ -12,6 +12,9 @@ export const graphics2DAssetManifest = {
         circuitEmissive: '/assets/img/textures/circuit_emissive_texture3.png',
         circuitColor: '/assets/img/textures/circuit_color_texture3.png',
         circuitAlphaMap: '/assets/img/textures/circuit_alpha_map3.png'
+    },
+    editorScreen:{
+        folderIcon: '/assets/img/icons/folder.png'
     }
 }
 

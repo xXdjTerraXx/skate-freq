@@ -338,7 +338,7 @@ class PlayingState {
             this.countdownUpdate(deltaTime)
             
         }
-        //playing update plays no matter what, but 
+        //playing update plays no matter what 
         this.playingUpdate(deltaTime)
 
     }
@@ -481,6 +481,97 @@ class GameOverState {
 class EditorState{
     constructor(app){
         this.app = app
+
+        this.container = new THREE.Group()
+        this.container.name = 'editor state container'
+        this.container.visible = false
+
+        this.setupContainer = new THREE.Group()
+        this.setupContainer.name = 'editor setup sub-state container'
+        this.setupContainer.visible = true
+
+        this.writeContainer = new THREE.Group()
+        this.writeContainer.name = 'editor write sub-state container'
+        this.writeContainer.visible = false
+
+        this.setupContainer.add(this.app.levelEditorSetupScreen.mainContainer)
+        this.writeContainer.add(this.app.levelEditor.mainContainer)
+
+        this.container.add(this.setupContainer, this.writeContainer)
+        this.app.scene.add(this.container)
+
+        this.subState = 'SETUP' // SETUP || WRITE
+    }
+
+    onEnter = () => {
+        console.log('entering EDITOR state')
+        this.addKeyEvents()
+        this.app.audioManager.resetSong()
+        //toggle visibility
+        this.container.visible = true
+        //display the ui scene buuut...
+        this.app.uiScene.visible = true
+        //set it to editor mode
+        this.app.ui.toggleDisplayEditorUI()
+        //init the set up screen (main/write screen inited on substate switch)
+        this.app.levelEditorSetupScreen.init()
+    }
+
+    addKeyEvents = () => {
+        //click events
+        window.addEventListener('click', e => this.app.ui.editorSetupHUD.handleClick(e))
+        //key input events
+        window.addEventListener('keydown', e => this.app.ui.editorSetupHUD.handleKeyDown(e))
+    }
+
+    removeKeyEvents = () => {
+        window.removeEventListener('click', e => this.app.ui.editorSetupHUD.handleClick(e))
+        window.removeEventListener('keydown', e => this.app.ui.editorSetupHUD.handleKeyDown(e))
+    }
+
+    setupUpdate = (deltaTime) => {
+        console.log("SETUP updating...")
+        this.app.ui.editorSetupHUD.update(deltaTime)
+        if(this.app.ui.editorSetupHUD.setupComplete){
+            //change the subState and flip container visiblity
+            this.subState = 'WRITE'
+            this.setupContainer.visible = false
+            this.writeContainer.visible = true
+            //toggle edit mode between write or setup mode
+            this.app.ui.toggleEditorMode()
+            //init the actual write/main screen 
+            this.app.levelEditor.init()
+            this.app.levelEditor.activate()
+            //start the song playing
+            this.app.audioManager.playSong()
+            return
+        }
+    }
+
+    writeUpdate = (deltaTime) => {    
+        this.app.ui.editorWriteHUD.update(deltaTime) 
+        this.app.levelEditor.update(deltaTime)   
+        console.log("WRITE updating...")
+    }
+
+    update = (deltaTime) => {
+        if(this.subState === 'SETUP'){
+            this.setupUpdate(deltaTime)
+        }
+        else{
+            this.writeUpdate(deltaTime)
+        }
+    }
+
+    onExit = () => {
+        this.container.visible = false
+        this.removeKeyEvents()
+        //toogle visibility of entire ui scene
+        this.app.uiScene.visible = false
+        //toggle editor ui
+        this.app.ui.toggleDisplayEditorUI()
+        //reset subState
+        this.subState = 'SETUP'
     }
 }
 

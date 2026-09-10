@@ -62,6 +62,26 @@ export default class AudioManager {
     console.log('all songs loaded yaay! here they are:', this.loadedSounds)
   }
 
+  loadAndSelectCustomSong = async (songURL, bpm) => {
+      return new Promise((resolve, reject) => {
+          const audio = new Audio()
+          audio.src = songURL
+
+          audio.addEventListener('canplaythrough', () => {
+              console.log(`audio loaded at ${songURL}`)
+              const customSongObject = {path: songURL, bpm, audio }
+              this.currentSong = customSongObject
+              resolve(customSongObject)
+          })
+
+          audio.addEventListener('error', (e) => {
+              console.error(`failed to load the song at ${songURL} T-T`)
+              reject(e)
+          })
+
+          audio.load()
+      })
+  }
 
   selectSong = (songKey) => {
     //check that song exists first

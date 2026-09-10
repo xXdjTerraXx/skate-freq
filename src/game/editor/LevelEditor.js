@@ -1,19 +1,17 @@
 import * as THREE from 'three'
-import { levelConfig } from '../config'
-import GateRing from './GateRing'
-import Ramp from './Ramp'
-import TapNote from './TapNote'
-import FloorPanel from './FloorPanel'
-import EventEmitter from './EventEmitter'
-import Rail from './note_nodes/Rail'
-import ENUMS from '../enums'
+import { levelConfig } from '../../config'
+import GateRing from '../GateRing'
+import Ramp from '../Ramp'
+import TapNote from '../TapNote'
+import FloorPanel from '../FloorPanel'
+import EventEmitter from '../EventEmitter'
+import Rail from '../note_nodes/Rail'
+import ENUMS from '../../enums'
 
 
 export default class LevelEditor{
-  constructor(app, hitManager, overclockVisualsManager){
+  constructor(app){
     this.app = app
-    this.hitManager = hitManager
-    this.overclockVisualsManager = overclockVisualsManager
     this.levelMap = null
     
     //bring in some constants from config
@@ -21,8 +19,8 @@ export default class LevelEditor{
     this.laneCount = levelConfig.LANE_COUNT
     //radians measurement of a face
     this.laneAngle = (Math.PI * 2) / this.laneCount
-    this.playerCurrentLane = levelConfig.STARTING_LANE
-    this.playerCurrentSubLane = levelConfig.STARTING_SUB_LANE
+    this.cursorCurrentLane = levelConfig.STARTING_LANE
+    this.cursorCurrentSubLane = levelConfig.STARTING_SUB_LANE
     //4/4 time
     this.beatsPerBar = 4
     this.beatSubdivision = levelConfig.GATE_RING_BEAT_SUBDIVISION
@@ -75,8 +73,8 @@ export default class LevelEditor{
     })
 
     //MAIN LEVEL CONTAINER, EVERYTHING LEVEL RELATED GOES HERE
-    this.mainLevelContainer = new THREE.Group()
-    this.mainLevelContainer.name = 'main level container'
+    this.mainContainer = new THREE.Group()
+    this.mainContainer.name = 'main level container'
     //TUNNELS CONTAINER
     this.tunnelsContainer = new THREE.Group()
     this.tunnelsContainer.name = 'tunnels container'
@@ -143,30 +141,39 @@ export default class LevelEditor{
     this.targetRotation = 0
     this.rotationVelocity = 0
 
-    //add tunnels to mainLevelContainer
+    //add tunnels to mainContainer
     this.tunnelsContainer.add(this.tunnel1)
     this.tunnelsContainer.add(this.tunnel2)
 
-    //add everything to mainLevelContainer. mainLevelContainer is actually
+    //add everything to mainContainer. mainContainer is actually
     //not inside of a state's container like most other mainContainers. instead,
     //it lives directly on app.scene, and the state wrappers for the
     //playing state and the countdown state control its visibility
-    this.mainLevelContainer.add(this.tunnelsContainer)
-    this.mainLevelContainer.add(this.floorPanelsContainer)
-    this.mainLevelContainer.add(this.tapNotesContainer)
-    this.mainLevelContainer.add(this.rampContainer)
-    this.mainLevelContainer.add(this.railContainer)
-    this.mainLevelContainer.add(this.ringContainer)
+    this.mainContainer.add(this.tunnelsContainer)
+    this.mainContainer.add(this.floorPanelsContainer)
+    this.mainContainer.add(this.tapNotesContainer)
+    this.mainContainer.add(this.rampContainer)
+    this.mainContainer.add(this.railContainer)
+    this.mainContainer.add(this.ringContainer)
 
     //init event emitter here
     this.eventEmitter = new EventEmitter()
     this.eventEmitter.on('noteKilled', () => this.dirtyNotesExist = true)
+
+    //this gets set in setup
+    this.cursor = null
   }
 
-  init = (noteMap) => {
-    console.log('DEBUG: PLAYER STARTING LANE:  ', this.playerCurrentLane)
+  //called in main.js
+  setCursor = (cursor) => {
+    this.cursor = cursor
+  }
+
+  init = () => {
+    console.log("ALSKDJFHASLKDJFHALSKDJFHASLKDJFHSALKDJFHLKSDFJ INIT INIT INIT")
     //first set this levels map to selected song's note map in audio manager
-    this.levelMap = noteMap 
+    // this.levelMap = noteMap 
+    this.levelMap = {}
     //sets song-dependant variables like bpm, secondsPerBeat
     this.setSongState()
     //FOG EFFECT
@@ -183,12 +190,14 @@ export default class LevelEditor{
     const floorPanelEmissiveMapTexture = this.app.assetManager.loadedAssets.textures.circuitEmissive
     const floorPanelAlphaMap = this.app.assetManager.loadedAssets.textures.circuitAlphaMap
     const songLength = this.app.audioManager.getSongDuration()
+    console.log("LEVEL EDITOR DEBUG: songLength from init: ", songLength)
     //make one panel per lane
     for(let i = 0; i < this.laneCount; i++){
       //loop over the oc section of this levels notemap, find oc sections for this lane
-      const overclockSections = this.levelMap.overclockSections.filter((data, dataIndex) => {
-        return data.lane === i
-      })
+      // const overclockSections = this.levelMap.overclockSections.filter((data, dataIndex) => {
+      //   return data.lane === i
+      // })
+      const overclockSections = []
       const countdownOffset = 4 * this.secondsPerBeat
       const panelBeginTimeInSeconds = countdownOffset
       const newFloorPanel = new FloorPanel(
@@ -220,73 +229,73 @@ export default class LevelEditor{
     }
      
     //init TAPNOTES
-    this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
-          const countdownOffset = 4 * this.secondsPerBeat
-          const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
-          const tapNote = new TapNote(
-            this.app, 
-            this.hitlineZPosition,
-            this.levelSpeed, 
-            this.zRotationOffset, 
-            this.currentTime, 
-            tapNoteInLevelMap.lane, 
-            tapNoteInLevelMap.subLane, 
-            tapNoteInLevelMap.beat,
-            timeInSeconds,
-            this.eventEmitter
-          ) 
-          tapNote.init(this.tapNotesContainer)
-          this.tapNotes.push(tapNote)
-        })
+    // this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
+    //       const countdownOffset = 4 * this.secondsPerBeat
+    //       const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
+    //       const tapNote = new TapNote(
+    //         this.app, 
+    //         this.hitlineZPosition,
+    //         this.levelSpeed, 
+    //         this.zRotationOffset, 
+    //         this.currentTime, 
+    //         tapNoteInLevelMap.lane, 
+    //         tapNoteInLevelMap.subLane, 
+    //         tapNoteInLevelMap.beat,
+    //         timeInSeconds,
+    //         this.eventEmitter
+    //       ) 
+    //       tapNote.init(this.tapNotesContainer)
+    //       this.tapNotes.push(tapNote)
+    //     })
 
-    //init RAMPS
-    this.levelMap.patterns.ramps.forEach(ramp => {
-      const countdownOffset = 4 * this.secondsPerBeat
-      const timeInSeconds = (ramp.beat - 1) * this.secondsPerBeat + countdownOffset
-      const durationInSeconds = ramp.duration * this.secondsPerBeat
-      const newRamp = new Ramp(
-        this.app, 
-        this.hitlineZPosition,
-        ramp.lane, 
-        ramp.duration,
-        ramp.beat,
-        timeInSeconds,
-        durationInSeconds,
-        this.zRotationOffset, 
-        this.levelSpeed, 
-        this.currentTime,
-        this.secondsPerBeat,
-        this.eventEmitter
-      ) 
-      newRamp.init(this.rampContainer)
-      this.ramps.push(newRamp)
-    })
+    // //init RAMPS
+    // this.levelMap.patterns.ramps.forEach(ramp => {
+    //   const countdownOffset = 4 * this.secondsPerBeat
+    //   const timeInSeconds = (ramp.beat - 1) * this.secondsPerBeat + countdownOffset
+    //   const durationInSeconds = ramp.duration * this.secondsPerBeat
+    //   const newRamp = new Ramp(
+    //     this.app, 
+    //     this.hitlineZPosition,
+    //     ramp.lane, 
+    //     ramp.duration,
+    //     ramp.beat,
+    //     timeInSeconds,
+    //     durationInSeconds,
+    //     this.zRotationOffset, 
+    //     this.levelSpeed, 
+    //     this.currentTime,
+    //     this.secondsPerBeat,
+    //     this.eventEmitter
+    //   ) 
+    //   newRamp.init(this.rampContainer)
+    //   this.ramps.push(newRamp)
+    // })
 
-    //init RAILS
-    this.levelMap.patterns.rails.forEach(rail => {
-      const countdownOffset = 4 * this.secondsPerBeat
-      const timeInSeconds = (rail.beat - 1) * this.secondsPerBeat + countdownOffset
-      const durationInSeconds = rail.duration * this.secondsPerBeat
-      const newRail = new Rail(
-        this.app, 
-        this.hitlineZPosition,
-        rail.lane, 
-        rail.duration,
-        rail.beat,
-        timeInSeconds, 
-        durationInSeconds,
-        this.zRotationOffset, 
-        this.levelSpeed, 
-        this.currentTime,
-        this.secondsPerBeat,
-        this.eventEmitter,
-      ) 
-      newRail.init(this.railContainer)
-      this.rails.push(newRail)
-    })
+    // //init RAILS
+    // this.levelMap.patterns.rails.forEach(rail => {
+    //   const countdownOffset = 4 * this.secondsPerBeat
+    //   const timeInSeconds = (rail.beat - 1) * this.secondsPerBeat + countdownOffset
+    //   const durationInSeconds = rail.duration * this.secondsPerBeat
+    //   const newRail = new Rail(
+    //     this.app, 
+    //     this.hitlineZPosition,
+    //     rail.lane, 
+    //     rail.duration,
+    //     rail.beat,
+    //     timeInSeconds, 
+    //     durationInSeconds,
+    //     this.zRotationOffset, 
+    //     this.levelSpeed, 
+    //     this.currentTime,
+    //     this.secondsPerBeat,
+    //     this.eventEmitter,
+    //   ) 
+    //   newRail.init(this.railContainer)
+    //   this.rails.push(newRail)
+    // })
 
     //rotate whole level so lane 1 is at 6oclock
-    this.mainLevelContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
+    this.mainContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
   }
 
   //this method fires from state wrapper when countdown substate changes to
@@ -298,16 +307,12 @@ export default class LevelEditor{
     this.songStartBeat = this.currentBeat
   }
 
-  setPlayer(player) {
-    this.player = player
-  }
-
   changeLane = (direction) => {
       this.rotationAccumulator -= direction
       this.targetRotation = this.rotationAccumulator * this.laneAngle
 
-      //keep track of playerCurrentLane
-      this.playerCurrentLane = (this.playerCurrentLane + direction + this.laneCount) % this.laneCount
+      //keep track of cursorCurrentLane
+      this.cursorCurrentLane = (this.cursorCurrentLane + direction + this.laneCount) % this.laneCount
   }
 
   //for lane rotation
@@ -473,8 +478,8 @@ checkRailHit = () => {
     this.rotationAccumulator = 0
     this.targetRotation = 0
     this.rotationVelocity = 0
-    this.playerCurrentLane = levelConfig.STARTING_LANE
-    this.playerCurrentSubLane = levelConfig.STARTING_SUB_LANE
+    this.cursorCurrentLane = levelConfig.STARTING_LANE
+    this.cursorCurrentSubLane = levelConfig.STARTING_SUB_LANE
     //reset isActivated
     this.isActivated = false
     //aaaand clean up the geometry
@@ -518,13 +523,13 @@ checkRailHit = () => {
   //sets properties related to the song and its bpm
   setSongState = () => {
       this.bpm = this.app.audioManager.getCurrentBpm()
+      console.log("DEBUG---> bpm: ", this.bpm)
       this.secondsPerBeat = 60/this.bpm
       //distance between each one
       this.ringSpacing = this.secondsPerBeat/this.beatSubdivision
   }
 
   onBeat = () => {
-      // this.player.onBeat((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
       this.app.audioManager.playClick()
       this.app.ui.gameplayHUD.surgeMeter.onBeat()
       this.app.ui.gameplayHUD.uplinkMeter.onBeat()
@@ -535,15 +540,15 @@ checkRailHit = () => {
   }
 
   onBeatSixteenthNote = () => {
-    this.app.scoreManager.onBeatSixteenth()
-    this.player.onBeatSixteenth((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
+    // this.app.scoreManager.onBeatSixteenth()
+    // this.player.onBeatSixteenth((Math.floor(this.currentBeat)%this.beatsPerBar)+1)
   }
 
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
     this.currentTime = this.app.audioManager.getCurrentTime()
-    
+    console.log(this.currentTime, "<----debug current time")
     //ON BEAT STUFF
     //store last beat value
     this.lastBeat = this.currentBeat

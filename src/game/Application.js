@@ -131,7 +131,7 @@ export default class Application{
     await this.assetManager.loadAllAssets()
   }
 
-   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen) => {
+   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen, levelEditor, levelEditorSetupScreen) => {
     this.level = level
     this.player = player
     this.controller = controller
@@ -146,6 +146,8 @@ export default class Application{
     this.modeSelectScreen = modeSelectScreen
     this.countdownScreen = countdownScreen
     this.pauseScreen = pauseScreen
+    this.levelEditor = levelEditor
+    this.levelEditorSetupScreen = levelEditorSetupScreen
   }
 
   start = () => {

@@ -46,6 +46,7 @@ export const levelConfig = {
     COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
+    EDITOR_DEFAULT_BPM: 140,
     //enom for note node types
     NOTE_NODE_TYPE: {
         TAPNOTE: 'TAPNOTE',
@@ -316,6 +317,31 @@ export const levelConfig = {
         healthContainer: {
             fontSize: 50,
             position: {x: 300, y: 350, z: 0}
+        }
+    },
+    EDITOR_UI_COMPONENT_SETTINGS:{
+        loadSongButtonContainer:{
+            position: {x: 300, y: 350, z: 0},
+            fontSize: {label: 25},
+            fontColor: 0xffffff,
+            size: {width: 200, height: 100}
+        },
+        bpmInputContainer:{
+            position: {x: 70, y: 350, z: 0},
+            fontSize: {label: 25, text: 50},
+            fontColor: 0xffffff,
+            size: {width: 200, height: 100}
+        },
+        genericButton:{
+            fontSize: 25,
+            fontColor: 0xffffff,
+            size:{width: 150, height: 80}
+        },
+        setupOkButton: {
+            position: {x: 300, y: 100, z:0},
+            bgColor: COLOR_PALETTE.black,
+            fontColor: COLOR_PALETTE.cyan,
+            borderColor: COLOR_PALETTE.cyan 
         }
     },
     RENDER_ORDER: {
