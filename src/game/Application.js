@@ -22,18 +22,38 @@ export default class Application{
     this.uiScene.visible = false
 
     // CAMERA setup
-    //main camera
-    this.camera = new THREE.PerspectiveCamera(
+    //MAIN CAMERA 1
+    this.mainCamera1 = new THREE.PerspectiveCamera(
       75, 
       window.innerWidth / window.innerHeight, 
       0.1, 
       1000
     )
     //position the camera
-    this.camera.position.z = 2
-    this.camera.position.y = .5
-    //little bit of downward titl
-    this.camera.rotation.x = -0.2
+    this.mainCamera1.position.y = .5
+    this.mainCamera1.position.z = 2
+    //rotation - little bit of downward titl
+    this.mainCamera1.rotation.x = -0.2
+
+    //MAIN CAMERA 2
+    this.mainCamera2 = new THREE.PerspectiveCamera(
+      75, 
+      window.innerWidth / window.innerHeight, 
+      0.1, 
+      1000
+    )
+    //position
+    this.mainCamera2.position.y = 5
+    this.mainCamera2.position.z = 2
+    //rotation
+    this.mainCamera2.rotation.x = -Math.PI / 4
+ 
+
+    //an array that contains all the cameras except the ui camera
+    this.camerasArray = [this.mainCamera1, this.mainCamera2]
+    this.activeCameraIndex = 0
+    this.activeCamera = this.camerasArray[this.activeCameraIndex]
+
     //aaaand the ui camera
     const UI_WIDTH = levelConfig.UI_SETTINGS.width
     const UI_HEIGHT = levelConfig.UI_SETTINGS.height
@@ -66,19 +86,19 @@ export default class Application{
     this.bloomComposer.renderToScreen = false 
     // this.renderer.toneMapping = THREE.ReinhardToneMapping
     //render pass sorta takes a pic of everything in the scene
-    const renderPass = new RenderPass(this.scene, this.camera)
-    this.bloomComposer.addPass(renderPass)
+    this.renderPass = new RenderPass(this.scene, this.activeCamera)
+    this.bloomComposer.addPass(this.renderPass)
     //then bloom pass adds bloom to it
-    const bloomPass = new UnrealBloomPass(
+    this.bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
         levelConfig.GRAPHICS.BLOOM.STRENGTH,   // strength
         levelConfig.GRAPHICS.BLOOM.RADIUS,   // radius
         levelConfig.GRAPHICS.BLOOM.THRESHOLD    // threshold
     )
-    this.bloomComposer.addPass(bloomPass)
+    this.bloomComposer.addPass(this.bloomPass)
 
     //COMPOSITE SHADER
-    const compositingShader = {
+    this.compositingShader = {
       uniforms: {
           baseTexture: { value: null },
           bloomTexture: { value: this.bloomComposer.renderTarget2.texture }
@@ -103,12 +123,13 @@ export default class Application{
     //FINAL COMPOSER
     //shader pass used in the finalComposer to combine the glow and
     // normal layers
-    this.shaderPass = new ShaderPass(compositingShader, 'baseTexture')
+    this.shaderPass = new ShaderPass(this.compositingShader, 'baseTexture')
 
     this.shaderPass.needsSwap = true
 
     this.finalComposer = new EffectComposer(this.renderer)
-    this.finalComposer.addPass(new RenderPass(this.scene, this.camera))
+    this.finalRenderPass = new RenderPass(this.scene, this.activeCamera)
+    this.finalComposer.addPass(this.finalRenderPass)
     this.finalComposer.addPass(this.shaderPass)
     
     //add a clock
@@ -116,13 +137,17 @@ export default class Application{
     
     // --- RESIZE HANDLING ---
     window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight
-      this.camera.updateProjectionMatrix()
+      this.mainCamera1.aspect = window.innerWidth / window.innerHeight
+      this.mainCamera1.updateProjectionMatrix()
+
+      this.mainCamera2.aspect = window.innerWidth / window.innerHeight
+      this.mainCamera2.updateProjectionMatrix()
       
       this.renderer.setSize(window.innerWidth, window.innerHeight)
       this.bloomComposer.setSize(window.innerWidth, window.innerHeight)
       this.finalComposer.setSize(window.innerWidth, window.innerHeight)
     })
+
 
   }
 
@@ -131,7 +156,7 @@ export default class Application{
     await this.assetManager.loadAllAssets()
   }
 
-   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen, levelEditor, levelEditorSetupScreen) => {
+   setup = (level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen, levelEditor, levelEditorSetupScreen, levelEditorController) => {
     this.level = level
     this.player = player
     this.controller = controller
@@ -148,6 +173,7 @@ export default class Application{
     this.pauseScreen = pauseScreen
     this.levelEditor = levelEditor
     this.levelEditorSetupScreen = levelEditorSetupScreen
+    this.levelEditorController = levelEditorController
   }
 
   start = () => {
@@ -160,6 +186,31 @@ export default class Application{
     this.masterUpdate()
   }
 
+  _setActiveCamera = (index) => {
+    this.activeCameraIndex = index
+    this.activeCamera = this.camerasArray[this.activeCameraIndex]
+
+    this.renderPass.camera = this.activeCamera
+    this.finalRenderPass.camera = this.activeCamera
+
+  }
+
+  swapCamera = () => {
+    let newIndex
+    this.activeCameraIndex === this.camerasArray.length - 1 ? newIndex = 0 : newIndex = this.activeCameraIndex + 1
+    this._setActiveCamera(index)
+  }
+
+  setNewCamera = (newIndex) => {
+    //just in case
+    if(newIndex > this.camerasArray.length - 1 || newIndex < 0) return
+    this._setActiveCamera(newIndex)
+  }
+
+  resetActiveCamera = () => {
+    this._setActiveCamera(0)
+  }
+
   masterUpdate = () => {
     requestAnimationFrame(this.masterUpdate)
 
@@ -170,15 +221,15 @@ export default class Application{
 
     //RENDER 
     // render bloom layer (layer 0 only)
-    this.camera.layers.set(0)
+    this.activeCamera.layers.set(0)
     this.bloomComposer.render()
 
     // update bloom texture uniform AFTER bloom has rendered
     this.shaderPass.uniforms['bloomTexture'].value = this.bloomComposer.renderTarget2.texture
 
     // render everything normally and composite bloom on top
-    this.camera.layers.enable(0)
-    this.camera.layers.enable(1)
+    this.activeCamera.layers.enable(0)
+    this.activeCamera.layers.enable(1)
     this.finalComposer.render()
 
     //new stuff to allow for ui camera

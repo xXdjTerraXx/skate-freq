@@ -94,6 +94,7 @@ class ModeSelectState{
     }
 
     modeSelectKeys = (e) => {
+        console.log("finally we debugging this shi", e.code)
         //song selection up
         if(e.code === 'KeyW'){
             this.app.modeSelectScreen.incrementSelection(1)
@@ -517,16 +518,20 @@ class EditorState{
         this.app.levelEditorSetupScreen.init()
     }
 
+    handleEditorClick = (e) => this.app.ui.editorSetupHUD.handleClick(e)
+    handleEditorKeyDown = (e) => this.app.ui.editorSetupHUD.handleKeyDown(e)
+
     addKeyEvents = () => {
-        //click events
-        window.addEventListener('click', e => this.app.ui.editorSetupHUD.handleClick(e))
-        //key input events
-        window.addEventListener('keydown', e => this.app.ui.editorSetupHUD.handleKeyDown(e))
+        window.addEventListener('click', this.handleEditorClick)
+        window.addEventListener('keydown', this.handleEditorKeyDown)
     }
 
     removeKeyEvents = () => {
-        window.removeEventListener('click', e => this.app.ui.editorSetupHUD.handleClick(e))
-        window.removeEventListener('keydown', e => this.app.ui.editorSetupHUD.handleKeyDown(e))
+        window.removeEventListener('click', this.handleEditorClick)
+        window.removeEventListener('keydown', this.handleEditorKeyDown)
+
+        //remove key events from the editor controller as well
+        this.app.levelEditorController.removeKeyEvents()
     }
 
     setupUpdate = (deltaTime) => {
@@ -539,11 +544,13 @@ class EditorState{
             this.writeContainer.visible = true
             //toggle edit mode between write or setup mode
             this.app.ui.toggleEditorMode()
+            //init the editor controler, which is only used in the write stage
+            this.app.levelEditorController.init()
             //init the actual write/main screen 
             this.app.levelEditor.init()
             this.app.levelEditor.activate()
             //start the song playing
-            this.app.audioManager.playSong()
+            // this.app.audioManager.playSong()
             return
         }
     }
@@ -551,6 +558,7 @@ class EditorState{
     writeUpdate = (deltaTime) => {    
         this.app.ui.editorWriteHUD.update(deltaTime) 
         this.app.levelEditor.update(deltaTime)   
+        this.app.levelEditorController.run(deltaTime)
         console.log("WRITE updating...")
     }
 
@@ -570,6 +578,8 @@ class EditorState{
         this.app.uiScene.visible = false
         //toggle editor ui
         this.app.ui.toggleDisplayEditorUI()
+        //reset camera just in case
+        this.app.resetActiveCamera()
         //reset subState
         this.subState = 'SETUP'
     }

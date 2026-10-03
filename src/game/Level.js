@@ -190,7 +190,6 @@ export default class Level{
     const floorPanelColorMapTexture = this.app.assetManager.loadedAssets.textures.circuitColor
     const floorPanelEmissiveMapTexture = this.app.assetManager.loadedAssets.textures.circuitEmissive
     const floorPanelAlphaMap = this.app.assetManager.loadedAssets.textures.circuitAlphaMap
-    const songLength = this.app.audioManager.getSongDuration()
     //make one panel per lane
     for(let i = 0; i < this.laneCount; i++){
       //loop over the oc section of this levels notemap, find oc sections for this lane
@@ -207,7 +206,7 @@ export default class Level{
         floorPanelAlphaMap,
         i,
         overclockSections,
-        songLength,
+        this.songLengthInSeconds,
         this.beatsPerBar,
         this.secondsPerBeat,
         this.levelSpeed,
@@ -525,6 +524,7 @@ export default class Level{
 
   //sets properties related to the song and its bpm
   setSongState = () => {
+      this.songLength = this.app.audioManager.getSongDurationInSeconds()
       this.bpm = this.app.audioManager.getCurrentBpm()
       this.secondsPerBeat = 60/this.bpm
       //distance between each one

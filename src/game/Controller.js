@@ -56,6 +56,7 @@ export default class Controller{
                 if(this.player.isInAir) this.handlePlayerTrick('A')
             }
             if(e.code === this.wKey){
+                console.log("ASdfasdfasd")
                 if(this.player.isInAir) this.handlePlayerTrick('S')
             }
             if(e.code === this.eKey){

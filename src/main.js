@@ -23,6 +23,7 @@ import ModeSelectScreen from './game/ModeSelectScreen'
 import LevelEditor from './game/editor/LevelEditor'
 import LevelEditorSetupScreen from './game/editor/LevelEditorSetupScreen'
 import EditorCursor from './game/editor/EditorCursor'
+import EditorControler from './game/editor/EditorControler'
 
 
 const mainApplication = new Application()
@@ -56,6 +57,8 @@ const level = new Level(mainApplication, hitManager, overclockVisualsManager)
 //get the parts of the editor ready
 const levelEditor = new LevelEditor(mainApplication)
 const levelEditorCursor = new EditorCursor(mainApplication, levelEditor)
+const levelEditorController = new EditorControler(mainApplication, levelEditor, levelEditorCursor)
+// levelEditorController.init()
 levelEditor.setCursor(levelEditorCursor)
 const levelEditorSetupScreen = new LevelEditorSetupScreen(mainApplication)
 levelEditorSetupScreen.init()
@@ -78,7 +81,7 @@ const controller = new Controller(mainApplication, level, player, hitManager)
 controller.init()
 
 //this setup function just gives the main app all the rest of the modules it needs
-mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen, levelEditor, levelEditorSetupScreen)
+mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen, levelEditor, levelEditorSetupScreen, levelEditorController)
 
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)

@@ -21,9 +21,7 @@ export default class LevelEditor{
     this.laneAngle = (Math.PI * 2) / this.laneCount
     this.cursorCurrentLane = levelConfig.STARTING_LANE
     this.cursorCurrentSubLane = levelConfig.STARTING_SUB_LANE
-    //4/4 time
-    this.beatsPerBar = 4
-    this.beatSubdivision = levelConfig.GATE_RING_BEAT_SUBDIVISION
+    this.gateRingsPerBeat = levelConfig.GATE_RING_BEAT_SUBDIVISION
     //how many gate rings
     this.ringCount = levelConfig.RING_COUNT    
     //hitline aka where the notes are being timed to (also where the player sits in space)
@@ -32,13 +30,30 @@ export default class LevelEditor{
 
     //time-related stuff (<--there's a reset function for all this below)
     this.currentTime = 0.00
-    this.lastBeat = 3
     this.currentBeat = 0
+    this.currentBar = 0
+    //default to 4 beats per bar
+    this.beatsPerBar = 4
+    this.lastBeat = null
     this.lastBeatEighth = null
     this.currentBeatEighth = null
     this.lastBeatSixteenth = null
     this.currentBeatSixteenth = null
-    this.currentBar = 0
+    //how many beat subdivisions per beat - 1, 2, 3, or 4
+    //(basically: quarter (1), eighth note (2), triplet (3), or sixteenth (4) note)
+    this.beatSubdivisionsOptions = [1, 2, 3, 4]
+    this.selectedBeatSubdivisionIndex = 0
+    this.currentBeatSubdivision =  this.beatSubdivisionsOptions[this.selectedBeatSubdivisionIndex]
+    //targetTime and currentBeatAccumulator used for tunnel movement lerping
+    this.targetTime = 0.00
+    this.currentBeatAccumulator = 0
+
+    //SOME POSITIONING STUFF
+    //rotation
+    this.rotation = 0
+    this.rotationAccumulator = 0
+    this.targetRotation = 0
+    this.rotationVelocity = 0
 
    //establish some arrays to hold things
     this.gateRings = []
@@ -53,6 +68,13 @@ export default class LevelEditor{
     //this property used for transition from countdown -> playing
     this.isActivated = false
 
+
+//~~*+*~~//~~*+*~~//~~*+*~~/ -- MESH SETUP --/~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//
+    //in the normal Level, there are two tunnels that loop. here in the editor, there is 
+    //one tunnel, with a length related to the length of the current song. before
+    //length is calculated, a placeholder geometry is used here that is later replaced
+    //here tunnelLength is a placeholder for actual tunnelLength calculated during init
+    this.tunnelLength = null
 
     //SHAPE setup
     this.geometry = new THREE.CylinderGeometry(
@@ -69,10 +91,27 @@ export default class LevelEditor{
       color: 0x00ffff,
       wireframe: true,
       side: THREE.BackSide, // THIS puts you inside the tunnel
-
     })
 
-    //MAIN LEVEL CONTAINER, EVERYTHING LEVEL RELATED GOES HERE
+    //TUNNEL MESH setup
+    this.tunnel = new THREE.Mesh(this.geometry, this.material)
+    //tunnel have to be rotated 90 deg on x so youre going THROUGH it
+    this.tunnel.rotation.x = Math.PI / 2
+    //put tunnel in layer 1 - NO BLOOM
+    this.tunnel.layers.set(1)
+
+    //EDGES OF TUNNEL
+    this.tunnelEdge = new THREE.EdgesGeometry(this.geometry)
+    this.tunnelLine = new THREE.LineSegments(
+      this.tunnelEdge,
+      new THREE.LineBasicMaterial({ color: 0xF57927 })
+    )
+     this.tunnel.add(this.tunnelLine)
+
+    //~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//
+
+
+    //ALL THE CONTAINS HERE
     this.mainContainer = new THREE.Group()
     this.mainContainer.name = 'main level container'
     //TUNNELS CONTAINER
@@ -97,7 +136,6 @@ export default class LevelEditor{
     this.worldHitFxContainer = new THREE.Group()
     this.worldHitFxContainer.name = 'world hit fx container'
     
-  
 
     //rotate the main container so that a side is at 6 oclock instead of vertex
     //(Math.PI * 2) / (levelConfig.LANE_COUNT / 2)
@@ -107,44 +145,9 @@ export default class LevelEditor{
     //of one side
     this.zRotationOffset = Math.PI / levelConfig.LANE_COUNT 
 
-    //TUNNELS setup
-    //two tunnels for loop
-    this.tunnel1 = new THREE.Mesh(this.geometry, this.material)
-    //tunnels have to be rotated 90 deg on x so youre going THROUGH it
-    this.tunnel1.rotation.x = Math.PI / 2
-    //put tunnel in layer 1 - NO BLOOM
-    this.tunnel1.layers.set(1)
-
-    this.tunnel2 = new THREE.Mesh(this.geometry, this.material)
-    this.tunnel2.rotation.x = Math.PI / 2
-    //put tunnel in layer 1 - NO BLOOM
-    this.tunnel2.layers.set(1)
-  
-    
-    //EDGES
-    this.edges = new THREE.EdgesGeometry(this.geometry)
-    this.line1 = new THREE.LineSegments(
-      this.edges,
-      new THREE.LineBasicMaterial({ color: 0xF57927 })
-    )
-     this.tunnel1.add(this.line1)
-
-    this.line2 = new THREE.LineSegments(
-      this.edges,
-      new THREE.LineBasicMaterial({ color: 0xF57927 })
-    )
-    this.tunnel2.add(this.line2)
-
-    //positioning
-    this.rotation = 0
-    this.rotationAccumulator = 0
-    this.targetRotation = 0
-    this.rotationVelocity = 0
-
+    //~~*+*~~//~~*+*~~//~~*+*~~/ --ADD TO CONTAINERS -- /~~*+*~~//~~*+*~~//~~*+*~~//
     //add tunnels to mainContainer
-    this.tunnelsContainer.add(this.tunnel1)
-    this.tunnelsContainer.add(this.tunnel2)
-
+    this.tunnelsContainer.add(this.tunnel)
     //add everything to mainContainer. mainContainer is actually
     //not inside of a state's container like most other mainContainers. instead,
     //it lives directly on app.scene, and the state wrappers for the
@@ -176,21 +179,20 @@ export default class LevelEditor{
     this.levelMap = {}
     //sets song-dependant variables like bpm, secondsPerBeat
     this.setSongState()
+    this.setTunnelLength()
     //FOG EFFECT
     this.app.scene.fog = new THREE.Fog(0x000000, 2, 15)
 
     //position tunnel
-    this.tunnel1.position.z = 0
-    // position second tunnel exactly one length behind
-    this.tunnel2.position.z = -levelConfig.TUNNEL_LENGTH 
+    this.tunnel.position.z = 0
 
     //init floor panels
     //store the textures for floor panels from texture loader
     const floorPanelColorMapTexture = this.app.assetManager.loadedAssets.textures.circuitColor
     const floorPanelEmissiveMapTexture = this.app.assetManager.loadedAssets.textures.circuitEmissive
     const floorPanelAlphaMap = this.app.assetManager.loadedAssets.textures.circuitAlphaMap
-    const songLength = this.app.audioManager.getSongDuration()
-    console.log("LEVEL EDITOR DEBUG: songLength from init: ", songLength)
+    
+    console.log("LEVEL EDITOR DEBUG: this.songLengthInSeconds from init: ", this.songLengthInSeconds)
     //make one panel per lane
     for(let i = 0; i < this.laneCount; i++){
       //loop over the oc section of this levels notemap, find oc sections for this lane
@@ -208,7 +210,7 @@ export default class LevelEditor{
         floorPanelAlphaMap,
         i,
         overclockSections,
-        songLength,
+        this.songLengthInSeconds,
         this.beatsPerBar,
         this.secondsPerBeat,
         this.levelSpeed,
@@ -221,12 +223,7 @@ export default class LevelEditor{
       this.floorPanels.push(newFloorPanel)
     }
 
-    //init gate rings
-    for(let i = 0; i < this.ringCount; i++){
-        const ring = new GateRing(this.app, this.ringContainer, i, this.ringSpacing, this.hitlineZPosition, this.ringCount)
-        ring.init()
-        this.gateRings.push(ring)
-    }
+    this.initGateRings()
      
     //init TAPNOTES
     // this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
@@ -307,12 +304,33 @@ export default class LevelEditor{
     this.songStartBeat = this.currentBeat
   }
 
+  initGateRings = () => {
+    for(let i = 0; i < this.ringCount; i++){
+        const ring = new GateRing(this.app, this.ringContainer, i, this.ringSpacing, this.hitlineZPosition, this.ringCount)
+        ring.init()
+        this.gateRings.push(ring)
+    }
+  }
+
   changeLane = (direction) => {
       this.rotationAccumulator -= direction
       this.targetRotation = this.rotationAccumulator * this.laneAngle
 
       //keep track of cursorCurrentLane
       this.cursorCurrentLane = (this.cursorCurrentLane + direction + this.laneCount) % this.laneCount
+      console.log("lane rotation debug: ", this.rotationAccumulator, this.targetRotation, this.cursorCurrentLane)
+  }
+
+  //moves the tunnel forward or back by 1 of the current beat subdivision unit
+  moveTunnel = (direction) => {
+    //first, get how many beatsToMove the tunnel based on the currently
+    //selected beat subdivision
+    const beatsToMove = direction * (1/this.currentBeatSubdivision)
+    //add to accumulator
+    this.currentBeatAccumulator += beatsToMove
+    //then convert that to seconds and sett the new targetTime
+    this.targetTime = this.currentBeatAccumulator * this.secondsPerBeat
+
   }
 
   //for lane rotation
@@ -328,6 +346,13 @@ export default class LevelEditor{
       this.rampContainer.rotation.z = this.rotation + this.zRotationOffset
       this.railContainer.rotation.z = this.rotation + this.zRotationOffset
       this.ringContainer.rotation.z = -this.rotation + this.zRotationOffset
+  }
+
+  //for lerping the tunnel movement
+  applyMovement = (deltaTime) => {
+    const lerpFactor = 1 - Math.pow(0.001, deltaTime)
+    this.currentTime += (this.targetTime - this.currentTime) * lerpFactor
+    console.log("DEBUG! ", this.currentTime, this.targetTime, this.currentBeatAccumulator)
   }
 
   //simply returns bool about if tapnote is incoming
@@ -470,9 +495,10 @@ checkRailHit = () => {
     this.currentTime = 0.00
     this.lastBeat = 3
     this.currentBeat = 0
+    this.currentBeatAccumulator = 0
+    this.currentBar = 0
     this.lastBeatSixteenth = null
     this.currentBeatSixteenth = null
-    this.currentBar = 0
     //reset rotation
     this.rotation = 0
     this.rotationAccumulator = 0
@@ -522,12 +548,43 @@ checkRailHit = () => {
 
   //sets properties related to the song and its bpm
   setSongState = () => {
+      this.songLengthInSeconds = this.app.audioManager.getSongDurationInSeconds()
       this.bpm = this.app.audioManager.getCurrentBpm()
       console.log("DEBUG---> bpm: ", this.bpm)
       this.secondsPerBeat = 60/this.bpm
       //distance between each one
-      this.ringSpacing = this.secondsPerBeat/this.beatSubdivision
+      this.ringSpacing = this.secondsPerBeat/this.gateRingsPerBeat
   }
+
+  //calculates the tunnel mesh's length based on the current song's length.
+  //then, disposes of the tunnel's initial geometry (built in the constructor) and
+  //set a new geometry based on this calculated length. this is all specific to the editor
+  setTunnelLength = () => {
+    //calcu tunnel length
+    this.tunnelLength = this.songLengthInSeconds * this.levelSpeed
+    //dispose of old stuff
+    this.tunnel.remove(this.tunnelLine)
+    this.geometry.dispose()
+    this.tunnelEdge.dispose()
+    this.tunnelLine.material.dispose()
+    //build new geometry, lines, and edges.
+    this.geometry = new THREE.CylinderGeometry(
+      levelConfig.TUNNEL_RADIUS,     // radius top
+      levelConfig.TUNNEL_RADIUS,     // radius bottom
+      this.tunnelLength,    // length of tunnel
+      levelConfig.LANE_COUNT,     // sides (hexagon)
+      1,
+      true   // open ended
+    )
+    this.tunnelEdge = new THREE.EdgesGeometry(this.geometry)
+    this.tunnelLine = new THREE.LineSegments(
+      this.tunnelEdge,
+      new THREE.LineBasicMaterial({ color: 0xF57927 })
+    )
+    //then set everything
+    this.tunnel.geometry = this.geometry
+    this.tunnel.add(this.tunnelLine)
+ }
 
   onBeat = () => {
       this.app.audioManager.playClick()
@@ -547,13 +604,13 @@ checkRailHit = () => {
   update = (deltaTime) => {
     //UPDATE MUSIC/BEAT STUFF
     //increment time
-    this.currentTime = this.app.audioManager.getCurrentTime()
-    console.log(this.currentTime, "<----debug current time")
+    // this.currentTime = this.app.audioManager.getCurrentTime()
+    // console.log(this.currentTime, "<----debug current time")
     //ON BEAT STUFF
     //store last beat value
     this.lastBeat = this.currentBeat
     //convert time to beats and update currentBeat
-    this.currentBeat = this.currentTime / this.secondsPerBeat
+    // this.currentBeat = this.currentTime / this.secondsPerBeat
     this.currentBar = Math.floor(this.currentBeat / this.beatsPerBar)
     //check fo ra new beat
     if(Math.floor(this.lastBeat) !== Math.floor(this.currentBeat)){
@@ -571,18 +628,7 @@ checkRailHit = () => {
       this.onBeatSixteenthNote()
     }
 
-    // move tunnels toward camera
-    this.tunnel1.position.z += this.levelSpeed * deltaTime
-    this.tunnel2.position.z += this.levelSpeed * deltaTime
-    
-    // reset for looping effect
-    if (this.tunnel1.position.z > levelConfig.TUNNEL_LENGTH) {
-        this.tunnel1.position.z = this.tunnel2.position.z - levelConfig.TUNNEL_LENGTH
-    }
 
-    if (this.tunnel2.position.z > levelConfig.TUNNEL_LENGTH) {
-        this.tunnel2.position.z = this.tunnel1.position.z - levelConfig.TUNNEL_LENGTH
-    }
 
     //update gate rings
     this.gateRings.forEach(ring => {
@@ -599,6 +645,8 @@ checkRailHit = () => {
    
     //APPLY ROTATION
     this.applyRotation(deltaTime)
+
+    this.applyMovement(deltaTime)
 
   }
 

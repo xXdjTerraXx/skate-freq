@@ -58,6 +58,6 @@ export default class GateRing {
 
       const t = performance.now() * 0.005
       const scale = 1 + Math.sin(t) * 0.05
-      this.mesh.scale.set(scale, scale, scale)
+      // this.mesh.scale.set(scale, scale, scale)
   }
 }

@@ -34,7 +34,7 @@ export const levelConfig = {
     PLAYER_MAX_JUMP_HEIGHT: 1.5,
     RING_COUNT: 12,
     RING_SPACING: 2,
-    GATE_RING_BEAT_SUBDIVISION: 2,
+    GATE_RING_BEAT_SUBDIVISION: 2,  //how many gate rings appear per beat
     RING_COLOR: 0x27BBF5,
     PLAYER_Z_VALUE: .2,
     PLAYER_RING_COLOR: 0x27F542,

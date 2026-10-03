@@ -119,7 +119,7 @@ export default class AudioManager {
     return this.currentSong.bpm
   }
 
-  getSongDuration() {
+  getSongDurationInSeconds() {
     return this.currentSong.audio.duration
   }
 
