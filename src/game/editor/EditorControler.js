@@ -21,10 +21,6 @@ export default class EditorControler{
         // this.heldKeys = new Set()
     }
 
-    init = () => {
-        this.addKeyEvents()
-    }
-
     addKeyEvents = () => {
         window.addEventListener('keydown', this.controllerKeyEvents)
     }

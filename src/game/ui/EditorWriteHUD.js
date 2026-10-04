@@ -3,6 +3,7 @@ import { createTextNode } from '../../utils'
 import { levelConfig } from '../../config'
 import BPMInput from './components/BPMInput'
 import LoadSongButton from './components/LoadSongButton'
+import BeatGridSelector from './components/BeatGridSelector'
 
 
 export default class EditorWriteHUD{
@@ -28,11 +29,13 @@ export default class EditorWriteHUD{
 
         //an array for all the components in the editorHUD
         this.childComponents = []
+
+        this.beatGridSelector = new BeatGridSelector(this.mainContainer, this.clickableMeshes, this.childComponents)
     }
 
     init = () => {
         //init individual ui components:
-
+        this.beatGridSelector.init()
         
     }
 

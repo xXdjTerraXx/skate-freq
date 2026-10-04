@@ -48,6 +48,7 @@ export const levelConfig = {
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
     EDITOR_DEFAULT_BPM: 140,
+    EDITOR_BEAT_SUBDIVISION_OPTIONS: [1, 2, 3, 4],//quarter, eighth, triplet, sixteenth
     //enom for note node types
     NOTE_NODE_TYPE: {
         TAPNOTE: 'TAPNOTE',
@@ -341,13 +342,20 @@ export const levelConfig = {
         genericButton:{
             fontSize: 25,
             fontColor: 0xffffff,
-            size:{width: 150, height: 80}
+            size:{width: 150, height: 80},
+            padding: 3
         },
         setupOkButton: {
             position: {x: 300, y: 100, z:0},
             bgColor: COLOR_PALETTE.black,
             fontColor: COLOR_PALETTE.cyan,
             borderColor: COLOR_PALETTE.cyan 
+        },
+        beatGridSelectorContainer: {
+            position: {x: -640, y: 420, z: 0},
+            fontSize: {label: 25, text: 50},
+            fontColor: 0xffffff,
+            size: {width: 200, height: 100}
         }
     },
     RENDER_ORDER: {

@@ -506,7 +506,7 @@ class EditorState{
 
     onEnter = () => {
         console.log('entering EDITOR state')
-        this.addKeyEvents()
+        this.addSetupKeyEvents()
         this.app.audioManager.resetSong()
         //toggle visibility
         this.container.visible = true
@@ -518,18 +518,31 @@ class EditorState{
         this.app.levelEditorSetupScreen.init()
     }
 
-    handleEditorClick = (e) => this.app.ui.editorSetupHUD.handleClick(e)
-    handleEditorKeyDown = (e) => this.app.ui.editorSetupHUD.handleKeyDown(e)
+    //key and mouse events for SETUP
+    handleEditorSetupClick = (e) => this.app.ui.editorSetupHUD.handleClick(e)
+    handleEditorSetupKeydown = (e) => this.app.ui.editorSetupHUD.handleKeyDown(e)
 
-    addKeyEvents = () => {
-        window.addEventListener('click', this.handleEditorClick)
-        window.addEventListener('keydown', this.handleEditorKeyDown)
+    addSetupKeyEvents = () => {
+        window.addEventListener('click', this.handleEditorSetupClick)
+        window.addEventListener('keydown', this.handleEditorSetupKeydown)
     }
 
-    removeKeyEvents = () => {
-        window.removeEventListener('click', this.handleEditorClick)
-        window.removeEventListener('keydown', this.handleEditorKeyDown)
+    removeSetupKeyEvents = () => {
+        window.removeEventListener('click', this.handleEditorSetupClick)
+        window.removeEventListener('keydown', this.handleEditorSetupKeydown)
+    }
 
+    //mouse and key events for WRITE 
+    handleEditorWriteClick = (e) => this.app.ui.editorWriteHUD.handleClick(e)
+
+    addWriteKeyEvents = () => {
+        window.addEventListener('click', this.handleEditorWriteClick)
+        //reminder: all SETUP key events are handled by editor controller
+        this.app.levelEditorController.addKeyEvents()
+    }
+
+    removeWriteKeyEvents = () => {
+        window.removeEventListener('click', this.handleEditorWriteClick)
         //remove key events from the editor controller as well
         this.app.levelEditorController.removeKeyEvents()
     }
@@ -542,10 +555,12 @@ class EditorState{
             this.subState = 'WRITE'
             this.setupContainer.visible = false
             this.writeContainer.visible = true
+            //remove key events from SETUP stage
+            this.removeSetupKeyEvents()
+            //and add key and mouse events for WRITE
+            this.addWriteKeyEvents()
             //toggle edit mode between write or setup mode
             this.app.ui.toggleEditorMode()
-            //init the editor controler, which is only used in the write stage
-            this.app.levelEditorController.init()
             //init the actual write/main screen 
             this.app.levelEditor.init()
             this.app.levelEditor.activate()
@@ -573,7 +588,10 @@ class EditorState{
 
     onExit = () => {
         this.container.visible = false
-        this.removeKeyEvents()
+        //remove key and mouse events
+        this.removeSetupKeyEvents()
+        //this func also removes the key events in controller
+        this.removeWriteKeyEvents()
         //toogle visibility of entire ui scene
         this.app.uiScene.visible = false
         //toggle editor ui

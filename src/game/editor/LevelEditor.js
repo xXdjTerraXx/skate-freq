@@ -48,7 +48,8 @@ export default class LevelEditor{
     //it's a similar variable to gateRingsPerBeat, but whereas that is a constant used
     //for inting all the gate rings, the beat subdivision is something that just
     //controls how theyre displayed and can be changed byt he player
-    this.beatSubdivisionsOptions = [1, 2, 3, 4]
+    //the options are [1, 2, 3, 4] - basically quarter, eighth, triplet, sixteenth
+    this.beatSubdivisionsOptions = levelConfig.EDITOR_BEAT_SUBDIVISION_OPTIONS
     this.selectedBeatSubdivisionIndex = 1
     this.currentBeatSubdivision =  this.beatSubdivisionsOptions[this.selectedBeatSubdivisionIndex]
     //targetTime and currentBeatAccumulator used for tunnel movement lerping
