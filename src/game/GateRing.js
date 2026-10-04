@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { levelConfig } from '../config';
+import ENUMS from '../enums';
 
 export default class GateRing {
-  constructor(app, ringContainer, index, ringSpacing, hitlineZPosition, ringCount) {
+  constructor(app, ringContainer, index, ringSpacing, hitlineZPosition, ringCount, beatSubdivision = ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN) {
     this.app = app
     this.ringContainer = ringContainer
     //the index is basically which gate ring this is, from the for loop where
@@ -13,13 +14,15 @@ export default class GateRing {
     this.hitlineZPosition = hitlineZPosition
     //total number of rings inited in Level
     this.ringCount = ringCount
-
+    //whether this gate ring falls on downbeat, upbeat, or sixteenth beat subdivision
+    this.beatSubdivision = beatSubdivision
     //hex geometry 
     this.geometry = new THREE.RingGeometry(1, 0.97, levelConfig.LANE_COUNT)
 
     //material
     this.material = new THREE.MeshBasicMaterial({
-      color: levelConfig.RING_COLOR,
+      // color: levelConfig.RING_COLOR,
+      color: levelConfig.GATE_RING_COLORS[this.beatSubdivision],
       side: THREE.DoubleSide
     })
 

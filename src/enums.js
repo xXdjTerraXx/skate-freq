@@ -27,6 +27,11 @@ const ENUMS = {
         LAND: 'LAND',
         TRICK:'TRICK'
     },
+    BEAT_SUBDIVISON_STRINGS: {
+        UP: 'UP',
+        DOWN:  'DOWN',
+        SIXTEENTH: 'SIXTEENTH'
+    },
     ANIMATIONS: {
         GRIND_ENTER: 'basic_grind_enter',
         GRIND_HOLD: 'basic_grind_hold',

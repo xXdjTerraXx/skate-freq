@@ -21,11 +21,14 @@ export default class LevelEditor{
     this.laneAngle = (Math.PI * 2) / this.laneCount
     this.cursorCurrentLane = levelConfig.STARTING_LANE
     this.cursorCurrentSubLane = levelConfig.STARTING_SUB_LANE
-    this.gateRingsPerBeat = levelConfig.GATE_RING_BEAT_SUBDIVISION
-    //how many gate rings
-    this.ringCount = levelConfig.RING_COUNT    
+    //this is basically what is the finest grain of gate rings which is 16th notes
+    this.gateRingsPerBeat = levelConfig.GATE_RING_BEAT_SUBDIVISION_EDITOR
     //hitline aka where the notes are being timed to (also where the player sits in space)
     this.hitlineZPosition = levelConfig.PLAYER_Z_VALUE
+    //whereas in level.js gate rings are looping (and their number from config), here
+    //it is calculated based on song length/number of beats and is done in 
+    // gate ring init method
+    this.totalNumberOfGateRings = null    
 
 
     //time-related stuff (<--there's a reset function for all this below)
@@ -34,15 +37,19 @@ export default class LevelEditor{
     this.currentBar = 0
     //default to 4 beats per bar
     this.beatsPerBar = 4
+    this.totalBeatsInSong = null
     this.lastBeat = null
     this.lastBeatEighth = null
     this.currentBeatEighth = null
     this.lastBeatSixteenth = null
     this.currentBeatSixteenth = null
-    //how many beat subdivisions per beat - 1, 2, 3, or 4
+    //how many beat subdivisions per beat to display - 1, 2, 3, or 4
     //(basically: quarter (1), eighth note (2), triplet (3), or sixteenth (4) note)
+    //it's a similar variable to gateRingsPerBeat, but whereas that is a constant used
+    //for inting all the gate rings, the beat subdivision is something that just
+    //controls how theyre displayed and can be changed byt he player
     this.beatSubdivisionsOptions = [1, 2, 3, 4]
-    this.selectedBeatSubdivisionIndex = 0
+    this.selectedBeatSubdivisionIndex = 1
     this.currentBeatSubdivision =  this.beatSubdivisionsOptions[this.selectedBeatSubdivisionIndex]
     //targetTime and currentBeatAccumulator used for tunnel movement lerping
     this.targetTime = 0.00
@@ -304,12 +311,49 @@ export default class LevelEditor{
     this.songStartBeat = this.currentBeat
   }
 
+    //ooook in total there should be 4 gate rings per beat, like this:
+    //// 0 - down beat
+    //// 1 - sixteenth
+    //// 2 - upbeat
+    //// 3 - sixteenth
+    ////  -----------
+    //// 4 - down beat
+    //// 5 - sixteenth
+    //// ....
+    //sooo loop over each beat and make 4 rings per beat
   initGateRings = () => {
-    for(let i = 0; i < this.ringCount; i++){
-        const ring = new GateRing(this.app, this.ringContainer, i, this.ringSpacing, this.hitlineZPosition, this.ringCount)
+    //but first get some variables needed for gate rings:
+    this.ringSpacing = this.secondsPerBeat/this.gateRingsPerBeat
+    //use values from song state init to figure the total number of gate rings ie
+    //how many sixteenth notes are in song, since that's smallest subdivision option
+    this.totalNumberOfGateRings = this.totalBeatsInSong * this.gateRingsPerBeat 
+
+    for(let i = 0; i < this.totalBeatsInSong; i++){
+      for(let j = 0; j < this.gateRingsPerBeat; j++){
+        let beatSubdivisionString
+        switch (j) {
+          case 0:
+            beatSubdivisionString = ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN
+            break;
+          case 1:
+            beatSubdivisionString = ENUMS.BEAT_SUBDIVISON_STRINGS.SIXTEENTH
+            break;
+          case 2: 
+            beatSubdivisionString = ENUMS.BEAT_SUBDIVISON_STRINGS.UP
+            break;
+          default: beatSubdivisionString = ENUMS.BEAT_SUBDIVISON_STRINGS.SIXTEENTH
+            break;
+        }
+        const ringIndex = i * 4 + j
+        const ring = new GateRing(this.app, this.ringContainer, ringIndex, this.ringSpacing, this.hitlineZPosition, this.totalNumberOfGateRings, beatSubdivisionString)
         ring.init()
         this.gateRings.push(ring)
+      }
     }
+  }
+
+  initTripletGateRings = () => {
+
   }
 
   changeLane = (direction) => {
@@ -330,7 +374,6 @@ export default class LevelEditor{
     this.currentBeatAccumulator += beatsToMove
     //then convert that to seconds and sett the new targetTime
     this.targetTime = this.currentBeatAccumulator * this.secondsPerBeat
-
   }
 
   //for lane rotation
@@ -352,7 +395,6 @@ export default class LevelEditor{
   applyMovement = (deltaTime) => {
     const lerpFactor = 1 - Math.pow(0.001, deltaTime)
     this.currentTime += (this.targetTime - this.currentTime) * lerpFactor
-    console.log("DEBUG! ", this.currentTime, this.targetTime, this.currentBeatAccumulator)
   }
 
   //simply returns bool about if tapnote is incoming
@@ -546,14 +588,14 @@ checkRailHit = () => {
     }
   }
 
-  //sets properties related to the song and its bpm
+  //sets properties related to the song and its bpm. called in init
   setSongState = () => {
       this.songLengthInSeconds = this.app.audioManager.getSongDurationInSeconds()
       this.bpm = this.app.audioManager.getCurrentBpm()
-      console.log("DEBUG---> bpm: ", this.bpm)
+      this.beatsPerSecond = this.bpm / 60
       this.secondsPerBeat = 60/this.bpm
-      //distance between each one
-      this.ringSpacing = this.secondsPerBeat/this.gateRingsPerBeat
+      this.totalBeatsInSong = Math.round(this.songLengthInSeconds / this.secondsPerBeat)
+      console.log("DEBUG---> bpm: ", this.bpm, "bps: ", this.beatsPerSecond, "totalBeatsInSong: ", this.totalBeatsInSong)
   }
 
   //calculates the tunnel mesh's length based on the current song's length.

@@ -12,7 +12,7 @@ import EditorWriteHUD from './EditorWriteHUD'
 //                |               |
 //         ~gameplay scene~     ~ui scene~
 //              |                    |
-//            ....              ~ui main container~   <----u r here*
+//            ....              ~ui main container~   <----**you r here**
 //                           _________|___________
 //                          |                     |
 //              ~ui gameplay container~     ~ui editor container~    

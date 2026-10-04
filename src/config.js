@@ -34,8 +34,9 @@ export const levelConfig = {
     PLAYER_MAX_JUMP_HEIGHT: 1.5,
     RING_COUNT: 12,
     RING_SPACING: 2,
-    GATE_RING_BEAT_SUBDIVISION: 2,  //how many gate rings appear per beat
-    RING_COLOR: 0x27BBF5,
+    GATE_RING_BEAT_SUBDIVISION: 2,  //atm, how many gate rings appear per beat
+    GATE_RING_BEAT_SUBDIVISION_EDITOR: 4, //the finest granularity of rings to generate
+    RING_COLOR: 0x27BBF5, //ring color in menus
     PLAYER_Z_VALUE: .2,
     PLAYER_RING_COLOR: 0x27F542,
     PLAYER_ACCEL: 5,
@@ -195,6 +196,11 @@ export const levelConfig = {
         RAIL: COLOR_PALETTE.gold,
         RAMP: 0xffffff
         
+    },
+    GATE_RING_COLORS:{
+        [ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN]: COLOR_PALETTE.cyan,
+        [ENUMS.BEAT_SUBDIVISON_STRINGS.UP]: COLOR_PALETTE.red,
+        [ENUMS.BEAT_SUBDIVISON_STRINGS.SIXTEENTH]: COLOR_PALETTE.gold,
     },
     OVERCLOCK_VISUALS_SETTINGS:{
         WhooshEmitter: {
