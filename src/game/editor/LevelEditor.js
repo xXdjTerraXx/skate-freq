@@ -349,6 +349,7 @@ export default class LevelEditor{
     }
   }
 
+  //TO DO: build triplet gate rings
   initTripletGateRings = () => {
 
   }
@@ -359,6 +360,7 @@ export default class LevelEditor{
     this.updateGateRingVisibility()
   }
 
+  //updates which gate rings are visible based off of current beat quantization
   updateGateRingVisibility = () => {
     const subdivision = this.currentBeatSubdivision
     //TO DO!! REMOVE THIS - ONLY FOR TESTING!
@@ -406,6 +408,10 @@ export default class LevelEditor{
     const beatsToMove = direction * (1/this.currentBeatSubdivision)
     //add to accumulator
     this.currentBeatAccumulator += beatsToMove
+    //clamp the accumulator between 0 and some other value
+    if(this.currentBeatAccumulator < 0) this.currentBeatAccumulator = 0
+    const songLastGateRing = (this.totalBeatsInSong * this.gateRingsPerBeat - 1) / this.gateRingsPerBeat
+    if(this.currentBeatAccumulator > songLastGateRing) this.currentBeatAccumulator = songLastGateRing
     //then convert that to seconds and sett the new targetTime
     this.targetTime = this.currentBeatAccumulator * this.secondsPerBeat
   }
@@ -704,20 +710,8 @@ checkRailHit = () => {
       this.onBeatSixteenthNote()
     }
 
-
-
     //update gate rings
-    this.gateRings.forEach(ring => {
-        //DEBUGGING GATE RINGS WITH A CLICK
-        // const wasBeforePlayer = ring.mesh.position.z < this.hitlineZPosition
-        ring.update(deltaTime, this.levelSpeed, this.currentTime)
-
-        //DEBUGGING GATE RINGS WITH A CLICK
-        // const isAfterPlayer = ring.mesh.position.z >= this.hitlineZPosition
-        // if (wasBeforePlayer && isAfterPlayer) {
-        //     this.app.audioManager.playKeyPressClick()
-        // }
-    })
+    this.gateRings.forEach(ring => ring.updateEditor(deltaTime, this.levelSpeed, this.currentTime))
    
     //APPLY ROTATION
     this.applyRotation(deltaTime)

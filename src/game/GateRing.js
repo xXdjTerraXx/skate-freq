@@ -63,4 +63,21 @@ export default class GateRing {
       const scale = 1 + Math.sin(t) * 0.05
       // this.mesh.scale.set(scale, scale, scale)
   }
+
+  //TO DO: for now, separate update method for editor. this is because of editor using
+  //a fixed amount of rings based on song length and gameplay using the looping method.
+  //at some point both should use fixed amount. probly??
+  updateEditor(deltaTime, speed, currentTime) {
+
+      const ringTime = this.gateRingIndex * this.ringSpacing
+      const timeUntilHit = ringTime - currentTime
+      this.mesh.position.z = this.hitlineZPosition - (speed * timeUntilHit)
+
+      
+      //TO DO: DONT DELETE THIS MESH SCALE SET - IT MAKES RINGS PULSE AND COULD BE USED
+      //TO SHOW CURRENT "SELECTED" BEAT??
+      // const t = performance.now() * 0.005
+      // const scale = 1 + Math.sin(t) * 0.05
+      // this.mesh.scale.set(scale, scale, scale)
+  }
 }
