@@ -30,7 +30,8 @@ const ENUMS = {
     BEAT_SUBDIVISON_STRINGS: {
         UP: 'UP',
         DOWN:  'DOWN',
-        SIXTEENTH: 'SIXTEENTH'
+        SIXTEENTH: 'SIXTEENTH',
+        TRIPLET: 'TRIPLET'
     },
     ANIMATIONS: {
         GRIND_ENTER: 'basic_grind_enter',

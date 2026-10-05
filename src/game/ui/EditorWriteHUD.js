@@ -30,13 +30,12 @@ export default class EditorWriteHUD{
         //an array for all the components in the editorHUD
         this.childComponents = []
 
-        this.beatGridSelector = new BeatGridSelector(this.mainContainer, this.clickableMeshes, this.childComponents)
+        this.beatGridSelector = new BeatGridSelector(this.app, this.mainContainer, this.clickableMeshes, this.childComponents)
     }
 
     init = () => {
         //init individual ui components:
         this.beatGridSelector.init()
-        
     }
 
     handleClick = (e) => {
@@ -65,6 +64,10 @@ export default class EditorWriteHUD{
         }
     }
 
+    getCurrentBeatSubdivision = () => {
+        return this.beatGridSelector.currentBeatGridSelection
+    }
+
     handleKeyDown = (e) => {
         
     }
@@ -81,8 +84,8 @@ export default class EditorWriteHUD{
             if(component.reset)component.reset()
         })
         //then reset all the stuff here in the manager
-        this.clickableMeshes = []
-        this.childComponents = []
+        this.clickableMeshes.length = 0
+        this.childComponents.length = 0
         this.mouseCoords = new THREE.Vector2()
         this.raycaster = new THREE.Raycaster()
         this.raycaster.layers.set(1)

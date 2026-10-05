@@ -3,7 +3,8 @@ import { COLOR_PALETTE, levelConfig } from '../../../config'
 import { createTextNode } from '../../../utils'
 
 export default class BeatGridSelector{
-    constructor(parentContainer, clickableMeshesArray, editorComponentsArray){
+    constructor(app, parentContainer, clickableMeshesArray, editorComponentsArray){
+        this.app = app
         this.parentContainer = parentContainer
         this.clickableMeshesArray = clickableMeshesArray
         this.editorComponentsArray = editorComponentsArray
@@ -22,12 +23,13 @@ export default class BeatGridSelector{
         this.currentBeatSubdivisionOptionsIndex = 0
         this.currentBeatGridSelection = this.beatSubdivisionOptions[this.currentBeatSubdivisionOptionsIndex]
 
+        // this.app.levelEditor.setBeatSubdivision(this.currentBeatGridSelection)
     }
 
     //calls all the init methods for this component (there are multiple for this one!!)
     init = () => {
 
-        //the container for all the parts of the load song button
+        //the container for all the parts of this component
         this.beatGridSelectorContainer = new THREE.Group()
         this.beatGridSelectorContainer.name = 'beat grid select container'
         this.beatGridSelectorContainer.position.set(
@@ -36,22 +38,26 @@ export default class BeatGridSelector{
             levelConfig.EDITOR_UI_COMPONENT_SETTINGS.beatGridSelectorContainer.position.z
         )
 
+        this.buttonsContainer = new THREE.Group()
+        this.buttonsContainer.name = 'beat grid buttons container'
+        this.buttonsContainer.position.set(0,0,0)
+
         //the label for this component
         this.beatGridSelectorLabel = createTextNode({
             text: `BEAT GRID`, 
             fontSize:  this.MAIN_LABEL_FONT_SIZE,
             color:  levelConfig.EDITOR_UI_COMPONENT_SETTINGS.beatGridSelectorContainer.fontColor, 
-            x: -(levelConfig.EDITOR_UI_COMPONENT_SETTINGS.beatGridSelectorContainer.size.width / 2),
+            x: 0,
             y: -(levelConfig.EDITOR_UI_COMPONENT_SETTINGS.beatGridSelectorContainer.size.height / 2), 
             z: 0,
             layers: 1
         })
-        this.beatGridSelectorContainer.add(this.beatGridSelectorLabel)
+        this.beatGridSelectorContainer.add(this.buttonsContainer, this.beatGridSelectorLabel)
 
-        //build all the buttons
+        //build all the buttons 
         this.beatSubdivisionOptions.forEach((beatSubdivision, i) => {
             const newButton = new BeatGridButton(
-                this.beatGridSelectorContainer, 
+                this.buttonsContainer, 
                 beatSubdivision, 
                 i, 
                 this.handleButtonClick,
@@ -69,78 +75,6 @@ export default class BeatGridSelector{
         this.editorComponentsArray.push(this)
     }
 
-    // initButton = (beatSubdivision, index) => {
-    //     const noteButtonContainer = new THREE.Group()
-    //     noteButtonContainer.name = `${beatSubdivision} note button container`
-    //     noteButtonContainer.position.set(
-    //         this.BUTTON_WIDTH*index,0,0
-    //     )
-
-    //     const noteButtonBackgroundGeometry = new THREE.PlaneGeometry(
-    //         this.BUTTON_WIDTH, 
-    //         this.BUTTON_HEIGHT
-    //     )
-    //     const noteButtonBackgroundMaterial = new THREE.MeshPhysicalMaterial({
-    //         color: 0xffffff,
-    //         transmission: 0.85,  
-    //         roughness: 0.15,      
-    //         metalness: 0.0,
-    //         thickness: 0.1,
-    //         transparent: true,
-    //         depthWrite: false,
-    //         side: THREE.FrontSide
-    //     })
-    //     const noteButtonBackgroundMesh = new THREE.Mesh(noteButtonBackgroundGeometry, noteButtonBackgroundMaterial)
-    //     noteButtonBackgroundMesh.layers.set(1)
-
-    //     //add mesh to clickableMeshes and update userData obj
-    //     noteButtonBackgroundMesh.userData.component = this
-    //     noteButtonBackgroundMesh.userData.beatSubdivision = beatSubdivision
-    //     noteButtonBackgroundMesh.userData.index = index
-    //     this.clickableMeshesArray.push(noteButtonBackgroundMesh)
-
-    //     const noteButtonBorderGeometry = new THREE.EdgesGeometry(noteButtonBackgroundGeometry)
-    //     const noteButtonBorderMaterial = new THREE.LineBasicMaterial({ color: this.BORDER_COLOR_INACTIVE })
-    //     const noteButtonBorderMesh = new THREE.LineSegments(noteButtonBorderGeometry, noteButtonBorderMaterial)
-    //     noteButtonBorderMesh.position.z = 0.02
-    //     noteButtonBorderMesh.layers.set(1)
-
-    //     let beatSubdivisionString
-    //     switch (beatSubdivision) {
-    //         case 1:
-    //             beatSubdivisionString = '1/4'
-    //             break;
-    //         case 2:
-    //             beatSubdivisionString = '1/8'
-    //             break;
-    //         case 3:
-    //             beatSubdivisionString = '1/3'
-    //             break;
-    //         case 4:
-    //             beatSubdivisionString = '1/16'
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    //     const noteTextNode = createTextNode({
-    //         text: `${beatSubdivisionString}`, 
-    //         fontSize:  this.BUTTON_FONT_SIZE, 
-    //         color:  levelConfig.EDITOR_UI_COMPONENT_SETTINGS.beatGridSelectorContainer.fontColor, 
-    //         x: -this.BUTTON_WIDTH/2,
-    //         y: 0, 
-    //         z: 0,
-    //         layers: 1
-    //     })
-    //     noteButtonContainer.add(noteButtonBackgroundMesh, noteButtonBorderMesh, noteTextNode)
-
-    //     //push to buttons array
-    //     this.buttons.push({
-    //         subdivision: beatSubdivision,
-    //         container: noteButtonContainer,
-    //         borderMaterial: noteButtonBorderMaterial
-    //     })
-    // }
-
     handleButtonClick = (index) => {
         //set the new selection state
         this.currentBeatSubdivisionOptionsIndex = index
@@ -151,24 +85,32 @@ export default class BeatGridSelector{
             else btn.isActive = false
             btn.setColors()
         })
-        console.log("DEBUG  ", this.buttons)
+        //and finally, set the beat subdivision by means of app
+        this.app.levelEditor.setBeatSubdivision(this.currentBeatGridSelection)
     }
 
-
-
     reset = () => {
+        //reset state stuff
         this.currentBeatGridSelection = null
         this.currentBeatSubdivisionOptionsIndex = null
-        // this.currentBPM = null
-        // this.currentBpmString = "---"
-        // this.currentBpmTextNode.text = this.currentBpmString
-        // this.currentBpmTextNode.sync()
+        //remove from parent container
+        this.parentContainer.remove(this.beatGridSelectorContainer)
+        //clean up alllll the geomtries and materials n stuff
+        this.buttons.forEach(btn => {
+            btn.noteButtonBackgroundGeometry.dispose()
+            btn.noteButtonBackgroundMaterial.dispose()
+            btn.noteButtonBorderGeometry.dispose()
+            btn.noteButtonBorderMaterial.dispose()
+            btn.noteTextNode.dispose()
+        })
+        //clear buttons array
+        this.buttons.length = 0
     }
 }
 
 class BeatGridButton{
-    constructor(beatGridSelectorContainer, beatSubdivision, index, handleButtonClick, isActive){
-        this.beatGridSelectorContainer = beatGridSelectorContainer
+    constructor(buttonsContainer, beatSubdivision, index, handleButtonClick, isActive){
+        this.buttonsContainer = buttonsContainer
         this.beatSubdivision = beatSubdivision
         this.index = index
         this.handleButtonClick = handleButtonClick
@@ -200,6 +142,7 @@ class BeatGridButton{
             this.BACKGROUND_COLOR_ACTIVE = COLOR_PALETTE.green
             this.TEXT_COLOR_INACTIVE = 0xffffff
             this.TEXT_COLOR_ACTIVE = COLOR_PALETTE.black
+            this.BORDER_COLOR = 0xffffff
     }
 
     init = () => {
@@ -225,7 +168,7 @@ class BeatGridButton{
         this.noteButtonBackgroundMesh.userData.index = this.index
 
         this.noteButtonBorderGeometry = new THREE.EdgesGeometry(this.noteButtonBackgroundGeometry)
-        this.noteButtonBorderMaterial = new THREE.LineBasicMaterial({ color: this.BORDER_COLOR_INACTIVE })
+        this.noteButtonBorderMaterial = new THREE.LineBasicMaterial({ color: this.BORDER_COLOR })
         this.noteButtonBorderMesh = new THREE.LineSegments(this.noteButtonBorderGeometry, this.noteButtonBorderMaterial)
         this.noteButtonBorderMesh.position.z = 0.02
         this.noteButtonBorderMesh.layers.set(1)
@@ -240,7 +183,7 @@ class BeatGridButton{
             layers: 1
         })
         this.noteButtonContainer.add(this.noteButtonBackgroundMesh, this.noteButtonBorderMesh, this.noteTextNode)
-        this.beatGridSelectorContainer.add(this.noteButtonContainer)
+        this.buttonsContainer.add(this.noteButtonContainer)
 
         this.setColors()
     }

@@ -38,20 +38,12 @@ export default class LevelEditor{
     //default to 4 beats per bar
     this.beatsPerBar = 4
     this.totalBeatsInSong = null
+    this.currentBeatSubdivision = null
     this.lastBeat = null
     this.lastBeatEighth = null
     this.currentBeatEighth = null
     this.lastBeatSixteenth = null
     this.currentBeatSixteenth = null
-    //how many beat subdivisions per beat to display - 1, 2, 3, or 4
-    //(basically: quarter (1), eighth note (2), triplet (3), or sixteenth (4) note)
-    //it's a similar variable to gateRingsPerBeat, but whereas that is a constant used
-    //for inting all the gate rings, the beat subdivision is something that just
-    //controls how theyre displayed and can be changed byt he player
-    //the options are [1, 2, 3, 4] - basically quarter, eighth, triplet, sixteenth
-    this.beatSubdivisionsOptions = levelConfig.EDITOR_BEAT_SUBDIVISION_OPTIONS
-    this.selectedBeatSubdivisionIndex = 1
-    this.currentBeatSubdivision =  this.beatSubdivisionsOptions[this.selectedBeatSubdivisionIndex]
     //targetTime and currentBeatAccumulator used for tunnel movement lerping
     this.targetTime = 0.00
     this.currentBeatAccumulator = 0
@@ -181,13 +173,13 @@ export default class LevelEditor{
   }
 
   init = () => {
-    console.log("ALSKDJFHASLKDJFHALSKDJFHASLKDJFHSALKDJFHLKSDFJ INIT INIT INIT")
     //first set this levels map to selected song's note map in audio manager
     // this.levelMap = noteMap 
     this.levelMap = {}
     //sets song-dependant variables like bpm, secondsPerBeat
     this.setSongState()
     this.setTunnelLength()
+    
     //FOG EFFECT
     this.app.scene.fog = new THREE.Fog(0x000000, 2, 15)
 
@@ -200,7 +192,7 @@ export default class LevelEditor{
     const floorPanelEmissiveMapTexture = this.app.assetManager.loadedAssets.textures.circuitEmissive
     const floorPanelAlphaMap = this.app.assetManager.loadedAssets.textures.circuitAlphaMap
     
-    console.log("LEVEL EDITOR DEBUG: this.songLengthInSeconds from init: ", this.songLengthInSeconds)
+    console.log("LEVEL EDITOR DEBUG---currentBeatSubdivision: ", this.currentBeatSubdivision)
     //make one panel per lane
     for(let i = 0; i < this.laneCount; i++){
       //loop over the oc section of this levels notemap, find oc sections for this lane
@@ -299,6 +291,10 @@ export default class LevelEditor{
     //   this.rails.push(newRail)
     // })
 
+    //set beatSubdivision
+    this.currentBeatSubdivision = this.app.ui.editorWriteHUD.getCurrentBeatSubdivision()
+    this.updateGateRingVisibility()
+
     //rotate whole level so lane 1 is at 6oclock
     this.mainContainer.rotation.z = ((2*Math.PI) / (levelConfig.LANE_COUNT)) * 6
   }
@@ -355,6 +351,43 @@ export default class LevelEditor{
 
   initTripletGateRings = () => {
 
+  }
+
+  setBeatSubdivision = (newBeatSubdivision) => {
+    this.currentBeatSubdivision = newBeatSubdivision
+    console.log("setting beat subdivision to...: ", this.currentBeatSubdivision)
+    this.updateGateRingVisibility()
+  }
+
+  updateGateRingVisibility = () => {
+    const subdivision = this.currentBeatSubdivision
+    //TO DO!! REMOVE THIS - ONLY FOR TESTING!
+    if(subdivision === 3)return
+
+    //first reset all rings to visible
+    this.gateRings.forEach(gateRing => gateRing.mesh.visible = true)
+    
+    /////quyarter ntoes/////
+    if(subdivision === 1){
+      this.gateRings.forEach(gateRing => {
+        if(gateRing.beatSubdivision !== ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN)gateRing.mesh.visible = false
+      })
+    }
+    /////eighth ntoes/////
+    if(subdivision === 2){
+      this.gateRings.forEach(gateRing => {
+        if(gateRing.beatSubdivision === ENUMS.BEAT_SUBDIVISON_STRINGS.SIXTEENTH || gateRing.beatSubdivision === ENUMS.BEAT_SUBDIVISON_STRINGS.TRIPLET)gateRing.mesh.visible = false
+      })
+    }
+
+    ////~~**TO DO: TRIPLETS!**~~////
+
+    /////sixteenth ntoes/////
+    if(subdivision === 4){
+      this.gateRings.forEach(gateRing => {
+        if(gateRing.beatSubdivision === ENUMS.BEAT_SUBDIVISON_STRINGS.TRIPLET)gateRing.mesh.visible = false
+      })
+    }
   }
 
   changeLane = (direction) => {
