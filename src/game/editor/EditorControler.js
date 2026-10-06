@@ -47,13 +47,13 @@ export default class EditorControler{
             // this.handleCrouch()
         }
         if(e.code === this.jKey){
-            // this.handlePlayerSubLaneSwitch(0)
+            this.handlePlaceTapNote(0)
         }
         if(e.code === this.kKey){
-            // this.handlePlayerSubLaneSwitch(1)
+            this.handlePlaceTapNote(1)
         }
         if(e.code === this.lKey){
-            // this.handlePlayerSubLaneSwitch(2)
+            this.handlePlaceTapNote(2)
         }
         if(e.code === this.qKey){
             // if(this.player.isInAir) this.handlePlayerTrick('A')
@@ -78,6 +78,10 @@ export default class EditorControler{
         if (e.code === this.aKey) this.levelEditor.changeLane(1)
             //right lane switch
         if (e.code ===  this.dKey) this.levelEditor.changeLane(-1)
+    }
+
+    handlePlaceTapNote = (subLaneIndex) => {
+        this.app.levelEditor.placeTapNote(subLaneIndex)
     }
 
     moveTunnel = (e) => {

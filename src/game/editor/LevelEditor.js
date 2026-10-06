@@ -7,6 +7,7 @@ import FloorPanel from '../FloorPanel'
 import EventEmitter from '../EventEmitter'
 import Rail from '../note_nodes/Rail'
 import ENUMS from '../../enums'
+import EditorMapHelper from './EditorMapHelper'
 
 
 export default class LevelEditor{
@@ -164,6 +165,9 @@ export default class LevelEditor{
     this.eventEmitter = new EventEmitter()
     this.eventEmitter.on('noteKilled', () => this.dirtyNotesExist = true)
 
+    //init map helper here
+    this.mapHelper = new EditorMapHelper()
+
     //this gets set in setup
     this.cursor = null
   }
@@ -228,22 +232,22 @@ export default class LevelEditor{
      
     //init TAPNOTES
     // this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
-    //       const countdownOffset = 4 * this.secondsPerBeat
-    //       const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
-    //       const tapNote = new TapNote(
-    //         this.app, 
-    //         this.hitlineZPosition,
-    //         this.levelSpeed, 
-    //         this.zRotationOffset, 
-    //         this.currentTime, 
-    //         tapNoteInLevelMap.lane, 
-    //         tapNoteInLevelMap.subLane, 
-    //         tapNoteInLevelMap.beat,
-    //         timeInSeconds,
-    //         this.eventEmitter
-    //       ) 
-    //       tapNote.init(this.tapNotesContainer)
-    //       this.tapNotes.push(tapNote)
+          // const countdownOffset = 4 * this.secondsPerBeat
+          // const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
+          // const tapNote = new TapNote(
+          //   this.app, 
+          //   this.hitlineZPosition,
+          //   this.levelSpeed, 
+          //   this.zRotationOffset, 
+          //   this.currentTime, 
+          //   tapNoteInLevelMap.lane, 
+          //   tapNoteInLevelMap.subLane, 
+          //   tapNoteInLevelMap.beat,
+          //   timeInSeconds,
+          //   this.eventEmitter
+          // ) 
+          // tapNote.init(this.tapNotesContainer)
+          // this.tapNotes.push(tapNote)
     //     })
 
     // //init RAMPS
@@ -457,6 +461,41 @@ export default class LevelEditor{
     this.currentTime += (this.targetTime - this.currentTime) * lerpFactor
   }
 
+  placeTapNote = (newSubLane) => {
+    if(!this.cursor) return
+    //move cursor to correct sublane
+    this.cursorCurrentSubLane = newSubLane
+    const noteToAdd = this.mapHelper.addTapNote(
+      this.cursorCurrentLane, this.cursorCurrentSubLane, this.currentBeatAccumulator
+    )
+    if(noteToAdd){
+      this.addTapNoteMesh(noteToAdd)
+      console.log("NOTE PLACED: ", noteToAdd)
+    }
+    else {
+      console.log("note not placed...")
+    }
+  }
+
+  addTapNoteMesh = (noteToAdd) => {
+      const convertedNoteBeat = this.mapHelper.mapBeatToAccumulatorBeat(noteToAdd.beat)
+      const timeInSeconds = convertedNoteBeat * this.secondsPerBeat 
+      const tapNote = new TapNote(
+        this.app, 
+        this.hitlineZPosition,
+        this.levelSpeed, 
+        this.zRotationOffset, 
+        this.currentTime, 
+        noteToAdd.lane, 
+        noteToAdd.subLane, 
+        noteToAdd.beat,
+        timeInSeconds,
+        this.eventEmitter
+      ) 
+      tapNote.init(this.tapNotesContainer)
+      this.tapNotes.push(tapNote)
+  }
+
   //simply returns bool about if tapnote is incoming
   hasHittableTapNote = () => {
     const playerLane = this.playerCurrentLane
@@ -588,11 +627,11 @@ checkRailHit = () => {
   //gets called in the "onExit" method of the results state.
   reset = () => {
     //reset the gate rings array
-    this.gateRings = []
-    this.tapNotes = []
-    this.rails = []
-    this.ramps = []
-    this.floorPanels = []
+    this.gateRings.length = 0
+    this.tapNotes.length = 0
+    this.rails.length = 0
+    this.ramps.length = 0
+    this.floorPanels.length = 0
     //reset time stuff
     this.currentTime = 0.00
     this.lastBeat = 3
@@ -656,6 +695,8 @@ checkRailHit = () => {
       this.secondsPerBeat = 60/this.bpm
       this.totalBeatsInSong = Math.round(this.songLengthInSeconds / this.secondsPerBeat)
       this.songLastGateRingBeat = (this.totalBeatsInSong * this.gateRingsPerBeat - 1) / this.gateRingsPerBeat
+      //init map helper with song length in beats
+      this.mapHelper.init(this.totalBeatsInSong)
       console.log("DEBUG---> bpm: ", this.bpm, "bps: ", this.beatsPerSecond, "totalBeatsInSong: ", this.totalBeatsInSong)
   }
 
@@ -741,6 +782,9 @@ checkRailHit = () => {
 
     this.tunnelsContainer.position.z = this.hitlineZPosition - this.tunnelLength / 2 + this.levelSpeed * this.currentTime
 
+
+    //update notes
+    this.updateNotes(deltaTime)
   }
 
   updateNotes = (deltaTime) => {
@@ -760,18 +804,7 @@ checkRailHit = () => {
     }
 
 
-    this.tapNotes.forEach(note => {
-      note.update(deltaTime, this.currentTime)
-      //tapnotes need to also check if the player isInAir
-      if (!note.hit && !this.player.isInAir && this.currentTime > note.time + levelConfig.NOTE_TIMING.GOOD) {
-        if(note.lane === this.playerCurrentLane){
-          // const hitScore = this.app.hitManager.registerHit(note, this.currentTime)
-          const hitScore = ENUMS.JUDGEMENT.MISS
-          this.app.scoreManager.updateScore(hitScore)
-        }
-        note.markMissed() 
-      }
-    })
+    this.tapNotes.forEach(note => note.update(deltaTime, this.currentTime))
 
     //update ramps
     this.ramps.forEach(ramp => {

@@ -44,7 +44,7 @@ export const levelConfig = {
     PLAYER_STARTING_UPLINK: 1000,
     PLAYER_MAX_UPLINK: 1000,
     SURGE_LIMIT: 3,  //how much surge u need to overclock
-    COUNTDOWN_OFFSET: 4,  //how many beats the countdown is. used to offset notes
+    COUNTDOWN_BEATS: 4,  //how many beats the countdown is. used to offset notes
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
     EDITOR_DEFAULT_BPM: 140,
