@@ -6,7 +6,7 @@ import { levelConfig } from '../config'
 // for overclock sections that sits on top of the glass mesh. because of rotation wierdness,
 // the meshes are both the children of a "bespokeContainer", which is what ultimately get's
 // moved along the z axis during update
-export default class FloorPanel{
+export default class FloorPanelEditor{
     constructor(app, 
         floorPanelsContainer, 
         colorMap, 
@@ -84,7 +84,7 @@ export default class FloorPanel{
 
     initGlassPanel = () => {
         //LENGTH OF PANEL
-        this.panelLengthGlass = this.levelSpeed * this.songLengthInSeconds
+        this.panelLengthGlass = (this.songLengthInSeconds - this.panelBeginTimeInSeconds) * this.levelSpeed 
 
         //GLASS GEOMETRY
         this.glassPanelGeometry = new THREE.PlaneGeometry(this.panelWidth, this.panelLengthGlass)
@@ -130,7 +130,7 @@ export default class FloorPanel{
             const panelLengthWorldUnits = panelLengthSeconds * this.levelSpeed
 
             //CREATE GEOMETRY
-            const geometry = new THREE.PlaneGeometry(this.panelWidth, panelLengthWorldUnits)
+            this.overclockGeometry = new THREE.PlaneGeometry(this.panelWidth, panelLengthWorldUnits)
 
             ////////  CLONING THE TEXTURES AND SETTING TILE/REPEAT
             ///////   ~~**~~**~   TO DO    ~**~~**~~**   
@@ -157,7 +157,7 @@ export default class FloorPanel{
             alphaMapTextureCLONE.repeat.set(1, textureRepeatCount) 
             
             //INIT MATERIAL
-            const overclockMaterial = new THREE.MeshPhysicalMaterial({
+            this.overclockMaterial = new THREE.MeshPhysicalMaterial({
                 map: colorMapTextureCLONE,
                 emissiveMap: emissiveMapTextureCLONE,
                 emissive: new THREE.Color(0xffffff),
@@ -173,12 +173,12 @@ export default class FloorPanel{
             })
 
             //CREATE THE MESH
-            const overclockMesh = new THREE.Mesh(geometry, overclockMaterial)
+            const overclockMesh = new THREE.Mesh(this.overclockGeometry, this.overclockMaterial)
             overclockMesh.name = `floor panel lane ${this.lane} OVERCLOCK`
             overclockMesh.renderOrder = levelConfig.RENDER_ORDER.FLOOR_OVERCLOCK
 
             const startOffset = (dataObj.startBeat - 1) * this.secondsPerBeat * this.levelSpeed
-            geometry.translate(0, -(panelLengthWorldUnits / 2) - startOffset, 0)
+            this.overclockGeometry.translate(0, -(panelLengthWorldUnits / 2) - startOffset, 0)
             //TO DO: POSITION THE MESH 
             overclockMesh.position.set(0, 0, 0)
             overclockMesh.rotation.y = Math.PI/2  
@@ -191,21 +191,17 @@ export default class FloorPanel{
         })
     }
 
-    // setState = (newState) => {
-    //     this.currentState = newState
-    //     if(this.currentState === 'GLASS'){
-    //     }
-    //     else if(this.currentState === 'OC'){
-    //     }
-    // }
 
     update = (deltaTime, currentTime) => {
         ///////update panel's  z position
-        this.z += this.levelSpeed * deltaTime
-        this.bespokeGroup.position.z = this.z
+        const timeUntilHit = this.panelBeginTimeInSeconds - currentTime
+        this.bespokeGroup.position.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
     }
 
-    updateEditor = () => {
-        
+    dispose =  () => {
+        this.glassMaterial.dispose()
+        this.glassPanelGeometry.dispose()
+        this.overclockGeometry.dispose()
+        this.overclockMaterial.dispose()
     }
 }

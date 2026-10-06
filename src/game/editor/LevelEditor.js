@@ -8,6 +8,7 @@ import EventEmitter from '../EventEmitter'
 import Rail from '../note_nodes/Rail'
 import ENUMS from '../../enums'
 import EditorMapHelper from './EditorMapHelper'
+import FloorPanelEditor from '../FloorPanelEditor'
 
 
 export default class LevelEditor{
@@ -205,9 +206,9 @@ export default class LevelEditor{
       //   return data.lane === i
       // })
       const overclockSections = []
-      const countdownOffset = 4 * this.secondsPerBeat
+      const countdownOffset = levelConfig.COUNTDOWN_BEATS * this.secondsPerBeat
       const panelBeginTimeInSeconds = countdownOffset
-      const newFloorPanel = new FloorPanel(
+      const newFloorPanel = new FloorPanelEditor(
         this.app, 
         this.floorPanelsContainer, 
         floorPanelColorMapTexture, 
@@ -680,11 +681,11 @@ checkRailHit = () => {
     }
     // clear floor panels
     while (this.floorPanelsContainer.children.length > 0) {
-        const child = this.floorPanelsContainer.children[0]
-        if(child.geometry)child.geometry.dispose()
-        if(child.material)child.material.dispose()
-        this.floorPanelsContainer.remove(child)
+        const bespokeGroup = this.floorPanelsContainer.children[0]
+        this.floorPanelsContainer.remove(bespokeGroup)
     }
+    this.floorPanels.forEach(panel => panel.dispose())
+    this.floorPanels.length = 0
   }
 
   //sets properties related to the song and its bpm. called in init
@@ -788,7 +789,8 @@ checkRailHit = () => {
   }
 
   updateNotes = (deltaTime) => {
-
+    //IMPORTANT!!!!  update method within level editor currently separate
+    //from normal update methods
     this.floorPanels.forEach(panel => {
       panel.update(deltaTime, this.currentTime)
     })
