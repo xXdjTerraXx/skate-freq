@@ -47,6 +47,7 @@ export default class LevelEditor{
     //targetTime and currentBeatAccumulator used for tunnel movement lerping
     this.targetTime = 0.00
     this.currentBeatAccumulator = 0
+    this.beatsToMove = null
 
     //SOME POSITIONING STUFF
     //rotation
@@ -315,7 +316,6 @@ export default class LevelEditor{
     //// 3 - sixteenth
     ////  -----------
     //// 4 - down beat
-    //// 5 - sixteenth
     //// ....
     //sooo loop over each beat and make 4 rings per beat
   initGateRings = () => {
@@ -355,9 +355,23 @@ export default class LevelEditor{
   }
 
   setBeatSubdivision = (newBeatSubdivision) => {
+    const lastBeatSubdivision = this.currentBeatSubdivision
     this.currentBeatSubdivision = newBeatSubdivision
     console.log("setting beat subdivision to...: ", this.currentBeatSubdivision)
     this.updateGateRingVisibility()
+    //fine -> coarse changes need to be re-snapped to grid
+    if(lastBeatSubdivision > this.currentBeatSubdivision)this.reSnapToGrid()
+  }
+
+  reSnapToGrid = () => {
+    const step = 1 / this.currentBeatSubdivision
+    const stepsFromStart = this.currentBeatAccumulator / step   // e.g. 0.75 / 1 = 0.75
+    const snapped = Math.round(stepsFromStart) * step           // round(0.75) * 1 = 1
+    //guard against going too far
+    if (snapped > this.songLastGateRingBeat) snapped = Math.floor(stepsFromStart) * step
+    this.currentBeatAccumulator = snapped
+    //then convert that to seconds and sett the new targetTime
+    this.targetTime = this.currentBeatAccumulator * this.secondsPerBeat
   }
 
   //updates which gate rings are visible based off of current beat quantization
@@ -403,15 +417,21 @@ export default class LevelEditor{
 
   //moves the tunnel forward or back by 1 of the current beat subdivision unit
   moveTunnel = (direction) => {
+    //reset beatstoMove
+    this.beatsToMove = null
     //first, get how many beatsToMove the tunnel based on the currently
     //selected beat subdivision
-    const beatsToMove = direction * (1/this.currentBeatSubdivision)
+    this.beatsToMove = direction * (1/this.currentBeatSubdivision)
+
+    //clamp movement
+    if(
+      this.currentBeatAccumulator + this.beatsToMove < 0 
+      || 
+      this.currentBeatAccumulator + this.beatsToMove > this.songLastGateRingBeat
+      ) return
+
     //add to accumulator
-    this.currentBeatAccumulator += beatsToMove
-    //clamp the accumulator between 0 and some other value
-    if(this.currentBeatAccumulator < 0) this.currentBeatAccumulator = 0
-    const songLastGateRing = (this.totalBeatsInSong * this.gateRingsPerBeat - 1) / this.gateRingsPerBeat
-    if(this.currentBeatAccumulator > songLastGateRing) this.currentBeatAccumulator = songLastGateRing
+    this.currentBeatAccumulator += this.beatsToMove
     //then convert that to seconds and sett the new targetTime
     this.targetTime = this.currentBeatAccumulator * this.secondsPerBeat
   }
@@ -635,6 +655,7 @@ checkRailHit = () => {
       this.beatsPerSecond = this.bpm / 60
       this.secondsPerBeat = 60/this.bpm
       this.totalBeatsInSong = Math.round(this.songLengthInSeconds / this.secondsPerBeat)
+      this.songLastGateRingBeat = (this.totalBeatsInSong * this.gateRingsPerBeat - 1) / this.gateRingsPerBeat
       console.log("DEBUG---> bpm: ", this.bpm, "bps: ", this.beatsPerSecond, "totalBeatsInSong: ", this.totalBeatsInSong)
   }
 
@@ -717,6 +738,8 @@ checkRailHit = () => {
     this.applyRotation(deltaTime)
 
     this.applyMovement(deltaTime)
+
+    this.tunnelsContainer.position.z = this.hitlineZPosition - this.tunnelLength / 2 + this.levelSpeed * this.currentTime
 
   }
 

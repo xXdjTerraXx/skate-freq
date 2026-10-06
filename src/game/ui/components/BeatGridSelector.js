@@ -140,6 +140,7 @@ class BeatGridButton{
             this.BUTTON_FONT_SIZE = 20
             this.BACKGROUND_COLOR_INACTIVE = COLOR_PALETTE.black
             this.BACKGROUND_COLOR_ACTIVE = COLOR_PALETTE.green
+            this.BACKGROUND_COLOR_UNAVAILABLE = 0x9c9c9c
             this.TEXT_COLOR_INACTIVE = 0xffffff
             this.TEXT_COLOR_ACTIVE = COLOR_PALETTE.black
             this.BORDER_COLOR = 0xffffff
@@ -185,6 +186,7 @@ class BeatGridButton{
         this.noteButtonContainer.add(this.noteButtonBackgroundMesh, this.noteButtonBorderMesh, this.noteTextNode)
         this.buttonsContainer.add(this.noteButtonContainer)
 
+        //call set colors fun at init bc one of the buttons begins as active
         this.setColors()
     }
 
@@ -193,9 +195,16 @@ class BeatGridButton{
         this.noteTextNode.color = this.isActive ? this.TEXT_COLOR_ACTIVE : this.TEXT_COLOR_INACTIVE
         this.noteTextNode.sync()
         this.noteButtonBackgroundMaterial.color.set(this.isActive ? this.BACKGROUND_COLOR_ACTIVE : this.BACKGROUND_COLOR_INACTIVE)
+
+        //TRIPLETS NOT IN YET, SO GREY OUT THE TRIPLET BTN
+        if(this.beatSubdivision === 3){
+            this.noteButtonBackgroundMaterial.color.set(this.BACKGROUND_COLOR_UNAVAILABLE)
+             this.noteButtonBackgroundMaterial.opacity = .3
+        }
     }
 
     onClick = () => {
+        if(this.beatSubdivision === 3) return
         this.handleButtonClick(this.index)
     }
 }
