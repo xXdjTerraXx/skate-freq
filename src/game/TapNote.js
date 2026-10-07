@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { levelConfig } from '../config'
 
 export default class TapNote{
-    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, beat, time, eventEmitter){
+    constructor(app, hitlineZPosition, levelSpeed, levelZRotationOffset, currentTime, lane, subLane, beat, time, eventEmitter, tapNotesContainer){
         this.noteNodeType = levelConfig.NOTE_NODE_TYPE.TAPNOTE
         
         this.app = app 
@@ -18,6 +18,8 @@ export default class TapNote{
         this.beat = beat
         //the time in seconds this note should reach the player
         this.time = time 
+        //the three.js group that holds the mesh
+        this.tapNotesContainer = tapNotesContainer
 
         //gets set to true when player hits (or misses) this note. prevents double hits
         this.hit = false
@@ -107,6 +109,12 @@ export default class TapNote{
         ///////update tapoNote z position
         this.z = this.hitlineZPosition - (this.levelSpeed * timeUntilHit)
         this.mesh.position.z = this.z
+  }
+
+  dispose = () => {
+    this.material.dispose()
+    this.geometry.dispose()
+    this.tapNotesContainer.remove(this.mesh)
   }
 }
 

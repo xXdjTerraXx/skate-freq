@@ -12,7 +12,8 @@ export default class Rail {
     levelSpeed, 
     currentTime, 
     secondsPerBeat, 
-    eventEmitter
+    eventEmitter,
+    railContainer
   ) {
     this.noteNodeType = levelConfig.NOTE_NODE_TYPE.RAIL
     
@@ -37,12 +38,12 @@ export default class Rail {
     this.secondsPerBeat = secondsPerBeat
     this.RAIL_LENGTH = this.duration * this.secondsPerBeat * this.levelSpeed
     // simple placeholder geometry (will replace later)
-    const geometry = new THREE.BoxGeometry(0.1, 0.1, this.RAIL_LENGTH)
-    const material = new THREE.MeshBasicMaterial({ 
+    this.geometry = new THREE.BoxGeometry(0.1, 0.1, this.RAIL_LENGTH)
+    this.material = new THREE.MeshBasicMaterial({ 
       color: levelConfig.NOTE_COLORS.RAIL, transparent: true, opacity: 0.25 
     })
-    material.opacity = .5
-    this.mesh = new THREE.Mesh(geometry, material)
+    this.material.opacity = .5
+    this.mesh = new THREE.Mesh(this.geometry, this.material)
     this.mesh.name = 'rail'
     this.mesh.renderOrder = levelConfig.RENDER_ORDER.WORLD_OPAQUE
 
@@ -54,6 +55,8 @@ export default class Rail {
 
     this.eventEmitter = eventEmitter
     this.readyForRemoval = false
+
+    this.railContainer = railContainer
   }
 
   init(railContainer) {
@@ -120,5 +123,11 @@ export default class Rail {
         this.killSelf()
       }
     }
+  }
+
+  dispose = () => {
+    this.railContainer.remove(this.mesh)
+    this.material.dispose()
+    this.geometry.dispose()
   }
 }

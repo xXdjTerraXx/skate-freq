@@ -268,7 +268,8 @@ export default class LevelEditor{
     //     this.levelSpeed, 
     //     this.currentTime,
     //     this.secondsPerBeat,
-    //     this.eventEmitter
+    //     this.eventEmitter,
+    //     this.rampContainer
     //   ) 
     //   newRamp.init(this.rampContainer)
     //   this.ramps.push(newRamp)
@@ -292,6 +293,7 @@ export default class LevelEditor{
     //     this.currentTime,
     //     this.secondsPerBeat,
     //     this.eventEmitter,
+    //     this.railContainer
     //   ) 
     //   newRail.init(this.railContainer)
     //   this.rails.push(newRail)
@@ -347,7 +349,8 @@ export default class LevelEditor{
             break;
         }
         const ringIndex = i * 4 + j
-        const ring = new GateRing(this.app, this.ringContainer, ringIndex, this.ringSpacing, this.hitlineZPosition, this.totalNumberOfGateRings, beatSubdivisionString)
+        const stepValue = .25 * ringIndex
+        const ring = new GateRing(this.app, this.ringContainer, ringIndex, this.ringSpacing, this.hitlineZPosition, this.totalNumberOfGateRings, beatSubdivisionString, stepValue)
         ring.init()
         this.gateRings.push(ring)
       }
@@ -491,7 +494,8 @@ export default class LevelEditor{
         noteToAdd.subLane, 
         noteToAdd.beat,
         timeInSeconds,
-        this.eventEmitter
+        this.eventEmitter,
+        this.tapNotesContainer
       ) 
       tapNote.init(this.tapNotesContainer)
       this.tapNotes.push(tapNote)
@@ -627,12 +631,6 @@ checkRailHit = () => {
   //resets all note nodes and gate rings
   //gets called in the "onExit" method of the results state.
   reset = () => {
-    //reset the gate rings array
-    this.gateRings.length = 0
-    this.tapNotes.length = 0
-    this.rails.length = 0
-    this.ramps.length = 0
-    this.floorPanels.length = 0
     //reset time stuff
     this.currentTime = 0.00
     this.lastBeat = 3
@@ -650,42 +648,24 @@ checkRailHit = () => {
     this.cursorCurrentSubLane = levelConfig.STARTING_SUB_LANE
     //reset isActivated
     this.isActivated = false
-    //aaaand clean up the geometry
+    //aaaand clean up the notes, rings, and floor panels
     // clear tap notes
-    while (this.tapNotesContainer.children.length > 0) {
-        const child = this.tapNotesContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.tapNotesContainer.remove(child)
-    }
+    this.tapNotes.forEach(tapNote => tapNote.dispose())
+    this.tapNotes.length = 0
     // clear ramps
-    while (this.rampContainer.children.length > 0) {
-        const child = this.rampContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.rampContainer.remove(child)
-    }
+    this.ramps.forEach(ramp => ramp.dispose())
+    this.ramps.length = 0
     //clear rails
-    while (this.railContainer.children.length > 0) {
-        const child = this.railContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.railContainer.remove(child)
-    }
+    this.rails.forEach(rail => rail.dispose())
+    this.rails.length = 0
     // clear gate rings
-    while (this.ringContainer.children.length > 0) {
-        const child = this.ringContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.ringContainer.remove(child)
-    }
+    this.gateRings.forEach(gateRing => gateRing.dispose())
+    this.gateRings.length = 0
     // clear floor panels
-    while (this.floorPanelsContainer.children.length > 0) {
-        const bespokeGroup = this.floorPanelsContainer.children[0]
-        this.floorPanelsContainer.remove(bespokeGroup)
-    }
     this.floorPanels.forEach(panel => panel.dispose())
     this.floorPanels.length = 0
+    //and finally reset the map helper
+    this.mapHelper.reset()
   }
 
   //sets properties related to the song and its bpm. called in init

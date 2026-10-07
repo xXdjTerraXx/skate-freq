@@ -11,7 +11,8 @@ export default class Ramp {
     levelSpeed, 
     currentTime, 
     secondsPerBeat, 
-    eventEmitter
+    eventEmitter,
+    rampContainer
   ) {
     this.noteNodeType = levelConfig.NOTE_NODE_TYPE.RAMP
     
@@ -35,13 +36,15 @@ export default class Ramp {
 
     this.secondsPerBeat = secondsPerBeat
 
+    this.rampContainer = rampContainer
+
     // simple placeholder geometry (will replace later)
-    const geometry = new THREE.BoxGeometry(0.15, 0.4, 1.2)
-    const material = new THREE.MeshBasicMaterial({ 
+    this.geometry = new THREE.BoxGeometry(0.15, 0.4, 1.2)
+    this.material = new THREE.MeshBasicMaterial({ 
       color: 0xff00ff, transparent: true, opacity: 0.25 
     })
-    material.opacity = .5
-    this.mesh = new THREE.Mesh(geometry, material)
+    this.material.opacity = .5
+    this.mesh = new THREE.Mesh(this.geometry, this.material)
     this.mesh.name = 'ramp'
     this.mesh.renderOrder = levelConfig.RENDER_ORDER.WORLD_OPAQUE
 
@@ -122,5 +125,12 @@ export default class Ramp {
         this.killSelf()
       }
     }
+  }
+
+  dispose = () => {
+    this.material.dispose()
+    this.geometry.dispose()
+    this.rampContainer.remove(this.mesh)
+
   }
 }

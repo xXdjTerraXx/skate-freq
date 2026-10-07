@@ -3,7 +3,7 @@ import { levelConfig } from '../config';
 import ENUMS from '../enums';
 
 export default class GateRing {
-  constructor(app, ringContainer, index, ringSpacing, hitlineZPosition, ringCount, beatSubdivision = ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN) {
+  constructor(app, ringContainer, index, ringSpacing, hitlineZPosition, ringCount, beatSubdivision = ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN, stepValue) {
     this.app = app
     this.ringContainer = ringContainer
     //the index is basically which gate ring this is, from the for loop where
@@ -16,6 +16,7 @@ export default class GateRing {
     this.ringCount = ringCount
     //whether this gate ring falls on downbeat, upbeat, or sixteenth beat subdivision
     this.beatSubdivision = beatSubdivision
+    this.stepValue = stepValue
     //hex geometry 
     this.geometry = new THREE.RingGeometry(1, 0.97, levelConfig.LANE_COUNT)
 
@@ -25,6 +26,12 @@ export default class GateRing {
       color: levelConfig.GATE_RING_COLORS[this.beatSubdivision],
       side: THREE.DoubleSide
     })
+    //color rings that appear duriong the initial countdown grey
+    if(this.stepValue !== undefined){
+      if(this.stepValue <= levelConfig.COUNTDOWN_BEATS - 1/levelConfig.EDITOR_BEAT_SUBDIVISION_OPTIONS[levelConfig.EDITOR_BEAT_SUBDIVISION_OPTIONS.length - 1]){
+      this.material.color.set(0xe3e3e3)
+      }
+    }
 
     //mesh
     this.mesh = new THREE.Mesh(this.geometry, this.material)
@@ -35,6 +42,14 @@ export default class GateRing {
 
   init() {
     this.ringContainer.add(this.mesh)
+  }
+
+  initBarLabel = () => {
+    // if(stepValue >= COUNTDOWN_BEATS && (stepValue - COUNTDOWN_BEATS) % beatsPerBar === 0)
+  }
+
+  initBeatAndTimeLabel = () => {
+    //every one can get a beat/time label
   }
 
   update(deltaTime, speed, currentTime) {
@@ -79,5 +94,11 @@ export default class GateRing {
       // const t = performance.now() * 0.005
       // const scale = 1 + Math.sin(t) * 0.05
       // this.mesh.scale.set(scale, scale, scale)
+  }
+
+  dispose = () => {
+    this.material.dispose()
+    this.geometry.dispose()
+    this.ringContainer.remove(this.mesh)
   }
 }

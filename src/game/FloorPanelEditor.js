@@ -162,8 +162,8 @@ export default class FloorPanelEditor{
                 emissiveMap: emissiveMapTextureCLONE,
                 emissive: new THREE.Color(0xffffff),
                 alphaMap: alphaMapTextureCLONE,
-                transparent: true,        // ← MUST be true for alphaMap to work
-                depthWrite: false,        // ← prevents transparency sorting issues
+                transparent: true,        
+                depthWrite: false,        
                 emissiveIntensity: 0.8,
                 transmission: 0.2,
                 roughness: 0.5,
@@ -179,7 +179,7 @@ export default class FloorPanelEditor{
 
             const startOffset = (dataObj.startBeat - 1) * this.secondsPerBeat * this.levelSpeed
             this.overclockGeometry.translate(0, -(panelLengthWorldUnits / 2) - startOffset, 0)
-            //TO DO: POSITION THE MESH 
+            
             overclockMesh.position.set(0, 0, 0)
             overclockMesh.rotation.y = Math.PI/2  
             overclockMesh.rotation.z = Math.PI/2 
@@ -201,7 +201,16 @@ export default class FloorPanelEditor{
     dispose =  () => {
         this.glassMaterial.dispose()
         this.glassPanelGeometry.dispose()
-        this.overclockGeometry.dispose()
-        this.overclockMaterial.dispose()
+        this.bespokeGroup.clear()
+        this.floorPanelsContainer.remove(this.bespokeGroup)
+        this.overclockMeshArray.forEach(ocMesh => {
+            ocMesh.material.map.dispose()
+            ocMesh.material.emissiveMap.dispose()
+            ocMesh.material.alphaMap.dispose()
+            ocMesh.geometry.dispose()
+            ocMesh.material.dispose()
+        })
+        this.overclockMeshArray.length = 0
+        
     }
 }

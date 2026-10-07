@@ -240,7 +240,8 @@ export default class Level{
             tapNoteInLevelMap.subLane, 
             tapNoteInLevelMap.beat,
             timeInSeconds,
-            this.eventEmitter
+            this.eventEmitter,
+            this.tapNotesContainer
           ) 
           tapNote.init(this.tapNotesContainer)
           this.tapNotes.push(tapNote)
@@ -263,7 +264,8 @@ export default class Level{
         this.levelSpeed, 
         this.currentTime,
         this.secondsPerBeat,
-        this.eventEmitter
+        this.eventEmitter,
+        this.rampContainer
       ) 
       newRamp.init(this.rampContainer)
       this.ramps.push(newRamp)
@@ -287,6 +289,7 @@ export default class Level{
         this.currentTime,
         this.secondsPerBeat,
         this.eventEmitter,
+        this.railContainer
       ) 
       newRail.init(this.railContainer)
       this.rails.push(newRail)
@@ -462,12 +465,6 @@ export default class Level{
   //resets all note nodes and gate rings
   //gets called in the "onExit" method of the results state.
   reset = () => {
-    //reset the gate rings array
-    this.gateRings = []
-    this.tapNotes = []
-    this.rails = []
-    this.ramps = []
-    this.floorPanels = []
     //reset time stuff
     this.currentTime = 0.00
     this.lastBeat = 3
@@ -486,45 +483,26 @@ export default class Level{
     this.isActivated = false
     //aaaand clean up the geometry
     // clear tap notes
-    while (this.tapNotesContainer.children.length > 0) {
-        const child = this.tapNotesContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.tapNotesContainer.remove(child)
-    }
+    this.tapNotes.forEach(tapNote => tapNote.dispose())
+    this.tapNotes.length = 0
     // clear ramps
-    while (this.rampContainer.children.length > 0) {
-        const child = this.rampContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.rampContainer.remove(child)
-    }
+    this.ramps.forEach(ramp => ramp.dispose())
+    this.ramps.length = 0
     //clear rails
-    while (this.railContainer.children.length > 0) {
-        const child = this.railContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.railContainer.remove(child)
-    }
+    this.rails.forEach(rail => rail.dispose())
+    this.rails.length = 0
     // clear gate rings
-    while (this.ringContainer.children.length > 0) {
-        const child = this.ringContainer.children[0]
-        child.geometry.dispose()
-        child.material.dispose()
-        this.ringContainer.remove(child)
-    }
+    this.gateRings.forEach(gateRing => gateRing.dispose())
+    this.gateRings.length = 0
     // clear floor panels
-    while (this.floorPanelsContainer.children.length > 0) {
-        const child = this.floorPanelsContainer.children[0]
-        if(child.geometry)child.geometry.dispose()
-        if(child.material)child.material.dispose()
-        this.floorPanelsContainer.remove(child)
-    }
+    this.floorPanels.forEach(panel => panel.dispose())
+    this.floorPanels.length = 0
+    console.log("DEBUG RESET RESET ERST LEVEL")
   }
 
   //sets properties related to the song and its bpm
   setSongState = () => {
-      this.songLength = this.app.audioManager.getSongDurationInSeconds()
+      this.songLengthInSeconds = this.app.audioManager.getSongDurationInSeconds()
       this.bpm = this.app.audioManager.getCurrentBpm()
       this.secondsPerBeat = 60/this.bpm
       //distance between each one
