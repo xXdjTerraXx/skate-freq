@@ -14,9 +14,11 @@ export default class GateRing {
     this.hitlineZPosition = hitlineZPosition
     //total number of rings inited in Level
     this.ringCount = ringCount
-    //whether this gate ring falls on downbeat, upbeat, or sixteenth beat subdivision
+    //enum - whether this gate ring falls on downbeat, upbeat, or sixteenth beat subdivision
     this.beatSubdivision = beatSubdivision
+    //this gate ring's beat position based on accumulator (0 index) space
     this.stepValue = stepValue
+    
     //hex geometry 
     this.geometry = new THREE.RingGeometry(1, 0.97, levelConfig.LANE_COUNT)
 

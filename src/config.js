@@ -356,6 +356,25 @@ export const levelConfig = {
             fontSize: {label: 25, text: 50},
             fontColor: 0xffffff,
             size: {width: 200, height: 100}
+        },
+        gateRingLabels: {
+            position: {x: -640, y: 420, z: 0},
+            rotation: {
+                x: 90 * (Math.PI/180), 
+                y: 45 * (Math.PI/180), 
+                z: Math.PI/2
+            },
+            //alternate rotation to face the second camera
+            aerialRotation: {
+                x: 180 * (Math.PI/180), 
+                y: 270 * (Math.PI/180), 
+                z: 270 * (Math.PI/180)
+            },
+            backgroundColor: 0xffffff,
+            fontSize: .175,
+            fontColor: COLOR_PALETTE.black,
+            borderColor: COLOR_PALETTE.purple,
+            size: {width: 200, height: 100}
         }
     },
     RENDER_ORDER: {

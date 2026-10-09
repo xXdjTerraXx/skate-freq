@@ -92,7 +92,7 @@ export default class EditorControler{
     }
 
     setNewCamera = (newIndex) => {
-        this.app.setNewCamera(newIndex)
+        this.app.levelEditor.setNewCamera(newIndex)
     }
 
     run = (deltaTime) => {

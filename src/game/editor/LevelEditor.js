@@ -9,6 +9,7 @@ import Rail from '../note_nodes/Rail'
 import ENUMS from '../../enums'
 import EditorMapHelper from './EditorMapHelper'
 import FloorPanelEditor from '../FloorPanelEditor'
+import GateRingLabel from '../GateRingLabel'
 
 
 export default class LevelEditor{
@@ -60,6 +61,7 @@ export default class LevelEditor{
 
    //establish some arrays to hold things
     this.gateRings = []
+    this.gateRingLabels = []
     this.tapNotes = []
     this.ramps = []
     this.rails = []
@@ -126,6 +128,9 @@ export default class LevelEditor{
     //RING CONTAINER
     this.ringContainer = new THREE.Group()
     this.ringContainer.name = 'rings container'
+    //RING LABELS CONTAINER
+    this.ringLabelsContainer = new THREE.Group()
+    this.ringLabelsContainer.name = 'ring labels container'
     //RAMPS CONTAINER 
     this.rampContainer = new THREE.Group()
     this.rampContainer.name = 'ramp container'
@@ -161,6 +166,7 @@ export default class LevelEditor{
     this.mainContainer.add(this.rampContainer)
     this.mainContainer.add(this.railContainer)
     this.mainContainer.add(this.ringContainer)
+    this.mainContainer.add(this.ringLabelsContainer)
 
     //init event emitter here
     this.eventEmitter = new EventEmitter()
@@ -332,6 +338,7 @@ export default class LevelEditor{
     //how many sixteenth notes are in song, since that's smallest subdivision option
     this.totalNumberOfGateRings = this.totalBeatsInSong * this.gateRingsPerBeat 
 
+    //ok for every beat in the song, make a gate ring
     for(let i = 0; i < this.totalBeatsInSong; i++){
       for(let j = 0; j < this.gateRingsPerBeat; j++){
         let beatSubdivisionString
@@ -352,6 +359,7 @@ export default class LevelEditor{
         const stepValue = .25 * ringIndex
         const ring = new GateRing(this.app, this.ringContainer, ringIndex, this.ringSpacing, this.hitlineZPosition, this.totalNumberOfGateRings, beatSubdivisionString, stepValue)
         ring.init()
+        this.giveGateRingLabel(ring)
         this.gateRings.push(ring)
       }
     }
@@ -359,6 +367,19 @@ export default class LevelEditor{
 
   //TO DO: build triplet gate rings
   initTripletGateRings = () => {
+
+  }
+
+  //inits all the gate ring labels
+  giveGateRingLabel = (ring) => {
+    //only down beat rings need a label
+    if(ring.beatSubdivision === ENUMS.BEAT_SUBDIVISON_STRINGS.DOWN){
+          const songBeat = this.mapHelper.accumulatorToSongBeat(ring.stepValue)
+          const barNumber = Math.floor(ring.stepValue / this.beatsPerBar) + 1
+          const newLabel = new GateRingLabel(ring, songBeat, barNumber, this.ringLabelsContainer)
+          this.ringLabelsContainer.add(newLabel.mainContainer)
+          this.gateRingLabels.push(newLabel)
+    }
 
   }
 
@@ -412,6 +433,15 @@ export default class LevelEditor{
         if(gateRing.beatSubdivision === ENUMS.BEAT_SUBDIVISON_STRINGS.TRIPLET)gateRing.mesh.visible = false
       })
     }
+  }
+
+  setNewCamera = (newCameraIndex) => {
+    //the cameras array in app: [normalView, aerialView]
+    //first check if index is valid
+    if(newCameraIndex < 0 || newCameraIndex > this.app.camerasArray.length - 1)return
+    //set the new camera in app
+    this.app.setNewCamera(newCameraIndex)
+    this.gateRingLabels.forEach(label => label.setLabelOrientation(newCameraIndex))
   }
 
   changeLane = (direction) => {
@@ -661,6 +691,9 @@ checkRailHit = () => {
     // clear gate rings
     this.gateRings.forEach(gateRing => gateRing.dispose())
     this.gateRings.length = 0
+    // clear gate ring labels
+    this.gateRingLabels.forEach(gateRing => gateRing.dispose())
+    this.gateRingLabels.length = 0
     // clear floor panels
     this.floorPanels.forEach(panel => panel.dispose())
     this.floorPanels.length = 0
@@ -755,7 +788,10 @@ checkRailHit = () => {
 
     //update gate rings
     this.gateRings.forEach(ring => ring.updateEditor(deltaTime, this.levelSpeed, this.currentTime))
-   
+    //IMPORTANT: update gate ring labels must be AFTER gate ring update bc
+    //their positioning is based off of gate rings
+    this.gateRingLabels.forEach(label => label.update(this.currentTime))
+    
     //APPLY ROTATION
     this.applyRotation(deltaTime)
 
