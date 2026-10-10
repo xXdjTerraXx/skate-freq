@@ -83,6 +83,9 @@ controller.init()
 //this setup function just gives the main app all the rest of the modules it needs
 mainApplication.setup(level, player, controller, hitManager, ui, titleScreen, scoreManager, surgeManager, resultsScreen, gameOverScreen, songSelectScreen, modeSelectScreen, countdownScreen, pauseScreen, levelEditor, levelEditorSetupScreen, levelEditorController)
 
+//this needed to give some generic ui components their functionality
+mainApplication.ui.editorWriteHUD.giveFunctions()
+
 //createGameStates returns a state object with all the state's inited
 const gameStatesDictionary = createGameStates(mainApplication)
 

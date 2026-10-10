@@ -4,6 +4,7 @@ import { levelConfig } from '../../config'
 import BPMInput from './components/BPMInput'
 import LoadSongButton from './components/LoadSongButton'
 import BeatGridSelector from './components/BeatGridSelector'
+import GenericCheckbox from './components/GenericCheckbox'
 
 
 export default class EditorWriteHUD{
@@ -31,11 +32,18 @@ export default class EditorWriteHUD{
         this.childComponents = []
 
         this.beatGridSelector = new BeatGridSelector(this.app, this.mainContainer, this.clickableMeshes, this.childComponents)
+        const showBeatLabelCheckboxPosition = levelConfig.EDITOR_UI_COMPONENT_SETTINGS.showBeatLabelsCheckbox.position
+        this.showBeatLabelsCheckbox = new GenericCheckbox(this.app, this.mainContainer, this.clickableMeshes, this.childComponents, 'Show beat labels', false, showBeatLabelCheckboxPosition)
     }
 
     init = () => {
         //init individual ui components:
         this.beatGridSelector.init()
+    }
+
+    //give clickable functions to some components that need it
+    giveFunctions = () => {
+        this.showBeatLabelsCheckbox.giveClickFunction(this.app.levelEditor.setLabelVisibility)
     }
 
     handleClick = (e) => {

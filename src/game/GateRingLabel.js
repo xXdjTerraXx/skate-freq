@@ -212,6 +212,10 @@ export default class GateRingLabel{
         this.mainContainer.rotation.set(this.currentRotationPreset.x, this.currentRotationPreset.y, this.currentRotationPreset.z)
     }
 
+    toggleVisibility = (visibility) => {
+        this.mainContainer.visible = visibility
+    }
+
     update = (currentTime) => {
         this.mainContainer.position.x = this.labelPosition.x
         this.mainContainer.position.y = this.labelPosition.y

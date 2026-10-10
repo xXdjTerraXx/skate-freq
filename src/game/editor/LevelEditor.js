@@ -73,6 +73,7 @@ export default class LevelEditor{
     //this property used for transition from countdown -> playing
     this.isActivated = false
 
+    this.showRingLabels = levelConfig.EDITOR_DISPLAY_LABELS_DEFAULT_VALUE
 
 //~~*+*~~//~~*+*~~//~~*+*~~/ -- MESH SETUP --/~~*+*~~//~~*+*~~//~~*+*~~//~~*+*~~//
     //in the normal Level, there are two tunnels that loop. here in the editor, there is 
@@ -433,6 +434,11 @@ export default class LevelEditor{
         if(gateRing.beatSubdivision === ENUMS.BEAT_SUBDIVISON_STRINGS.TRIPLET)gateRing.mesh.visible = false
       })
     }
+  }
+
+  setLabelVisibility = (boxIsChecked) => {
+    this.showRingLabels = boxIsChecked
+    this.gateRingLabels.forEach(label => label.toggleVisibility(this.showRingLabels))
   }
 
   setNewCamera = (newCameraIndex) => {

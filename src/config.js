@@ -48,6 +48,7 @@ export const levelConfig = {
     WORLD_FRICTION: 0.98,
     WORLD_GRAVITY: -.007,
     EDITOR_DEFAULT_BPM: 140,
+    EDITOR_DISPLAY_LABELS_DEFAULT_VALUE: true,
     EDITOR_BEAT_SUBDIVISION_OPTIONS: [1, 2, 3, 4],//quarter, eighth, triplet, sixteenth
     //enom for note node types
     NOTE_NODE_TYPE: {
@@ -345,6 +346,16 @@ export const levelConfig = {
             size:{width: 150, height: 80},
             padding: 3
         },
+        genericCheckbox:{
+            fontSize: 25,
+            fontColor: 0xffffff,
+            boxSize: 30,
+            gap: 50, //space between box and label
+            xArmThickness: 4,
+            xColor: COLOR_PALETTE.cyan,
+            borderColor: COLOR_PALETTE.cyan,
+            boxBackgroundColor: COLOR_PALETTE.black
+        },
         setupOkButton: {
             position: {x: 300, y: 100, z:0},
             bgColor: COLOR_PALETTE.black,
@@ -352,7 +363,7 @@ export const levelConfig = {
             borderColor: COLOR_PALETTE.cyan 
         },
         beatGridSelectorContainer: {
-            position: {x: -640, y: 420, z: 0},
+            position: {x: -675, y: 420, z: 0},
             fontSize: {label: 25, text: 50},
             fontColor: 0xffffff,
             size: {width: 200, height: 100}
@@ -374,7 +385,10 @@ export const levelConfig = {
             fontSize: .175,
             fontColor: COLOR_PALETTE.black,
             borderColor: COLOR_PALETTE.purple,
-            size: {width: 200, height: 100}
+            size: {width: 200, height: 100},
+        },
+        showBeatLabelsCheckbox:{
+            position: {x: -675, y: 300, z: 0}
         }
     },
     RENDER_ORDER: {
