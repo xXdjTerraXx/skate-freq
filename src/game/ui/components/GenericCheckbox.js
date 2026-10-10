@@ -101,6 +101,10 @@ export default class GenericCheckbox{
         this.xContainer.visible = this.isChecked
     }
 
+    toggle = () => {
+        this.isChecked = !this.isChecked
+    }
+    
     onClick = () => {
         console.log("WOOWOWWWW U CLICKED THE CHECK BOXOXOXOXO")
         this.toggle()
@@ -108,7 +112,17 @@ export default class GenericCheckbox{
         if(this.clickFunction)this.clickFunction(this.isChecked)
     }
 
-    toggle = () => {
-        this.isChecked = !this.isChecked
+    dispose = () => {
+        //dispose materials, geometry, and text
+        this.borderGeometry.dispose()
+        this.borderMaterial.dispose()
+        this.boxGeometry.dispose()
+        this.boxMaterial.dispose()
+        this.label.dispose()
+        //clear containers
+        this.boxContainer.clear()
+        this.xContainer.clear()
+        this.mainContainer.clear()
+        this.clickFunction = null
     }
 }

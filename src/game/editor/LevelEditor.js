@@ -62,7 +62,8 @@ export default class LevelEditor{
    //establish some arrays to hold things
     this.gateRings = []
     this.gateRingLabels = []
-    this.tapNotes = []
+    //here in the editor, a map is used instead of an array to hold note nodes
+    this.tapNotes = new Map()
     this.ramps = []
     this.rails = []
     this.floorPanels = []
@@ -238,25 +239,7 @@ export default class LevelEditor{
 
     this.initGateRings()
      
-    //init TAPNOTES
-    // this.levelMap.patterns.tapNotes.forEach(tapNoteInLevelMap => {
-          // const countdownOffset = 4 * this.secondsPerBeat
-          // const timeInSeconds = (tapNoteInLevelMap.beat - 1) * this.secondsPerBeat + countdownOffset
-          // const tapNote = new TapNote(
-          //   this.app, 
-          //   this.hitlineZPosition,
-          //   this.levelSpeed, 
-          //   this.zRotationOffset, 
-          //   this.currentTime, 
-          //   tapNoteInLevelMap.lane, 
-          //   tapNoteInLevelMap.subLane, 
-          //   tapNoteInLevelMap.beat,
-          //   timeInSeconds,
-          //   this.eventEmitter
-          // ) 
-          // tapNote.init(this.tapNotesContainer)
-          // this.tapNotes.push(tapNote)
-    //     })
+
 
     // //init RAMPS
     // this.levelMap.patterns.ramps.forEach(ramp => {
@@ -501,20 +484,40 @@ export default class LevelEditor{
     this.currentTime += (this.targetTime - this.currentTime) * lerpFactor
   }
 
+  getMapKeyFromNote = (lane, songBeat) => {
+    return  `${lane}-${songBeat}`
+  }
+
   placeTapNote = (newSubLane) => {
     if(!this.cursor) return
+
     //move cursor to correct sublane
     this.cursorCurrentSubLane = newSubLane
-    const noteToAdd = this.mapHelper.addTapNote(
+
+    //add tap note in map helper and get the status object it returns
+    const notePlacementStatusObject = this.mapHelper.addTapNote(
       this.cursorCurrentLane, this.cursorCurrentSubLane, this.currentBeatAccumulator
     )
-    if(noteToAdd){
-      this.addTapNoteMesh(noteToAdd)
-      console.log("NOTE PLACED: ", noteToAdd)
+
+    //ignore invalid or unchanged placements
+    if(
+      notePlacementStatusObject.status === this.mapHelper.PLACEMENT_STATUS_ENUMS.UNCHANGED ||
+      notePlacementStatusObject.status === this.mapHelper.PLACEMENT_STATUS_ENUMS.INVALID
+    ) console.log("note not placed...")
+
+    //successful note add
+    else if(notePlacementStatusObject.status === this.mapHelper.PLACEMENT_STATUS_ENUMS.ADDED){
+      this.addTapNoteMesh(notePlacementStatusObject.note)
+      console.log("NOTE ADDED: ", notePlacementStatusObject.note)
     }
-    else {
-      console.log("note not placed...")
+    //note replace
+    else if(notePlacementStatusObject.status === this.mapHelper.PLACEMENT_STATUS_ENUMS.REPLACED){
+      this.deleteTapNoteMesh(notePlacementStatusObject.previousNote)
+      this.addTapNoteMesh(notePlacementStatusObject.note)
+      console.log("NOTE DELETED: ", notePlacementStatusObject.previousNote,"NOTE REPLACED: ", notePlacementStatusObject.note)
     }
+
+    console.log("SYNC CHECK FOR TAP NOTES", this.tapNotes.size, this.mapHelper.noteMap.patterns.tapNotes.length)
   }
 
   addTapNoteMesh = (noteToAdd) => {
@@ -534,7 +537,20 @@ export default class LevelEditor{
         this.tapNotesContainer
       ) 
       tapNote.init(this.tapNotesContainer)
-      this.tapNotes.push(tapNote)
+      //add to tapnotes map
+      const key = this.getMapKeyFromNote(noteToAdd.lane, noteToAdd.beat)
+      this.tapNotes.set(key, tapNote)
+  }
+
+  deleteTapNoteMesh = (noteToDelete) => {
+    const noteKey = this.getMapKeyFromNote(noteToDelete.lane, noteToDelete.beat)
+    const existing = this.tapNotes.get(noteKey)
+    if(!existing){ 
+      console.warn("no mesh for key", noteKey)
+      return 
+    }
+    this.tapNotes.get(noteKey).dispose()
+    this.tapNotes.delete(noteKey)
   }
 
   //simply returns bool about if tapnote is incoming
@@ -827,8 +843,8 @@ checkRailHit = () => {
       this.dirtyNotesExist = false
     }
 
-
-    this.tapNotes.forEach(note => note.update(deltaTime, this.currentTime))
+    //loop over the tap notes map
+    this.tapNotes.values().forEach(note => note.update(deltaTime, this.currentTime))
 
     //update ramps
     this.ramps.forEach(ramp => {

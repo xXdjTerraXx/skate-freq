@@ -67,4 +67,12 @@ export default class GenericButton{
     onClick = () => {
         this.clickFunction()
     }
+
+    dispose = () => {
+        this.buttonBackgroundGeometry.dispose()
+        this.buttonBackgroundMaterial.dispose()
+        this.buttonBorderGeometry.dispose()
+        this.buttonBorderMaterial.dispose()
+        this.buttonLabelTextNode.dispose()
+    }
 }

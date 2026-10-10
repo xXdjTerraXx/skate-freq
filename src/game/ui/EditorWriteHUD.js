@@ -89,7 +89,7 @@ export default class EditorWriteHUD{
         this.mainContainer.visible = false
         //first reset all the components
         this.childComponents.forEach(component => {
-            if(component.reset)component.reset()
+            if(component.dispose)component.dispose()
         })
         //then reset all the stuff here in the manager
         this.clickableMeshes.length = 0

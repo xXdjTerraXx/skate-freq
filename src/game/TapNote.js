@@ -112,6 +112,7 @@ export default class TapNote{
   }
 
   dispose = () => {
+    console.log("THEOEOO JELLO PUDDIN")
     this.material.dispose()
     this.geometry.dispose()
     this.tapNotesContainer.remove(this.mesh)

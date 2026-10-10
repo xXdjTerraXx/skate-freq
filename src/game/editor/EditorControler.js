@@ -14,6 +14,7 @@ export default class EditorControler{
         this.qKey = 'KeyQ'
         this.wKey = 'KeyW'
         this.sKey = 'KeyS'
+        this.tab = 'Tab'
         this.spacebar = 'Space'
         this.key1 = 'Digit1'
         this.key2 = 'Digit2'
@@ -42,7 +43,9 @@ export default class EditorControler{
         if (e.code ===  this.dKey) {
             this.rotateTunnel(e)
         }
-        //crouch
+        if(e.code === this.tab){
+            console.log("TAB KEY PRESSED")
+        }
         if(e.code === this.spacebar){
             // this.handleCrouch()
         }
